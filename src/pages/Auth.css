@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.auth-container {
+  min-height: 100vh;
+  width: 100%;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6rem;
+  
+  font-family: 'Poppins', sans-serif;
+  
+  background: 
+    linear-gradient(to bottom, rgba(13, 43, 91, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%),
+    url('../assets/bg.jpg'); 
+    
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 2rem;
+}
+
+.brand-section {
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; 
+}
+
+.brand-logo-img {
+  width: 580px;
+  height: auto;
+  display: block;
+}
+
+.brand-subtitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: white;
+  margin-top: 26px;
+  text-align: center;
+  opacity: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.auth-card {
+  background: white;
+  padding: 3rem;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  flex-shrink: 0; 
+}
+
+.auth-header {
+  color: #0d2b5b;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  color: #0d2b5b;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background-color: #e6e6e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: 2px solid #f38020;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #f38020;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s;
+}
+
+.auth-btn:hover {
+  background-color: #d66e15;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.auth-link {
+  color: #0d2b5b;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .auth-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .brand-logo-img {
+    width: 400px;
+  }
+  
+  .brand-subtitle {
+    font-size: 1.5rem;
+  }
+}
