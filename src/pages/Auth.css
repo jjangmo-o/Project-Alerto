@@ -90,6 +90,19 @@
   outline: 2px solid #f38020;
 }
 
+.form-error {
+  color: #E83F38;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.form-helper {
+  color: #6C757D;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+
 .auth-btn {
   width: 100%;
   padding: 12px;

@@ -19,51 +19,6 @@
   width: 100%;
 }
 
-.top-header {
-  background: white;
-  padding: 1rem 2.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #E9ECEF;
-  flex-shrink: 0;
-}
-
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1C3E6F;
-}
-
-.menu-icon-img {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.menu-icon-img:hover {
-    transform: scale(1.1);
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #1C3E6F;
-  font-weight: 700;
-}
-
-.avatar-circle {
-  width: 45px;
-  height: 45px;
-  background-color: #E9ECEF;
-  border-radius: 50%;
-}
-
 .dashboard-grid {
   padding: 2.5rem;
   display: grid;
@@ -95,6 +50,18 @@
   align-items: center;
   gap: 1.2rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.status-card.success {
+  border-left: 6px solid #7BA655;
+}
+
+.status-card.warning {
+  border-left: 6px solid #FF8C00;
+}
+
+.status-card.danger {
+  border-left: 6px solid #E83F38;
 }
 
 .icon-box {
@@ -223,6 +190,11 @@
   line-height: 1.1;
 }
 
+.water-value.normal { color: #7BA655; }
+.water-value.warning { color: #FF8C00; }
+.water-value.critical { color: #E83F38; }
+
+
 .water-timestamp {
     font-size: 12px;
     color: #ADB5BD;
@@ -255,9 +227,17 @@
   font-size: 1.4rem;
 }
 
+.hub-section {
+  padding: 0 2.5rem 2.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .hub-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
 }
 
@@ -281,6 +261,10 @@
   transform: translateY(-5px);
   background: #FF8C00;
   box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+}
+
+.hub-card:focus {
+  outline: 3px solid #FF8C00;
 }
 
 .hub-icon {

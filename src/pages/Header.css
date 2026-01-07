@@ -1,0 +1,52 @@
+.top-header {
+  background: white;
+  padding: 1rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E9ECEF;
+  flex-shrink: 0;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1C3E6F;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.menu-icon-img {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.menu-icon-img:hover {
+  transform: scale(1.1);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1C3E6F;
+  font-weight: 700;
+}
+
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #E9ECEF;
+    border-radius: 50%;
+    cursor: pointer;
+}

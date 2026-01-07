@@ -33,19 +33,23 @@ const Register = () => {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Full Name</label>
+            <label htmlFor="fullName" className="form-label">Full Name</label>
             <input 
               type="text" 
+              id="fullName"
               name="fullName"
               className="form-input" 
               onChange={handleChange}
               required
             />
+            <p className="form-helper">Password must be at least 8 characters</p>
+
           </div>
 
           <div className="form-group">
-            <label className="form-label">Barangay</label>
+            <label htmlFor="barangay" className="form-label">Barangay</label>
             <select 
+              id="barangay"
               name="barangay" 
               className="form-input" 
               onChange={handleChange}
@@ -73,9 +77,10 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Mobile Number</label>
+            <label htmlFor="contact" className="form-label">Mobile Number</label>
             <input 
               type="tel" 
+              id="contact"
               name="contact"
               placeholder="0912 345 6789"
               className="form-input" 
@@ -85,9 +90,10 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label htmlFor="password" className="form-label">Password</label>
             <input 
               type="password" 
+              id="password"
               name="password"
               className="form-input" 
               onChange={handleChange}

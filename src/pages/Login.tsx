@@ -28,27 +28,29 @@ const Login = () => {
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Username</label>
-            <input 
-              type="text" 
+            <label htmlFor="username" className="form-label">Username</label>
+            <input
+              id="username"
+              type="text"
               name="username"
-              className="form-input" 
-              value={formData.username}
-              onChange={handleChange}
-              required
+              className="form-input"
             />
+
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label htmlFor="password" className="form-label">Password</label>
             <input 
-              type="password" 
+              id="password"
+              type="password"
               name="password"
               className="form-input" 
               value={formData.password}
               onChange={handleChange}
               required
             />
+            <p className="form-helper">Password must be at least 8 characters</p>
+
           </div>
 
           <button type="submit" className="auth-btn">Login</button>

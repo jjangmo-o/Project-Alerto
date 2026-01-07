@@ -85,6 +85,10 @@
   color: white;
 }
 
+.nav-item:focus {
+  outline: 2px solid #FF8C00;
+}
+
 .nav-item.active {
   background-color: #FF8C00;
   color: white;
