@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { authService } from '../services/authService';
 import { profileService } from '../services/profileService';
@@ -9,50 +9,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
-    try {
-      const userProfile = await profileService.getProfile(userId);
-      return userProfile;
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return null;
-    }
-  }, []);
+  const loadingRef = useRef(true);
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const initAuth = async () => {
       try {
+        // Set a timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (isMounted && loadingRef.current) {
+            console.warn('Auth initialization timed out');
+            setLoading(false);
+            loadingRef.current = false;
+          }
+        }, 3000); // 3 second timeout
+
         const session = await authService.getSession();
         
         if (!isMounted) return;
         
         if (session?.user) {
           setUser(session.user);
-          const userProfile = await fetchProfile(session.user.id);
-          if (isMounted) setProfile(userProfile);
+          
+          // Fetch profile in background, don't block loading
+          profileService.getProfile(session.user.id)
+            .then(userProfile => {
+              if (isMounted) setProfile(userProfile);
+            })
+            .catch(err => {
+              console.error('Error fetching profile:', err);
+            });
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
       } finally {
-        if (isMounted) setLoading(false);
+        clearTimeout(timeoutId);
+        if (isMounted) {
+          setLoading(false);
+          loadingRef.current = false;
+        }
       }
     };
 
     initAuth();
 
+    // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(
-      async (_event: string, session: unknown) => {
+      async (event: string, session: unknown) => {
         if (!isMounted) return;
         
         const typedSession = session as Session | null;
         setUser(typedSession?.user ?? null);
         
-        if (typedSession?.user) {
-          const userProfile = await fetchProfile(typedSession.user.id);
-          if (isMounted) setProfile(userProfile);
+        if (typedSession?.user && event !== 'SIGNED_OUT') {
+          profileService.getProfile(typedSession.user.id)
+            .then(userProfile => {
+              if (isMounted) setProfile(userProfile);
+            })
+            .catch(err => {
+              console.error('Error fetching profile:', err);
+            });
         } else {
           setProfile(null);
         }
@@ -61,16 +79,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, []);
 
   const login = async (email: string, password: string) => {
     const { user: authUser } = await authService.login(email, password);
     if (authUser) {
       setUser(authUser);
-      const userProfile = await fetchProfile(authUser.id);
-      setProfile(userProfile);
+      profileService.getProfile(authUser.id)
+        .then(userProfile => setProfile(userProfile))
+        .catch(err => console.error('Error fetching profile:', err));
     }
   };
 
@@ -81,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     contact: string; 
     password: string;
     address?: string;
+    birthDate?: string;
   }) => {
     await authService.register(data);
   };
@@ -96,8 +117,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (user) {
-      const userProfile = await fetchProfile(user.id);
-      setProfile(userProfile);
+      try {
+        const userProfile = await profileService.getProfile(user.id);
+        setProfile(userProfile);
+      } catch (error) {
+        console.error('Error refreshing profile:', error);
+      }
     }
   };
 

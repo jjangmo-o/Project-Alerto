@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import './Auth.css';
+import './Register.css';
 import logoImg from '../assets/logo.png';
 
 const Register = () => {
@@ -40,7 +40,6 @@ const Register = () => {
     }
   };
 
-  // Show success screen after registration - improved version
   if (registrationSuccess) {
     return (
       <div className="auth-container">
@@ -50,7 +49,6 @@ const Register = () => {
         </div>
 
         <div className="auth-card success-card">
-          {/* Success Icon with animation */}
           <div className="success-icon-wrapper">
             <div className="success-icon">
               <svg 
@@ -115,10 +113,10 @@ const Register = () => {
       <div className="auth-card">
         <h2 className="auth-header">Create Account</h2>
 
-        {error && <p className="form-error" style={{ textAlign: 'center', marginBottom: '1rem', color: '#dc2626' }}>{error}</p>}
+        {error && <p style={{ textAlign: 'center', marginBottom: '1rem', color: '#dc2626', fontSize: '0.85rem' }}>{error}</p>}
         
         <form onSubmit={handleSubmit} autoComplete="off">
-          <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+          <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
               <label htmlFor="firstName" className="form-label">First Name</label>
               <input 
@@ -150,7 +148,7 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+          <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
               <label htmlFor="email" className="form-label">Email</label>
               <input 
