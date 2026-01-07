@@ -70,6 +70,7 @@ function AppRoutes() {
     </Routes>
   );
 }
+import EmergencyHotlines from './pages/EmergencyHotlines';
 
 function App() {
   return (
