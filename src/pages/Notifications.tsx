@@ -70,14 +70,15 @@ const Notifications = () => {
     }
   };
 
-  const getSeverityLabel = (severity: SeverityLevel) => {
+    const getSeverityLabel = (severity: SeverityLevel) => {
     switch (severity) {
-      case 'critical': return 'CRITICAL';
-      case 'urgent': return 'URGENT';
-      case 'normal': return 'NORMAL';
-      default: return '';
+        case 'critical': return 'CRITICAL';
+        case 'urgent': return 'URGENT';
+        case 'normal': return 'ALERT'; // matches UI
+        default: return '';
     }
-  };
+    };
+
 
   const getTypeIcon = (type: NotificationType) => {
     switch (type) {
