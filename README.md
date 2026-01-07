@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+### Prerequisites
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Before you begin, ensure you have the following installed:
 
-Currently, two official plugins are available:
+- **Node.js** (v18.0.0 or higher)
+- **npm** (v9.0.0 or higher) or **yarn** (v1.22.0 or higher)
+- **Git**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Check your versions
+node --version  # Should be >= 18.0.0
+npm --version   # Should be >= 9.0.0
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Installation
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/project-alerto.git
+   cd project-alerto
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   # Copy the example env file
+   cp .env.example .env.local
+   
+   # Edit with your credentials
+   nano .env.local
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   ```
+   http://localhost:5173
+   ```
+
+---
+
+## 📦 Dependencies
+
+### Core Dependencies
+
+| Package | Version | Description |
+|---------|---------|-------------|
+| `react` | ^19.2.0 | UI component library |
+| `react-dom` | ^19.2.0 | React DOM rendering |
+| `react-router-dom` | ^7.11.0 | Client-side routing |
+| `@supabase/supabase-js` | ^2.90.0 | Supabase client SDK |
+
+### Styling
+
+| Package | Version | Description |
+|---------|---------|-------------|
+| `tailwindcss` | ^3.4.0 | Utility-first CSS framework |
+| `postcss` | ^8.5.0 | CSS post-processing |
+| `autoprefixer` | ^10.4.0 | CSS vendor prefixing |
+
+### Development Dependencies
+
+| Package | Version | Description |
+|---------|---------|-------------|
+| `typescript` | ~5.9.0 | TypeScript language |
+| `vite` | ^7.2.0 | Build tool & dev server |
+| `@vitejs/plugin-react` | ^4.5.0 | React plugin for Vite |
+| `eslint` | ^9.30.0 | Code linting |
+| `@eslint/js` | ^9.30.0 | ESLint JavaScript rules |
+| `typescript-eslint` | ^8.35.0 | TypeScript ESLint support |
+| `eslint-plugin-react-hooks` | ^5.2.0 | React Hooks linting |
+| `eslint-plugin-react-refresh` | ^0.4.20 | React Refresh linting |
+| `@types/react` | ^19.2.0 | React type definitions |
+| `@types/react-dom` | ^19.2.0 | React DOM type definitions |
+
+### Install All at Once
+
+If starting from scratch, run:
+
+```bash
+# Core dependencies
+npm install react react-dom react-router-dom @supabase/supabase-js
+
+# Styling
+npm install -D tailwindcss postcss autoprefixer
+
+# Development tools
+npm install -D typescript vite @vitejs/plugin-react
+npm install -D eslint @eslint/js typescript-eslint
+npm install -D eslint-plugin-react-hooks eslint-plugin-react-refresh
+npm install -D @types/react @types/react-dom
+
+# Initialize Tailwind (if not already done)
+npx tailwindcss init -p
+```
+
+### Quick Install Command
+
+Copy and paste this single command to install everything:
+
+```bash
+npm install react react-dom react-router-dom @supabase/supabase-js && npm install -D tailwindcss postcss autoprefixer typescript vite @vitejs/plugin-react eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh @types/react @types/react-dom
 ```
