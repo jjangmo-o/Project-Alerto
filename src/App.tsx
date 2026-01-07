@@ -8,6 +8,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import './App.css';
 import EmergencyHotlines from './pages/EmergencyHotlines';
+import Notifications from './pages/Notifications';
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -44,7 +45,7 @@ function AppRoutes() {
       <Route path="/hotlines" element={<ProtectedRoute><EmergencyHotlines /></ProtectedRoute>} />
       <Route path="/map" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/residence" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
     </Routes>
   );
 }
