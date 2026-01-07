@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import './Sidebar.css';
 import logoImg from '../assets/logo-lighthouse.png';
 
@@ -7,7 +8,20 @@ interface SidebarProps {
   isOpen: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen}) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      navigate('/login', { replace: true });
+    }
+  };
+
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div className="sidebar-logo">
@@ -54,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen}) => {
     </nav>
 
 
-      <button className="logout-btn">Logout</button>
+      <button className="logout-btn" onClick={handleLogout}>Logout</button>
     </aside>
   );
 };

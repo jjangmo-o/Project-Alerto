@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import './Dashboard.css';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -16,10 +17,14 @@ import alertGreen from '../assets/icon-green-alert.svg';
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { profile } = useAuth();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  // Get user's first name from profile
+  const userName = profile?.first_name || 'User';
 
   return (
     <div className="dashboard-container">
@@ -28,7 +33,7 @@ const Dashboard = () => {
       <main className="main-content">
         <Header
           onMenuClick={toggleSidebar}
-          username="Richard"
+          username={userName}
         />
 
 

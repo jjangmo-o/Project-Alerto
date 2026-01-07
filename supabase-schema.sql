@@ -1,0 +1,21 @@
+-- =============================================
+-- PROJECT ALERTO - SUPABASE SCHEMA REFERENCE
+-- =============================================
+-- Your existing tables are already set up!
+-- No additional tables needed - alerts and water
+-- levels will come from external APIs.
+-- =============================================
+
+-- Your existing tables:
+-- - barangays
+-- - profiles  
+-- - evacuation_centers
+-- - emergency_hotlines
+-- - disaster_reports
+-- - evacuation_logs
+-- - families
+-- - family_members
+-- - report_images
+
+-- Enable realtime for evacuation centers (optional)
+-- ALTER PUBLICATION supabase_realtime ADD TABLE public.evacuation_centers;
