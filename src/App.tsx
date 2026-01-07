@@ -1,16 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
-
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
-import EmergencyHotlines from './pages/EmergencyHotlines';
 import './App.css';
+import EmergencyHotlines from './pages/EmergencyHotlines';
 
-// Loading Spinner Component
 const LoadingScreen = () => (
   <div className="loading-screen">
     <div className="loading-spinner"></div>
@@ -18,33 +16,19 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
-// Public Route - redirects to dashboard if already logged in
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+  if (loading) return <LoadingScreen />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
 

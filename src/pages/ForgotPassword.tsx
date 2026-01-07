@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
-import './Auth.css';
+import './ForgotPassword.css';
 import logoImg from '../assets/logo.png';
 
 const ForgotPassword = () => {
@@ -26,7 +26,6 @@ const ForgotPassword = () => {
     }
   };
 
-  // Success screen after email is sent
   if (emailSent) {
     return (
       <div className="auth-container">
