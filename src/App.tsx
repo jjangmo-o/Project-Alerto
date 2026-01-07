@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+import EmergencyHotlines from './pages/EmergencyHotlines';
 import './App.css';
 
 // Loading Spinner Component
