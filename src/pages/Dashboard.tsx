@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Dashboard.css';
+import Sidebar from './Sidebar';
 
-import logoImg from '../assets/logo-lighthouse.png';
 import menuIcon from '../assets/icon-menu.png';
 import currentStatusIcon from '../assets/icon-current-status.png';
 import notificationBellIcon from '../assets/icon-notification.png';
@@ -10,39 +10,44 @@ import hotlineIcon from '../assets/icon-emergency-hotlines.png';
 import mapIcon from '../assets/icon-evacuation-map.png';
 import cardIcon from '../assets/icon-profile-card.png';
 import alertRed from '../assets/icon-red-alert.png';
+import alertYellow from '../assets/icon-yellow-alert.png';
 import alertOrange from '../assets/icon-orange-alert.png';
-import alertGreen from '../assets/icon-green-alert.png';
+import alertGreen from '../assets/icon-green-alert.svg';
 
 const Dashboard = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const evacuationCenters = [
+    "MALANDAY ELEMENTARY SCHOOL", "H. BAUTISTA ELEMENTARY SCHOOL", "NANGKA ELEMENTARY SCHOOL",
+    "CONCEPCION INTEGRATED SCHOOL (ES)", "CONCEPCION INTEGRATED SCHOOL (SL)", "CONCEPCION ELEMENTARY SCHOOL",
+    "STO. NIÑO ELEMENTARY SCHOOL", "STO. NIÑO NATIONAL HIGH SCHOOL", "LEODEGARIO VICTORINO ELEMENTARY SCHOOL",
+    "FILIPINAS GYM", "BULELAK GYM", "SAMPAGUITA GYM", "MARIKINA ELEMENTARY SCHOOL",
+    "STA ELENA HIGH SCHOOL", "NANGKA GYM", "KALUMPANG ELEMENTARY SCHOOL", "KALUMPANG NHS",
+    "KAP. MOY ELEMENTARY", "SAN ROQUE ELEMENTARY SCHOOL", "SAN ROQUE NATIONAL HIGH SCHOOL",
+    "BARANGKA ELEMENTARY SCHOOL", "TAÑONG HIGH SCHOOL", "PLMAR (GREENHEIGHTS)", "IVS COVERED COURT",
+    "JESUS DELA PEÑA NHS", "MARIKINA HIGH SCHOOL", "PARANG ELEMENTARY SCHOOL", "PARANG HIGH SCHOOL",
+    "FORTUNE ELEMENTARY SCHOOL", "FORTUNE HIGH SCHOOL", "STA. ELENA CHAPEL", "ST.MARY ELEMENTARY SCHOOL",
+    "SSS VILLAGE ELEMENTARY SCHOOL", "SSS NATIONAL HIGH SCHOOL", "MARIKINA HEIGHTS HIGH SCHOOL"
+  ];
+
   return (
     <div className="dashboard-container">
       
-      {/* --- for sidebar --- */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          {}
-          <img src={logoImg} alt="Project Alerto Logo" />
-          <h2>Project Alerto</h2>
-          <p>Marikeños Readiness Hub</p>
-        </div>
+      <Sidebar isOpen={isSidebarOpen} activePage="dashboard" />
 
-        <nav className="nav-menu">
-          <button className="nav-item active">Dashboard</button>
-          <button className="nav-item">Emergency Hotlines</button>
-          <button className="nav-item">Evacuation Map</button>
-          <button className="nav-item">Residence Card</button>
-          <button className="nav-item">Notifications</button>
-        </nav>
-
-        <button className="logout-btn">Logout</button>
-      </aside>
-
-      {}
       <main className="main-content">
-        {/* top header */}
         <header className="top-header">
           <div className="header-title">
-            <img src={menuIcon} alt="Menu" className="menu-icon-img" />
+            <img 
+              src={menuIcon} 
+              alt="Menu" 
+              className="menu-icon-img" 
+              onClick={toggleSidebar}
+            />
             Dashboard
           </div>
           <div className="user-profile">
@@ -59,7 +64,6 @@ const Dashboard = () => {
             <section className="status-row">
               <div className="status-card">
                 <div className="icon-box">
-                  {}
                   <img src={currentStatusIcon} alt="Stable" />
                 </div>
                 <div className="status-info">
@@ -69,7 +73,6 @@ const Dashboard = () => {
               </div>
               <div className="status-card">
                 <div className="icon-box">
-                  {}
                   <img src={notificationBellIcon} alt="Alerts" />
                 </div>
                 <div className="status-info">
@@ -79,7 +82,6 @@ const Dashboard = () => {
               </div>
               <div className="status-card">
                 <div className="icon-box">
-                  {}
                   <img src={notificationBellIcon} alt="ECs Vacant" />
                 </div>
                 <div className="status-info">
@@ -92,7 +94,7 @@ const Dashboard = () => {
             {/* row 2 aka map & water Level card */}
             <section className="map-water-row">
               <div className="map-card">
-                {}
+                {/* Map content */}
               </div>
               
               <div className="water-level-card">
@@ -135,50 +137,57 @@ const Dashboard = () => {
 
           <div className="right-column">
             
-            <div className="info-card">
+            <div className="info-card recent-alerts-card">
               <h3>Recent Alerts</h3>
               
-              <div className="alert-item">
-                <img src={alertRed} alt="Critical" className="alert-icon" />
-                <div className="alert-content">
-                  <h4>Flood Level Rising</h4>
-                  <p>- Brgy San Roque</p>
+              <div className="alerts-list"> 
+                <div className="alert-item">
+                  <img src={alertRed} alt="Critical" className="alert-icon" />
+                  <div className="alert-content">
+                    <h4>Flood Level Rising</h4>
+                    <p>- Brgy San Roque</p>
+                  </div>
+                  <span className="alert-time">Just now</span>
                 </div>
-                <span className="alert-time">Just now</span>
-              </div>
 
-              <div className="alert-item">
-                <img src={alertOrange} alt="Warning" className="alert-icon" />
-                <div className="alert-content">
-                  <h4>Evacuation Center Full</h4>
-                  <p>- Brgy Tañong</p>
+                <div className="alert-item">
+                  <img src={alertYellow} alt="Warning" className="alert-icon" />
+                  <div className="alert-content">
+                    <h4>Evacuation Center Full</h4>
+                    <p>- Brgy Tañong</p>
+                  </div>
+                  <span className="alert-time">10m ago</span>
                 </div>
-                <span className="alert-time">10m ago</span>
-              </div>
 
-              <div className="alert-item">
-                <img src={alertGreen} alt="Resolved" className="alert-icon" />
-                <div className="alert-content">
-                  <h4>Aid Delivered</h4>
-                  <p>- Brgy Malanday</p>
+                <div className="alert-item">
+                  <img src={alertGreen} alt="Resolved" className="alert-icon" />
+                  <div className="alert-content">
+                    <h4>Aid Delivered</h4>
+                    <p>- Brgy Malanday</p>
+                  </div>
+                  <span className="alert-time">15m ago</span>
                 </div>
-                <span className="alert-time">15m ago</span>
-              </div>
 
-              <div className="alert-item">
-                <img src={alertOrange} alt="Warning" className="alert-icon" />
-                <div className="alert-content">
-                  <h4>Marikina River Water</h4>
-                  <p>Level is now at CRITICAL</p>
+                <div className="alert-item">
+                  <img src={alertOrange} alt="Warning" className="alert-icon" />
+                  <div className="alert-content">
+                    <h4>Marikina River Water</h4>
+                    <p>Level is now at CRITICAL level</p>
+                  </div>
+                  <span className="alert-time">17m ago</span>
                 </div>
-                <span className="alert-time">17m ago</span>
               </div>
             </div>
 
-            <div className="info-card" style={{flexGrow: 1}}>
+            <div className="info-card">
               <h3>Evacuation Centers</h3>
-              <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ADB5BD', fontWeight: '600'}}>
-                List of Centers...
+              <div className="evac-list-container">
+                {evacuationCenters.map((center, index) => (
+                  <div key={index} className="evac-list-item">
+                    <span className="evac-num">{index + 1}.</span>
+                    <span>{center}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
