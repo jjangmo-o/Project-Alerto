@@ -49,15 +49,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function AppRoutes() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
