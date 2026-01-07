@@ -63,14 +63,13 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/hotlines" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/hotlines" element={<ProtectedRoute><EmergencyHotlines /></ProtectedRoute>} />
       <Route path="/map" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/residence" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     </Routes>
   );
 }
-import EmergencyHotlines from './pages/EmergencyHotlines';
 
 function App() {
   return (
