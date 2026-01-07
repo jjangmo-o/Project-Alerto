@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './Dashboard.css';
 import Sidebar from './Sidebar';
 import Header from './Header';
