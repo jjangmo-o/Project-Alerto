@@ -8,6 +8,7 @@ export const authService = {
     contact: string;
     password: string;
     address?: string;
+    birthDate?: string;
   }) {
     // Sign up with Supabase Auth - pass user metadata for the trigger
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -19,6 +20,7 @@ export const authService = {
           last_name: data.lastName,
           contact_number: data.contact,
           address: data.address || null,
+          birth_date: data.birthDate || null,
         },
       },
     });
@@ -62,7 +64,9 @@ export const authService = {
   },
 
   async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
     if (error) throw error;
   },
 };

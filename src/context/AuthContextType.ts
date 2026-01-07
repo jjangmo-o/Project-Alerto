@@ -14,6 +14,7 @@ export interface AuthContextType {
     contact: string; 
     password: string;
     address?: string;
+    birthDate?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;

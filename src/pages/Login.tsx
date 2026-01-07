@@ -42,9 +42,25 @@ const Login = () => {
       <div className="auth-card">
         <h2 className="auth-header">Sign In</h2>
 
-        {error && <p className="form-error" style={{ textAlign: 'center', marginBottom: '1rem', color: '#dc2626' }}>{error}</p>}
+        {error && (
+          <div className="error-box">
+            <svg 
+              width="18" 
+              height="18" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="#dc2626" 
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M15 9l-6 6"></path>
+              <path d="M9 9l6 6"></path>
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
             <label htmlFor="email" className="form-label">Email</label>
             <input
@@ -55,6 +71,8 @@ const Login = () => {
               placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
+              autoComplete="off"
+              data-lpignore="true"
               required
             />
           </div>
@@ -68,6 +86,8 @@ const Login = () => {
               className="form-input" 
               value={formData.password}
               onChange={handleChange}
+              autoComplete="new-password"
+              data-lpignore="true"
               required
             />
           </div>
@@ -78,7 +98,9 @@ const Login = () => {
         </form>
 
         <div className="auth-footer">
-          <p style={{marginBottom: '10px'}}>Forgot password? <span className="auth-link">click here</span></p>
+          <p style={{marginBottom: '10px'}}>
+            Forgot password? <Link to="/forgot-password" className="auth-link">Click here</Link>
+          </p>
           <p>
             No account? <Link to="/register" className="auth-link">Register</Link>
           </p>
