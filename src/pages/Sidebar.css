@@ -8,13 +8,16 @@
   flex-direction: column;
   padding: 2rem 1.5rem;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
   height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
-  
-  transition: width 0.3s ease, padding 0.3s ease, opacity 0.2s ease;
-  overflow: hidden;
   white-space: nowrap;
+  transition: width 0.3s ease, padding 0.3s ease;
 }
+
 
 /* HIDDEN STATE */
 .sidebar.closed {

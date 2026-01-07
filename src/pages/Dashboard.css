@@ -312,7 +312,7 @@
 
 /* RECENT ALERTS SPECIFIC STYLES */
 .recent-alerts-card {
-  height: 460px;
+  height: 480px;
   display: flex;
   flex-direction: column;
   padding: 1.5rem !important;
