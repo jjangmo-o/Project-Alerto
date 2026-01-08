@@ -3,9 +3,11 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../hooks/useAuth';
 import { notificationService, type Notification, type NotificationType, type SeverityLevel } from '../services/notificationService';
+import closeIcon from '../assets/icon-close-button.svg';
 import './Notifications.css';
 
-type FilterType = 'all' | NotificationType;
+
+type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire';
 type SortOption = 'newest' | 'oldest';
 
 const Notifications = () => {
@@ -13,6 +15,7 @@ const Notifications = () => {
   const [activeTab, setActiveTab] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [focusedNotification, setFocusedNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { profile } = useAuth();
@@ -70,24 +73,36 @@ const Notifications = () => {
     }
   };
 
-  const getSeverityLabel = (severity: SeverityLevel) => {
+    const getSeverityLabel = (severity: SeverityLevel) => {
     switch (severity) {
-      case 'critical': return 'CRITICAL';
-      case 'urgent': return 'URGENT';
-      case 'normal': return 'NORMAL';
-      default: return '';
+        case 'critical': return 'CRITICAL';
+        case 'urgent': return 'URGENT';
+        case 'normal': return 'ALERT';
+        default: return '';
     }
-  };
+    };
+
 
   const getTypeIcon = (type: NotificationType) => {
     switch (type) {
       case 'typhoon': return '🌀';
       case 'earthquake': return '🌍';
       case 'fire': return '🔥';
-      case 'flood': return '🌊';
       default: return '⚠️';
     }
   };
+
+  const getTabIcon = (tab: FilterType) => {
+  switch (tab) {
+    case 'typhoon': return '🌀';
+    case 'earthquake': return '🌍';
+    case 'fire': return '🔥';
+    case 'all':
+    default:
+      return '🔔';
+  }
+};
+
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -110,6 +125,20 @@ const Notifications = () => {
     });
   };
 
+  const truncateText = (text: string, limit = 160) => {
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + '…';
+  };
+
+  useEffect(() => {
+    if (focusedNotification) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [focusedNotification]);
+
+
   const handleDismiss = useCallback(async (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
     await notificationService.dismiss(id);
@@ -126,6 +155,13 @@ const Notifications = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const tabTitles: Record<FilterType, string> = {
+    all: 'All Updates',
+    typhoon: 'Typhoon Updates',
+    earthquake: 'Earthquake Alerts',
+    fire: 'Fire Alert Updates',
   };
 
   return (
@@ -165,22 +201,42 @@ const Notifications = () => {
             </div>
 
             <div className="sort-dropdown">
-              <label>SORT BY:</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)}>
-                <option value="newest">NEWEST</option>
-                <option value="oldest">OLDEST</option>
-              </select>
+              <span className="sort-label">SORT BY</span>
+
+              <div className="sort-select-wrapper">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="sort-select"
+                >
+                  <option value="newest">NEWEST</option>
+                  <option value="oldest">OLDEST</option>
+                </select>
+                <span className="sort-arrow">▾</span>
+              </div>
             </div>
+
           </div>
 
           <div className="notifications-section-header">
             <div className="notifications-section-title">
-              <span className="section-icon">🔔</span>
-              <h2>All Updates</h2>
+              <span className="section-icon">{getTabIcon(activeTab)}</span>
+              <h2>{tabTitles[activeTab]}</h2>
             </div>
-            <button className="refresh-btn" onClick={handleRefresh} disabled={loading}>
-              {loading ? 'Refreshing...' : '↻ Refresh'}
+            <button
+              className={`refresh-btn ${loading ? 'loading' : ''}`}
+              onClick={handleRefresh}
+              disabled={loading}
+              aria-label="Refresh notifications"
+            >
+              <span className="refresh-icon" aria-hidden>
+                ↻
+              </span>
+              <span className="refresh-text">
+                Refresh
+              </span>
             </button>
+
           </div>
 
           {error && (
@@ -197,7 +253,10 @@ const Notifications = () => {
             </div>
           )}
 
-          <div className="notifications-list">
+          <div
+            key={`${activeTab}-${sortBy}`}
+            className="notifications-list animated-tab"
+          >
             {!loading && sortedNotifications.length === 0 ? (
               <div className="no-notifications">
                 <p>No notifications to display</p>
@@ -207,13 +266,19 @@ const Notifications = () => {
                 <div
                   key={notification.id}
                   className={`notification-card ${getSeverityClass(notification.severity)} ${!notification.is_read ? 'unread' : ''}`}
+                  onClick={() => setFocusedNotification(notification)}
+                  role="button"
+                  tabIndex={0}
                 >
                   <button
                     className="notification-close"
-                    onClick={() => handleDismiss(notification.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDismiss(notification.id);
+                    }}
                     aria-label="Dismiss notification"
                   >
-                    ×
+                    <img src={closeIcon} alt="Close notification" />
                   </button>
 
                   <div className="notification-header">
@@ -223,8 +288,14 @@ const Notifications = () => {
                   </div>
 
                   <div className="notification-body">
-                    <p>{notification.message}</p>
+                    <p>
+                      {truncateText(notification.message)}
+                      {notification.message.length > 160 && (
+                        <span className="see-more"> See more</span>
+                      )}
+                    </p>
                   </div>
+
 
                   <div className="notification-footer">
                     <span className={`severity-badge ${getSeverityClass(notification.severity)}`}>
@@ -235,6 +306,48 @@ const Notifications = () => {
               ))
             )}
           </div>
+
+          {focusedNotification && (
+            <div
+              className="notification-overlay"
+              onClick={() => setFocusedNotification(null)}
+            >
+              <div
+                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="spotlight-close"
+                  onClick={() => setFocusedNotification(null)}
+                >
+                  <img src={closeIcon} alt="" />
+                </button>
+
+                <div className="notification-header">
+                  <span className="notification-icon">
+                    {getTypeIcon(focusedNotification.type)}
+                  </span>
+                  <span className="notification-title">
+                    {focusedNotification.title}
+                  </span>
+                  <span className="notification-time">
+                    {formatTime(focusedNotification.created_at)}
+                  </span>
+                </div>
+
+                <div className="notification-body expanded">
+                  <p>{focusedNotification.message}</p>
+                </div>
+
+                <div className="notification-footer">
+                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)}`}>
+                    {getSeverityLabel(focusedNotification.severity)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
         </section>
       </main>
     </div>

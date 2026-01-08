@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -19,6 +20,7 @@ import communityStatusIcon from '../assets/icon-community-status.svg';
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -86,22 +88,22 @@ const Dashboard = () => {
               <h3 className="hub-title">Preparedness Hub</h3>
 
               <div className="hub-row">
-                <div className="hub-card" tabIndex={0}>
+                <div className="hub-card" tabIndex={0} onClick={() => navigate('/hotlines')}>
                   <img src={hotlineIcon} className="hub-icon" />
                   <div className="hub-label">Emergency Hotlines</div>
                 </div>
 
-                <div className="hub-card" tabIndex={0}>
+                <div className="hub-card" tabIndex={0} onClick={() => navigate('/map')}>
                   <img src={mapIcon} className="hub-icon" />
                   <div className="hub-label">Evacuation Map</div>
                 </div>
 
-                <div className="hub-card" tabIndex={0}>
+                <div className="hub-card" tabIndex={0} onClick={() => navigate('/residence')}>
                   <img src={cardIcon} className="hub-icon" />
                   <div className="hub-label">Residence Card</div>
                 </div>
 
-                <div className="hub-card" tabIndex={0}>
+                <div className="hub-card" tabIndex={0} onClick={() => navigate('/community-status')}>
                   <img src={communityStatusIcon} className="hub-icon" />
                   <div className="hub-label">Community Status</div>
                 </div>
