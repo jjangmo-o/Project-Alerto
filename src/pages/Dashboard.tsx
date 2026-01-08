@@ -14,6 +14,7 @@ import alertRed from '../assets/icon-red-alert.png';
 import alertYellow from '../assets/icon-yellow-alert.png';
 import alertOrange from '../assets/icon-orange-alert.png';
 import alertGreen from '../assets/icon-green-alert.svg';
+import communityStatusIcon from '../assets/icon-community-status.svg';
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -73,30 +74,36 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* MAP & WATER LEVEL */}
-            <section className="map-water-row">
+            {/* MAP */}
+            <section className="map-row">
               <div className="map-card">
                 {/* Map content */}
               </div>
+            </section>
 
-              <div className="water-level-card">
-                <div className="water-header">
-                  <img src={waterLevelIcon} alt="Water Level" className="water-level-icon" />
-                  <span className="marikina-river-text">MARIKINA RIVER</span>
-                  <h2 className="water-level-title">WATER LEVEL UPDATE</h2>
+            {/* PREPAREDNESS HUB */}
+            <section className="hub-section">
+              <h3 className="hub-title">Preparedness Hub</h3>
+
+              <div className="hub-row">
+                <div className="hub-card" tabIndex={0}>
+                  <img src={hotlineIcon} className="hub-icon" />
+                  <div className="hub-label">Emergency Hotlines</div>
                 </div>
 
-                <div className="water-body">
-                  <div className="water-status-group">
-                    <div className="water-status-text">Status: Normal</div>
-                    <div className="water-value normal">NORMAL (14.2m)</div>
-                    <div className="water-timestamp">
-                      As of 11:20 AM | 22 July 2025
-                    </div>
-                  </div>
-                  <button className="evac-btn">
-                    View Nearest Evacuation Center
-                  </button>
+                <div className="hub-card" tabIndex={0}>
+                  <img src={mapIcon} className="hub-icon" />
+                  <div className="hub-label">Evacuation Map</div>
+                </div>
+
+                <div className="hub-card" tabIndex={0}>
+                  <img src={cardIcon} className="hub-icon" />
+                  <div className="hub-label">Residence Card</div>
+                </div>
+
+                <div className="hub-card" tabIndex={0}>
+                  <img src={communityStatusIcon} className="hub-icon" />
+                  <div className="hub-label">Community Status</div>
                 </div>
               </div>
             </section>
@@ -143,53 +150,40 @@ const Dashboard = () => {
                   <span className="alert-time">17m ago</span>
                 </div>
               </div>
+
+              <a
+                href="/notifications"
+                className="view-more-alerts"
+              >
+                View More Alerts
+              </a>
             </div>
 
+            <div className="water-level-card">
+                <div className="water-header">
+                  <img src={waterLevelIcon} alt="Water Level" className="water-level-icon" />
+                  <span className="marikina-river-text">MARIKINA RIVER</span>
+                  <h2 className="water-level-title">WATER LEVEL UPDATE</h2>
+                </div>
 
-            
-            {/* 
-              TEMPORARILY HIDDEN:
-              Evacuation Centers Card
-            */}
-            {/*
-            <div className="info-card">
-              <h3>Evacuation Centers</h3>
-              <div className="evac-list-container">
-                ...
+                <div className="water-body">
+                  <div className="water-status-group">
+                    <div className="water-status-text">Status: Normal</div>
+                    <div className="water-value normal">NORMAL (14.2m)</div>
+                    <div className="water-timestamp">
+                      As of 11:20 AM | 22 July 2025
+                    </div>
+                  </div>
+                  <button className="evac-btn">
+                    View Nearest Evacuation Center
+                  </button>
+                </div>
               </div>
-            </div>
-            */}
           </div>
 
           
         </div>
 
-        {/* ✅ FULL-WIDTH PREPAREDNESS HUB */}
-<section className="hub-section">
-  <h3 className="hub-title">Preparedness Hub</h3>
-
-  <div className="hub-row">
-    <div className="hub-card" tabIndex={0}>
-      <img src={hotlineIcon} className="hub-icon" />
-      <div className="hub-label">Emergency Hotlines</div>
-    </div>
-
-    <div className="hub-card" tabIndex={0}>
-      <img src={mapIcon} className="hub-icon" />
-      <div className="hub-label">Evacuation Map</div>
-    </div>
-
-    <div className="hub-card" tabIndex={0}>
-      <img src={cardIcon} className="hub-icon" />
-      <div className="hub-label">Residence Card</div>
-    </div>
-
-    <div className="hub-card" tabIndex={0}>
-      <img src={currentStatusIcon} className="hub-icon" />
-      <div className="hub-label">Community Status</div>
-    </div>
-  </div>
-</section>
       </main>
     </div>
   );

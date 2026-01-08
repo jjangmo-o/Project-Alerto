@@ -378,20 +378,304 @@ const HOTLINES: Record<string, any> = {
             },
         ],
     },
-    evacuation: [],
+    evacuation: {
+        district1: [
+            {
+                title: 'MALANDAY ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 950-4630' },
+                ],
+            },
+            
+            {
+                title: 'STO. NIÑO ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 621-7031' },
+                ],
+            },
+
+            {
+                title: 'STO. NIÑO NATIONAL HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 934-0257' },
+                ],
+            },
+
+            {
+                title: 'LEODEGARIO VICTORINO ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 945-6621' },
+                ],
+            },
+            
+            {
+                title: 'SAMPAGUITA GYM',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 8942-0129' },
+                ],
+            },
+
+            {
+                title: 'MARIKINA ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 646-1738' },
+                ],
+            },
+            {
+                title: 'STA ELENA HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 646-9793' },
+                ],
+            },
+            
+            {
+                title: 'KALUMPANG ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 7799-6013' },
+                ],
+            },
+
+            {
+                title: 'KALUMPANG NHS',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 358-9135' },
+                ],
+            },
+            
+            {
+                title: 'SAN ROQUE ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 645-3235' },
+                ],
+            },
+            {
+                title: 'SAN ROQUE NATIONAL HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 654-4323' },
+                ],
+            },
+            {
+                title: 'BARANGKA ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 635-5851' },
+                ],
+            },
+            {
+                title: 'TAÑONG HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 948-8403' },
+                ],
+            },
+            
+            {
+                title: 'IVS COVERED COURT',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 8681-9457' },
+                ],
+            },
+            {
+                title: 'JESUS DELA PEÑA NHS',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 7358-5790' },
+                ],
+            },
+        ],
+
+        district2: [
+            {
+                title: 'H. BAUTISTA ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 696-4075' },
+                ],
+            },
+
+            {
+                title: 'NANGKA ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 576-4681' },
+                ],
+            },
+
+            {
+                title: 'CONCEPCION INTEGRATED SCHOOL (ES)',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 650-1906' },
+                ],
+            },
+
+            {
+                title: 'CONCEPCION INTEGRATED SCHOOL (SL)',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 656-8404' },
+                ],
+            },
+
+            {
+                title: 'CONCEPCION ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 942-0023' },
+                ],
+            },
+
+            {
+                title: 'FILIPINAS GYM',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 02-8942-1346' },
+                ],
+            },
+
+            {
+                title: 'BULELAK GYM',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 0966 406 2407' },
+                ],
+            },
+
+            {
+                title: 'NANGKA GYM',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 8942-0453' },
+                ],
+            },
+
+            {
+                title: 'KAP. MOY ELEMENTARY',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 356-6827' },
+                ],
+            },
+
+            {
+                title: 'PLMAR (GREENHEIGHTS)',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 369-8650' },
+                ],
+            },
+
+            {
+                title: 'MARIKINA HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 239-8206' },
+                ],
+            },
+            
+            {
+                title: 'PARANG ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 621-2294' },
+                ],
+            },
+
+            {
+                title: 'PARANG HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 941-9374' },
+                ],
+            },
+
+            {
+                title: 'FORTUNE ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 621-4492' },
+                ],
+            },
+
+            {
+                title: 'FORTUNE HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 941-4892' },
+                ],
+            },
+
+            {
+                title: 'STA. ELENA CHAPEL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 8647-7505' },
+                ],
+            },
+
+            {
+                title: 'ST. MARY ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 717-0496' },
+                ],
+            },
+
+            {
+                title: 'SSS VILLAGE ELEMENTARY SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 941-4135' },
+                ],
+            },
+
+            {
+                title: 'SSS NATIONAL HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call (02) 7624 7386' },
+                ],
+            },
+
+            {
+                title: 'MARIKINA HEIGHTS HIGH SCHOOL',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 279348913' },
+                ],
+            },
+        ],
+    },
 };
+
+const getSortedDistricts = (data: Record<string, any[]>) =>
+    Object.entries(data)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([districtKey, items]) => [
+            districtKey,
+            [...items].sort((a, b) => a.title.localeCompare(b.title)),
+    ]);
 
 const EmergencyHotlines = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'general' | 'marikina' | 'barangay' | 'evacuation'>('general');
 
     // districts and barangays
-    const sortedBarangayDistricts = Object.entries(HOTLINES.barangay)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([districtKey, barangays]: any) => [
-        districtKey,
-        [...barangays].sort((a, b) => a.title.localeCompare(b.title)),
-    ]);
+    const sortedBarangayDistricts = getSortedDistricts(HOTLINES.barangay);
+    const sortedEvacuationDistricts = getSortedDistricts(HOTLINES.evacuation);
+
 
     const [collapsedDistricts, setCollapsedDistricts] =
     useState<Record<string, boolean>>({});
@@ -477,10 +761,13 @@ const EmergencyHotlines = () => {
                         </>
                     )}
 
-
-                    {activeTab === 'barangay' && (
+                    {(activeTab === 'barangay' || activeTab === 'evacuation') && (
                     <>
-                        {sortedBarangayDistricts.map(([districtKey, barangays]: any) => {
+                        {(activeTab === 'barangay'
+                            ? sortedBarangayDistricts
+                            : sortedEvacuationDistricts
+                        ).map(([districtKey, items]: any) => {
+
                             const isCollapsed = collapsedDistricts[districtKey];
                             return (
                                 <section key={districtKey}>
@@ -502,7 +789,7 @@ const EmergencyHotlines = () => {
 
                                         {!isCollapsed && (
                                             <div className="hotlines-grid">
-                                                {barangays
+                                                {items
                                                     .filter((item: any) =>
                                                         item.title.toLowerCase().includes(searchTerm.toLowerCase())
                                                     )
