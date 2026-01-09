@@ -23,6 +23,8 @@
   padding: 2.5rem;
   display: grid;
   grid-template-columns: 3fr 1.1fr;
+  grid-auto-rows: auto;
+  align-items: start;
   gap: 2.5rem;
   max-width: 1600px;
   margin: 0 auto;
@@ -96,21 +98,28 @@
 }
 
 /* Map & Water Row */
-.map-water-row {
+.map-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
-  height: 300px; 
+  align-items: stretch;
+  width: 100%;
 }
 
 .map-card {
   background: #E9ECEF;
   border-radius: 16px;
   overflow: hidden;
+  min-height: 420px;
   height: 100%;
   background-size: cover;
   background-position: center;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.map-card > * {
+  height: 100%;
+  width: 100%;
 }
 
 .water-level-card {
@@ -145,10 +154,10 @@
 }
 
 .water-level-title {
-    font-size: 28px;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
 }
 
 .water-level-icon {
@@ -159,7 +168,7 @@
 }
 
 .water-body {
-  padding: 0.8rem 1rem;
+  padding: 1.5rem 1.25rem 1.75rem;
   text-align: center;
   flex-grow: 1;
   display: flex;
@@ -176,18 +185,18 @@
 }
 
 .water-status-text {
-    font-weight: 700;
-    color: #1C3E6F;
-    margin-bottom: 2px;
-    font-size: 1rem;
+  font-weight: 700;
+  color: #1C3E6F;
+  margin-bottom: 6px;
+  font-size: 1.1rem;
 }
 
 .water-value {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 800;
   color: #7BA655;
-  margin-bottom: 2px;
-  line-height: 1.1;
+  margin-bottom: 6px;
+  line-height: 1.15;
 }
 
 .water-value.normal { color: #7BA655; }
@@ -205,11 +214,11 @@
   background-color: #FF8C00;
   color: white;
   border: none;
-  padding: 10px 0;
-  border-radius: 8px;
+  padding: 14px 0;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
   transition: 0.3s;
   margin-top: 5px;
   width: 100%;
@@ -233,6 +242,10 @@
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+}
+
+.hub-section.in-grid {
+  padding: 0;
 }
 
 .hub-row {
@@ -295,6 +308,10 @@
   gap: 2.5rem;
 }
 
+.right-column .water-level-card {
+  height: 100%;
+}
+
 .info-card {
   background: white;
   padding: 2rem;
@@ -317,6 +334,22 @@
   flex-direction: column;
   padding: 1.5rem !important;
   box-sizing: border-box;
+}
+
+.view-more-alerts {
+  text-align: center;
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #777777;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.view-more-alerts:hover {
+  color: #1C3E6F;
+  text-decoration: underline;
 }
 
 .recent-alerts-card h3 {
@@ -467,10 +500,10 @@
       padding-bottom: 10px;
   }
   
-  .status-row, .hub-row, .map-water-row {
+  .status-row, .hub-row, .map-row {
     grid-template-columns: 1fr;
   }
-  .map-water-row {
+  .map-row {
     height: auto;
   }
   .map-card {
