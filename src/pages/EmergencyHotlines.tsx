@@ -1,11 +1,39 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useAuth } from '../hooks/useAuth';
 import './EmergencyHotlines.css';
 
 import icon from '../assets/icon-call.svg';
 
-const HOTLINES: Record<string, any> = {
+// Define proper types
+interface HotlineSection {
+  label?: string;
+  type?:  'main' | 'alert' | 'secondary' | 'sectionLabel';
+  text?: string;
+  divider?: boolean;
+}
+
+interface HotlineItem {
+  title: string;
+  sections: HotlineSection[];
+  type?:  'sectionLabel';
+  text?: string;
+}
+
+interface DistrictHotlines {
+  district1: HotlineItem[];
+  district2: HotlineItem[];
+}
+
+interface HotlinesData {
+  general: HotlineItem[];
+  marikina: HotlineItem[];
+  barangay: DistrictHotlines;
+  evacuation: DistrictHotlines;
+}
+
+const HOTLINES: HotlinesData = {
     general: [
         {
         title: 'NATIONAL EMERGENCY HOTLINE',
@@ -22,7 +50,7 @@ const HOTLINES: Record<string, any> = {
                 { type: 'main', text: 'Call (02) 8911-5061 to 65' },
                 { divider: true },
                 { label: 'OTHER LANDLINE HOTLINES' },
-                { type: 'secondary', text: 'Call (02) 8911-1406' },
+                { type:  'secondary', text: 'Call (02) 8911-1406' },
                 { type: 'secondary', text: 'Call (02) 8912-2665' },
                 { type: 'secondary', text: 'Call (02) 8912-5668' },
                 { type: 'secondary', text: 'Call (02) 8911-1873' },
@@ -33,7 +61,7 @@ const HOTLINES: Record<string, any> = {
             title: 'PHILIPPINE RED CROSS',
             sections: [
                 { label: 'MAIN OPERATIONS HOTLINE' },
-                { type: 'main', text: 'Call 143' },
+                { type: 'main', text:  'Call 143' },
                 { divider: true },
                 { label: 'NATIONAL BLOOD CENTER' },
                 { type: 'alert', text: 'Call (02) 8527-8385 to 95' },
@@ -46,14 +74,14 @@ const HOTLINES: Record<string, any> = {
 
         {
             title: 'DEPARTMENT OF SOCIAL WELFARE AND DEVELOPMENT (DSWD)',
-            sections: [
+            sections:  [
                 { label: 'MAIN OPERATIONS HOTLINE' },
                 { type: 'main', text: 'Call (02) 931-81-01 to 07' },
-                { divider: true },
+                { divider:  true },
                 { label: 'DISASTER RESPONSE UNIT' },
                 { type: 'alert', text: 'Call (02) 8856-3665' },
                 { type: 'alert', text: 'Call (02) 8852-8081' },
-                { divider: true },
+                { divider:  true },
                 { label: 'OTHER LINES' },
                 { type: 'secondary', text: 'Call/Text 0918-912-813' },
             ],
@@ -101,8 +129,8 @@ const HOTLINES: Record<string, any> = {
             title: 'PHILIPPINE COAST GUARD',
             sections: [
                 { label: 'MAIN OPERATIONS HOTLINE' },
-                { type: 'main', text: 'Call (02) 8527-8481 to 89' },
-                { divider: true },
+                { type: 'main', text:  'Call (02) 8527-8481 to 89' },
+                { divider:  true },
                 { label: 'OTHER LANDLINE HOTLINES' },
                 { type: 'secondary', text: 'Call (02) 8527-3877' },
                 { type: 'secondary', text: 'Call (02) 8527-3880 to 85' },
@@ -115,16 +143,16 @@ const HOTLINES: Record<string, any> = {
             title: 'MANILA WATER',
             sections: [
                 { label: 'MAIN OPERATIONS HOTLINE' },
-                { type: 'main', text: 'Call 1627' },
+                { type: 'main', text:  'Call 1627' },
             ],
         },
 
         {
             title: 'PHILIPPINE NATIONAL POLICE (PNP)',
-            sections: [
+            sections:  [
                 { label: 'MAIN OPERATIONS HOTLINE' },
                 { type: 'main', text: 'Call 117' },
-                { divider: true },
+                { divider:  true },
                 { label: 'OTHER LANDLINE HOTLINES' },
                 { type: 'secondary', text: 'Call (02) 8722-0650' },
                 { type: 'secondary', text: 'Call 0917-847-5757' },
@@ -135,7 +163,7 @@ const HOTLINES: Record<string, any> = {
             title: 'MERALCO',
             sections: [
                 { label: 'MAIN OPERATIONS HOTLINE' },
-                { type: 'main', text: 'Call (02) 16211' },
+                { type: 'main', text:  'Call (02) 16211' },
                 { divider: true },
                 { label: 'OTHER LANDLINE HOTLINES' },
                 { type: 'secondary', text: 'Call 0920-971-6211' },
@@ -157,7 +185,7 @@ const HOTLINES: Record<string, any> = {
             title: 'MARIKINA COMMAND CENTER',
             sections: [
                 { label: 'MAIN OPERATION HOTLINE' },
-                { type: 'main', text: 'Call (02) 8646-0427' },
+                { type: 'main', text:  'Call (02) 8646-0427' },
             ],
         },
 
@@ -165,7 +193,7 @@ const HOTLINES: Record<string, any> = {
             title: 'MARIKINA CITY',
             sections: [
                 { label: 'MAIN OPERATION HOTLINE' },
-                { type: 'main', text: 'Call (02) 8646-1631' },
+                { type: 'main', text:  'Call (02) 8646-1631' },
             ],
         },
 
@@ -194,7 +222,7 @@ const HOTLINES: Record<string, any> = {
         },
 
         {
-            title: 'MARIKINA LANDLINE HOTLINES',
+            title: 'MARIKINA LANDLINE HOTLINES (PLDT)',
             sections: [
                 { label: 'PLDT' },
                 { type: 'main', text: 'Call 8-646-2436 to 38' },
@@ -202,7 +230,7 @@ const HOTLINES: Record<string, any> = {
         },
         
         {
-            title: 'MARIKINA LANDLINE HOTLINES',
+            title: 'MARIKINA LANDLINE HOTLINES (GLOBE)',
             sections: [
                 { label: 'GLOBE' },
                 { type: 'main', text: 'Call 7-273-6563' },
@@ -216,11 +244,6 @@ const HOTLINES: Record<string, any> = {
                 { type: 'main', text: 'Call 997-1108' },
                 { type: 'main', text: 'Call 942-2359' },
             ],
-        },
-
-        {
-            type: 'sectionLabel',
-            text: 'Mobile Hotlines',
         },
 
         {
@@ -245,7 +268,7 @@ const HOTLINES: Record<string, any> = {
         },
     ],
 
-    barangay: {
+    barangay:  {
         district1: [
             {
                 title: 'BARANGAY BARANGKA',
@@ -368,20 +391,12 @@ const HOTLINES: Record<string, any> = {
                     { type: 'main', text: 'Call 477-3817' },
                 ],
             },
-
-            {
-                title: 'BARANGAY ',
-                sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call ' },
-                ],
-            },
         ],
     },
     evacuation: {
         district1: [
             {
-                title: 'MALANDAY ELEMENTARY SCHOOL',
+                title:  'MALANDAY ELEMENTARY SCHOOL',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 950-4630' },
@@ -407,7 +422,7 @@ const HOTLINES: Record<string, any> = {
             {
                 title: 'LEODEGARIO VICTORINO ELEMENTARY SCHOOL',
                 sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
+                    { label:  'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 945-6621' },
                 ],
             },
@@ -424,7 +439,7 @@ const HOTLINES: Record<string, any> = {
                 title: 'MARIKINA ELEMENTARY SCHOOL',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call 646-1738' },
+                    { type: 'main', text:  'Call 646-1738' },
                 ],
             },
             {
@@ -452,7 +467,7 @@ const HOTLINES: Record<string, any> = {
             },
             
             {
-                title: 'SAN ROQUE ELEMENTARY SCHOOL',
+                title:  'SAN ROQUE ELEMENTARY SCHOOL',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 645-3235' },
@@ -461,14 +476,14 @@ const HOTLINES: Record<string, any> = {
             {
                 title: 'SAN ROQUE NATIONAL HIGH SCHOOL',
                 sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
+                    { label:  'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 654-4323' },
                 ],
             },
             {
                 title: 'BARANGKA ELEMENTARY SCHOOL',
                 sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
+                    { label:  'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 635-5851' },
                 ],
             },
@@ -498,7 +513,7 @@ const HOTLINES: Record<string, any> = {
 
         district2: [
             {
-                title: 'H. BAUTISTA ELEMENTARY SCHOOL',
+                title: 'H.  BAUTISTA ELEMENTARY SCHOOL',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 696-4075' },
@@ -562,7 +577,7 @@ const HOTLINES: Record<string, any> = {
             },
 
             {
-                title: 'KAP. MOY ELEMENTARY',
+                title: 'KAP.  MOY ELEMENTARY',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 356-6827' },
@@ -588,7 +603,7 @@ const HOTLINES: Record<string, any> = {
             {
                 title: 'PARANG ELEMENTARY SCHOOL',
                 sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
+                    { label:  'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 621-2294' },
                 ],
             },
@@ -604,16 +619,16 @@ const HOTLINES: Record<string, any> = {
             {
                 title: 'FORTUNE ELEMENTARY SCHOOL',
                 sections: [
-                    { label: 'MAIN OPERATION HOTLINE' },
+                    { label:  'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 621-4492' },
                 ],
             },
 
             {
                 title: 'FORTUNE HIGH SCHOOL',
-                sections: [
+                sections:  [
                     { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call 941-4892' },
+                    { type:  'main', text: 'Call 941-4892' },
                 ],
             },
 
@@ -635,17 +650,17 @@ const HOTLINES: Record<string, any> = {
 
             {
                 title: 'SSS VILLAGE ELEMENTARY SCHOOL',
-                sections: [
+                sections:  [
                     { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call 941-4135' },
+                    { type:  'main', text: 'Call 941-4135' },
                 ],
             },
 
             {
                 title: 'SSS NATIONAL HIGH SCHOOL',
-                sections: [
+                sections:  [
                     { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call (02) 7624 7386' },
+                    { type:  'main', text: 'Call (02) 7624 7386' },
                 ],
             },
 
@@ -660,51 +675,68 @@ const HOTLINES: Record<string, any> = {
     },
 };
 
-const getSortedDistricts = (data: Record<string, any[]>) =>
+const getSortedDistricts = (data:  DistrictHotlines): [string, HotlineItem[]][] =>
     Object.entries(data)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([districtKey, items]) => [
             districtKey,
-            [...items].sort((a, b) => a.title.localeCompare(b.title)),
-    ]);
+            [... items].sort((a, b) => a.title.localeCompare(b. title)),
+        ]);
 
 const EmergencyHotlines = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'general' | 'marikina' | 'barangay' | 'evacuation'>('general');
+    const { profile } = useAuth();
+
+    // Get user's first name for header
+    const userName = profile?.first_name || 'User';
 
     // districts and barangays
     const sortedBarangayDistricts = getSortedDistricts(HOTLINES.barangay);
     const sortedEvacuationDistricts = getSortedDistricts(HOTLINES.evacuation);
 
-
-    const [collapsedDistricts, setCollapsedDistricts] =
-    useState<Record<string, boolean>>({});
-
+    const [collapsedDistricts, setCollapsedDistricts] = useState<Record<string, boolean>>({});
     const [searchTerm, setSearchTerm] = useState('');
+
+    const renderHotlineItems = (items: HotlineItem[]) => {
+        return items
+            .filter((item) => item.title !== 'MARIKINA MOBILE HOTLINES')
+            .map((item, idx) => (
+                <Card key={idx} title={item.title}>
+                    {item.sections.map((section, i) => {
+                        if (section.divider) return <Divider key={i} />;
+                        if (section.label) return <Label key={i} text={section. label} />;
+                        if (section.type === 'main') return <MainBtn key={i} text={section. text || ''} />;
+                        if (section.type === 'alert') return <AlertBtn key={i} text={section.text || ''} />;
+                        return <SecondaryBtn key={i} text={section.text || ''} />;
+                    })}
+                </Card>
+            ));
+    };
 
     return (
         <div className="hotlines-container">
             <Sidebar isOpen={isSidebarOpen} />
 
             <main className="hotlines-main">
-                <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+                <Header onMenuClick={() => setIsSidebarOpen(! isSidebarOpen)} username={userName} />
 
                 <section className="hotlines-content">
 
                     {/* TABS */}
                     <div className="hotlines-tabs">
                         {[
-                            { key: 'general', label: 'General Hotlines' },
-                            { key: 'marikina', label: 'Marikina Rescue' },
-                            { key: 'barangay', label: 'Barangay Contact' },
-                            { key: 'evacuation', label: 'Evacuation Center' },
+                            { key: 'general' as const, label: 'General Hotlines' },
+                            { key: 'marikina' as const, label: 'Marikina Rescue' },
+                            { key:  'barangay' as const, label: 'Barangay Contact' },
+                            { key:  'evacuation' as const, label: 'Evacuation Center' },
                         ].map(tab => (
                             <button
                                 key={tab.key}
-                                className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-                                onClick={() => setActiveTab(tab.key as any)}
+                                className={`tab-btn ${activeTab === tab.key ?  'active' : ''}`}
+                                onClick={() => setActiveTab(tab.key)}
                             >
-                                {tab.label}
+                                {tab. label}
                             </button>
                         ))}
                     </div>
@@ -719,89 +751,79 @@ const EmergencyHotlines = () => {
                         />
                     </div>
 
-
-                    {/* GRID */}
-                    {activeTab !== 'barangay' && Array.isArray(HOTLINES[activeTab]) && (
-                    <div className="hotlines-grid animated-grid" key={activeTab}>
-                        {HOTLINES[activeTab]
-                        .filter((item: any) => item.type !== 'sectionLabel' && item.title !== 'MARIKINA MOBILE HOTLINES')
-                        .map((item: any, idx: number) => (
-                            <Card key={idx} title={item.title}>
-                            {item.sections.map((section: any, i: number) => {
-                                if (section.divider) return <Divider key={i} />;
-                                if (section.label) return <Label key={i} text={section.label} />;
-                                if (section.type === 'main') return <MainBtn key={i} text={section.text} />;
-                                if (section.type === 'alert') return <AlertBtn key={i} text={section.text} />;
-                                return <SecondaryBtn key={i} text={section.text} />;
-                            })}
-                            </Card>
-                        ))}
-                    </div>
+                    {/* GRID for general tab */}
+                    {activeTab === 'general' && (
+                        <div className="hotlines-grid animated-grid" key={activeTab}>
+                            {renderHotlineItems(HOTLINES. general)}
+                        </div>
                     )}
 
-                        
-                    {/* MOBILE HOTLINES SECTION */}
+                    {/* GRID for marikina tab */}
                     {activeTab === 'marikina' && (
-                    <>
-                        <h3 className="section-label">Mobile Hotlines</h3>
+                        <>
+                            <div className="hotlines-grid animated-grid" key={activeTab}>
+                                {renderHotlineItems(HOTLINES.marikina)}
+                            </div>
 
-                        <div className="hotlines-grid">
-                            {HOTLINES.marikina
-                                .filter((item: any) => item.title === 'MARIKINA MOBILE HOTLINES')
-                                .map((item: any, idx: number) => (
-                                <Card key={idx} title={item.title}>
-                                    {item.sections.map((section: any, i: number) => {
-                                    if (section.divider) return <Divider key={i} />;
-                                    if (section.label) return <Label key={i} text={section.label} />;
-                                    return <SecondaryBtn key={i} text={section.text} />;
-                                    })}
-                                </Card>
-                            ))}
+                            {/* MOBILE HOTLINES SECTION */}
+                            <h3 className="section-label">Mobile Hotlines</h3>
+                            <div className="hotlines-grid">
+                                {HOTLINES.marikina
+                                    .filter((item) => item.title === 'MARIKINA MOBILE HOTLINES')
+                                    .map((item, idx) => (
+                                        <Card key={idx} title={item.title}>
+                                            {item. sections.map((section, i) => {
+                                                if (section.divider) return <Divider key={i} />;
+                                                if (section. label) return <Label key={i} text={section.label} />;
+                                                return <SecondaryBtn key={i} text={section.text || ''} />;
+                                            })}
+                                        </Card>
+                                    ))}
                             </div>
                         </>
                     )}
 
+                    {/* District-based tabs (barangay & evacuation) */}
                     {(activeTab === 'barangay' || activeTab === 'evacuation') && (
-                    <>
-                        {(activeTab === 'barangay'
-                            ? sortedBarangayDistricts
-                            : sortedEvacuationDistricts
-                        ).map(([districtKey, items]: any) => {
-
-                            const isCollapsed = collapsedDistricts[districtKey];
-                            return (
-                                <section key={districtKey}>
-                                    <h3
-                                        className="section-label"
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() =>
-                                            setCollapsedDistricts(prev => ({
-                                            ...prev,
-                                            [districtKey]: !prev[districtKey],
-                                            }))
-                                        }
+                        <>
+                            {(activeTab === 'barangay'
+                                ? sortedBarangayDistricts
+                                :  sortedEvacuationDistricts
+                            ).map(([districtKey, items]) => {
+                                const isCollapsed = collapsedDistricts[districtKey];
+                                return (
+                                    <section key={districtKey}>
+                                        <h3
+                                            className="section-label"
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() =>
+                                                setCollapsedDistricts(prev => ({
+                                                    ...prev,
+                                                    [districtKey]: !prev[districtKey],
+                                                }))
+                                            }
                                         >
-                                        {districtKey === 'district1' ? 'District I' : 'District II'}
-                                        <span style={{ marginLeft: 8 }}>
-                                            {isCollapsed ? '▸' : '▾'}
-                                        </span>
-                                    </h3>
+                                            {districtKey === 'district1' ?  'District I' : 'District II'}
+                                            <span style={{ marginLeft: 8 }}>
+                                                {isCollapsed ? '▸' : '▾'}
+                                            </span>
+                                        </h3>
 
-                                        {!isCollapsed && (
+                                        {! isCollapsed && (
                                             <div className="hotlines-grid">
                                                 {items
-                                                    .filter((item: any) =>
-                                                        item.title.toLowerCase().includes(searchTerm.toLowerCase())
+                                                    .filter((item) =>
+                                                        item.title. toLowerCase().includes(searchTerm. toLowerCase())
                                                     )
-                                                    .map((item: any, idx: number) => (
-                                                    <Card key={idx} title={item.title}>
-                                                        {item.sections.map((section: any, i: number) => {
-                                                            if (section.divider) return <Divider key={i} />;
-                                                            if (section.label) return <Label key={i} text={section.label} />;
-                                                            return <MainBtn key={i} text={section.text} />;
-                                                        })}
-                                                    </Card>
-                                                ))}
+                                                    .map((item, idx) => (
+                                                        <Card key={idx} title={item.title}>
+                                                            {item.sections.map((section, i) => {
+                                                                if (section.divider) return <Divider key={i} />;
+                                                                if (section.label) return <Label key={i} text={section.label} />;
+                                                                return <MainBtn key={i} text={section.text || ''} />;
+                                                            })}
+                                                        </Card>
+                                                    ))}
                                             </div>
                                         )}
                                     </section>
@@ -815,42 +837,54 @@ const EmergencyHotlines = () => {
     );
 };
 
-// HELPERS
+// HELPERS - with proper types
 
-const Card = ({ title, children }: any) => (
+interface CardProps {
+    title: string;
+    children: React.ReactNode;
+}
+
+const Card: React.FC<CardProps> = ({ title, children }) => (
     <div className="hotline-card">
         <div className="hotline-header">
-        <img src={icon} alt="" />
-        <h4>{title}</h4>
+            <img src={icon} alt="" />
+            <h4>{title}</h4>
         </div>
         {children}
     </div>
 );
 
+interface LabelProps {
+    text: string;
+}
 
-const Label = ({ text }: any) => (
+const Label: React.FC<LabelProps> = ({ text }) => (
     <p className="hotline-label">{text}</p>
 );
 
-const Divider = () => (
+const Divider: React.FC = () => (
     <div style={{ height: '1px', background: '#E9ECEF', margin: '10px 0' }} />
 );
 
-const MainBtn = ({ text }: any) => (
+interface ButtonProps {
+    text: string;
+}
+
+const MainBtn: React.FC<ButtonProps> = ({ text }) => (
     <button className="hotline-btn main">
         <img src={icon} alt="" />
         {text}
     </button>
 );
 
-const AlertBtn = ({ text }: any) => (
+const AlertBtn: React.FC<ButtonProps> = ({ text }) => (
     <button className="hotline-btn alert">
         <img src={icon} alt="" />
         {text}
     </button>
 );
 
-const SecondaryBtn = ({ text }: any) => (
+const SecondaryBtn: React.FC<ButtonProps> = ({ text }) => (
     <button className="hotline-btn secondary">
         <img src={icon} alt="" />
         {text}
