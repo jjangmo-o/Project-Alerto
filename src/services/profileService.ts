@@ -26,7 +26,7 @@ export const profileService = {
 
   async getSignedImageUrl(path: string) {
     const { data, error } = await supabase.storage
-      .from('profile_images')
+      .from('profile-images')
       .createSignedUrl(path, 60 * 5); // 5 minutes
 
     if (error) throw error;

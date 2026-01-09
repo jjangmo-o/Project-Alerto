@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap');
 
 .residence-page {
+  font-family: 'Source Sans 3', sans-serif;
   padding: 3rem;
   background-color: #f3f0ee;
   min-height: 100vh;
@@ -9,51 +10,76 @@
   align-items: flex-start;
 }
 
+/* ================= CARD ================= */
+
 .residence-card {
+  width: 100%;
   max-width: 980px;
   background: #ffffff;
   border: 8px solid #0b3b75;
-  border-radius: 24px;
-  padding: 2rem 2.5rem 2.5rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border-radius: 26px;
+  padding: 1.8rem 2.2rem 2.4rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
 }
+
+/* ================= TITLE ================= */
 
 .residence-title {
-  font-size: 2.4rem;
+  font-size: 2.1rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
   color: #000;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px solid #0b3b75;
 }
+
+/* ================= CONTENT ================= */
 
 .residence-content {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2.4rem;
+  margin-top: 1.2rem;
+}
+
+/* ================= PHOTO ================= */
+
+.residence-photo {
   display: flex;
-  gap: 2.5rem;
+  flex-direction: column;
+  align-items: center;
 }
 
-.residence-details {
-  max-width: 520px;
-}
-
-/* PHOTO */
 .residence-photo img {
   width: 230px;
   height: 280px;
   object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+  background-color: #f2f2f2;
 }
 
-/* DETAILS */
+.edit-photo-btn {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f38020;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.edit-photo-btn:hover {
+  color: #d66e15;
+}
+
+/* ================= DETAILS ================= */
+
 .residence-details {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.detail-row {
-  display: flex;
-  gap: 3rem;
+  gap: 1.1rem;
 }
 
 .detail-block {
@@ -61,23 +87,83 @@
   flex-direction: column;
 }
 
+.detail-row {
+  display: flex;
+  gap: 3.5rem;
+}
+
 .label {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: #0b3b75;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .value {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #000;
   line-height: 1.4;
 }
 
 .value.name {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
+
+/* ================= ACTIONS ================= */
+
+.residence-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.residence-actions button {
+  padding: 0.7rem 2rem;
+  background-color: #f38020;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.residence-actions button:hover {
+  background-color: #d66e15;
+  transform: translateY(-1px);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .residence-content {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: left;
+  }
+
+  .detail-row {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .residence-card {
+    padding: 1.4rem;
+  }
+
+  .residence-title {
+    font-size: 1.7rem;
+  }
+
+  .residence-photo img {
+    width: 200px;
+    height: 250px;
+  }
+}
+
