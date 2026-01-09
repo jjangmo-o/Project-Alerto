@@ -1,34 +1,40 @@
 import { supabase } from '../lib/supabase';
 
+export type RegisterPayload = {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  gender: string;
+  email: string;
+  contact: string;
+  address: string;
+  birthDate: string;
+  password: string;
+};
+
 export const authService = {
-  async register(data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    contact: string;
-    password: string;
-    address?: string;
-    birthDate?: string;
-  }) {
-    // Sign up with Supabase Auth - pass user metadata for the trigger
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+  async register(data: RegisterPayload) {
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: {
           first_name: data.firstName,
+          middle_name: data.middleName ?? null,
           last_name: data.lastName,
+          gender: data.gender,
+          birth_date: data.birthDate,
           contact_number: data.contact,
-          address: data.address || null,
-          birth_date: data.birthDate || null,
+          address: data.address,
         },
       },
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Registration failed');
+    if (error) throw error;
+    if (!authData.user) {
+      throw new Error('Registration failed');
+    }
 
-    // Profile is created automatically by database trigger
     return { user: authData.user };
   },
 
@@ -43,23 +49,17 @@ export const authService = {
   },
 
   async logout() {
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
-    if (error) {
-      console.error('Logout error:', error);
-    }
-  },
-
-  async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    await supabase.auth.signOut();
   },
 
   async getSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session;
+    const { data } = await supabase.auth.getSession();
+    return data.session;
   },
 
-  onAuthStateChange(callback: (event: string, session: unknown) => void) {
+  onAuthStateChange(
+    callback: (event: string, session: import('@supabase/supabase-js').Session | null) => void
+  ) {
     return supabase.auth.onAuthStateChange(callback);
   },
 

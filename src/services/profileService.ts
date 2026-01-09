@@ -1,8 +1,10 @@
 import { supabase } from '../lib/supabase';
-import type { Profile } from '../lib/database.types';
+import type { Tables } from '../lib/database.types';
+
+type Profile = Tables<'profiles'>;
 
 export const profileService = {
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<Profile> {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -10,49 +12,24 @@ export const profileService = {
       .single();
 
     if (error) throw error;
-    return data as Profile;
+    return data;
   },
 
-  async getProfileById(profileId: string) {
-    const { data, error } = await supabase
+  async updateProfileImage(userId: string, path: string) {
+    const { error } = await supabase
       .from('profiles')
-      .select('*')
-      .eq('profile_id', profileId)
-      .single();
+      .update({ profile_picture_path: path })
+      .eq('user_id', userId);
 
     if (error) throw error;
-    return data as Profile;
   },
 
-  async updateProfile(userId: string, updates: Partial<Omit<Profile, 'profile_id' | 'user_id' | 'created_at'>>) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates as never)
-      .eq('user_id', userId)
-      .select()
-      .single();
+  async getSignedImageUrl(path: string) {
+    const { data, error } = await supabase.storage
+      .from('profile_images')
+      .createSignedUrl(path, 60 * 5); // 5 minutes
 
     if (error) throw error;
-    return data as Profile;
-  },
-
-  async uploadProfileImage(userId: string, file: File) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-${Date.now()}.${fileExt}`;
-    const filePath = `profile-images/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
-
-    await profileService.updateProfile(userId, { profile_image_url: publicUrl });
-
-    return publicUrl;
+    return data.signedUrl;
   },
 };
