@@ -10,15 +10,16 @@ interface HeaderProps {
 }
 
 
-const routeTitles: Record<string, string> = {
+const routeTitles:  Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/hotlines': 'Emergency Hotlines',
   '/map': 'Evacuation Map',
   '/residence': 'Residence Card',
   '/notifications': 'Notifications',
+  '/community-status': 'Community Status',
 };
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, username }) => {
   const location = useLocation();
 
   const title =
@@ -40,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
 
         <div className="user-profile">
             <div className="avatar-circle"></div>
-            <span>Hello, {username}!</span>
+            <span>Hello, {username || 'User'}!</span>
         </div>
     </header>
   );
