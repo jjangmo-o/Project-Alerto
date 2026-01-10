@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import './EmergencyHotlines.css';
@@ -668,6 +668,42 @@ const getSortedDistricts = (data: Record<string, any[]>) =>
             [...items].sort((a, b) => a.title.localeCompare(b.title)),
     ]);
 
+
+const matchesSearch = (
+    item: any,
+    search: string,
+    scope: 'all' | 'title' | 'numbers'
+) => {
+    if (!search) return true;
+
+    const term = search.toLowerCase();
+
+    const titleMatch = item.title?.toLowerCase().includes(term);
+    const numberMatch = item.sections?.some((section: any) =>
+        section.text?.toLowerCase().includes(term)
+    );
+
+    if (scope === 'title') return titleMatch;
+    if (scope === 'numbers') return numberMatch;
+
+    return titleMatch || numberMatch;
+};
+
+const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.split(regex).map((part, index) =>
+        part.toLowerCase() === searchTerm.toLowerCase() ? (
+            <mark key={index} style={{ backgroundColor: '#FFE082', padding: '0 2px' }}>
+                {part}
+            </mark>
+        ) : (
+            part
+        )
+    );
+};
+
 const EmergencyHotlines = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'general' | 'marikina' | 'barangay' | 'evacuation'>('general');
@@ -680,7 +716,38 @@ const EmergencyHotlines = () => {
     const [collapsedDistricts, setCollapsedDistricts] =
     useState<Record<string, boolean>>({});
 
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(() =>
+    localStorage.getItem('hotlinesSearch') || ''
+    );
+
+    const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+
+    const [searchScope, setSearchScope] = useState<'all' | 'title' | 'numbers'>(
+        () => (localStorage.getItem('hotlinesScope') as any) || 'all'
+    );
+
+    useEffect(() => {
+    const timeout = setTimeout(() => {
+        setDebouncedSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+    }, [searchTerm]);
+    
+    useEffect(() => {
+        localStorage.setItem('hotlinesSearch', searchTerm);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        localStorage.setItem('hotlinesScope', searchScope);
+    }, [searchScope]);
+
+    useEffect(() => {
+        if (!debouncedSearch) return;
+
+        setCollapsedDistricts({});
+    }, [debouncedSearch]);
 
     return (
         <div className="hotlines-container">
@@ -717,25 +784,67 @@ const EmergencyHotlines = () => {
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
-                    </div>
 
+                        <div className="search-scope">
+                            {[
+                                { key: 'all', label: 'All' },
+                                { key: 'title', label: 'Title' },
+                                { key: 'numbers', label: 'Numbers' },
+                            ].map(option => (
+                                <button
+                                    key={option.key}
+                                    className={`scope-btn ${
+                                        searchScope === option.key ? 'active' : ''
+                                    }`}
+                                    onClick={() =>
+                                        setSearchScope(option.key as any)
+                                    }
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* GRID */}
                     {activeTab !== 'barangay' && Array.isArray(HOTLINES[activeTab]) && (
                     <div className="hotlines-grid animated-grid" key={activeTab}>
                         {HOTLINES[activeTab]
-                        .filter((item: any) => item.type !== 'sectionLabel' && item.title !== 'MARIKINA MOBILE HOTLINES')
-                        .map((item: any, idx: number) => (
-                            <Card key={idx} title={item.title}>
-                            {item.sections.map((section: any, i: number) => {
-                                if (section.divider) return <Divider key={i} />;
-                                if (section.label) return <Label key={i} text={section.label} />;
-                                if (section.type === 'main') return <MainBtn key={i} text={section.text} />;
-                                if (section.type === 'alert') return <AlertBtn key={i} text={section.text} />;
-                                return <SecondaryBtn key={i} text={section.text} />;
-                            })}
-                            </Card>
-                        ))}
+                            .filter((item: any) =>
+                                item.type !== 'sectionLabel' &&
+                                item.title !== 'MARIKINA MOBILE HOTLINES' &&
+                                matchesSearch(item, debouncedSearch, searchScope)
+                            ).length === 0 ? (
+                                <p style={{ textAlign: 'center', color: '#6C757D', marginTop: 40 }}>
+                                    No hotlines found matching "<strong>{searchTerm}</strong>"
+                                </p>
+                            ) : (
+                                <div className="hotlines-grid animated-grid" key={activeTab}>
+                                    {HOTLINES[activeTab]
+                                        .filter((item: any) =>
+                                            item.type !== 'sectionLabel' &&
+                                            item.title !== 'MARIKINA MOBILE HOTLINES' &&
+                                            matchesSearch(item, debouncedSearch, searchScope)
+                                        )
+                                        .map((item: any, idx: number) => (
+                                            <Card
+                                                key={idx}
+                                                title={item.title}
+                                                searchTerm={searchTerm}
+                                            >
+                                                {item.sections.map((section: any, i: number) => {
+                                                    if (section.divider) return <Divider key={i} />;
+                                                    if (section.label) return <Label key={i} text={section.label} />;
+                                                    if (section.type === 'main')
+                                                        return <MainBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                    if (section.type === 'alert')
+                                                        return <AlertBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                    return <SecondaryBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                })}
+                                            </Card>
+                                        ))}
+                                </div>
+                            )}
                     </div>
                     )}
 
@@ -749,11 +858,18 @@ const EmergencyHotlines = () => {
                             {HOTLINES.marikina
                                 .filter((item: any) => item.title === 'MARIKINA MOBILE HOTLINES')
                                 .map((item: any, idx: number) => (
-                                <Card key={idx} title={item.title}>
+                                <Card key={idx} title={item.title} searchTerm={searchTerm}>
                                     {item.sections.map((section: any, i: number) => {
-                                    if (section.divider) return <Divider key={i} />;
-                                    if (section.label) return <Label key={i} text={section.label} />;
-                                    return <SecondaryBtn key={i} text={section.text} />;
+                                        if (section.divider) return <Divider key={i} />;
+                                        if (section.label) return <Label key={i} text={section.label} />;
+
+                                        return (
+                                            <SecondaryBtn
+                                                key={i}
+                                                text={section.text}
+                                                searchTerm={searchTerm}
+                                            />
+                                        );
                                     })}
                                 </Card>
                             ))}
@@ -774,12 +890,15 @@ const EmergencyHotlines = () => {
                                     <h3
                                         className="section-label"
                                         style={{ cursor: 'pointer' }}
-                                        onClick={() =>
+                                        onClick={() => {
+                                            if (debouncedSearch) return;
+
                                             setCollapsedDistricts(prev => ({
-                                            ...prev,
-                                            [districtKey]: !prev[districtKey],
-                                            }))
-                                        }
+                                                ...prev,
+                                                [districtKey]: !prev[districtKey],
+                                            }));
+                                        }}
+
                                         >
                                         {districtKey === 'district1' ? 'District I' : 'District II'}
                                         <span style={{ marginLeft: 8 }}>
@@ -788,21 +907,39 @@ const EmergencyHotlines = () => {
                                     </h3>
 
                                         {!isCollapsed && (
-                                            <div className="hotlines-grid">
-                                                {items
-                                                    .filter((item: any) =>
-                                                        item.title.toLowerCase().includes(searchTerm.toLowerCase())
-                                                    )
-                                                    .map((item: any, idx: number) => (
-                                                    <Card key={idx} title={item.title}>
-                                                        {item.sections.map((section: any, i: number) => {
-                                                            if (section.divider) return <Divider key={i} />;
-                                                            if (section.label) return <Label key={i} text={section.label} />;
-                                                            return <MainBtn key={i} text={section.text} />;
-                                                        })}
-                                                    </Card>
-                                                ))}
-                                            </div>
+                                            items.filter((item: any) =>
+                                                matchesSearch(item, debouncedSearch, searchScope)
+                                            ).length === 0 ? (
+                                                <p style={{ color: '#6C757D', marginBottom: 24 }}>
+                                                    No results found in this district
+                                                </p>
+                                            ) : (
+                                                <div className="hotlines-grid">
+                                                    {items
+                                                        .filter((item: any) =>
+                                                            matchesSearch(item, debouncedSearch, searchScope)
+                                                        )
+                                                        .map((item: any, idx: number) => (
+                                                            <Card
+                                                                key={idx}
+                                                                title={item.title}
+                                                                searchTerm={debouncedSearch}
+                                                            >
+                                                                {item.sections.map((section: any, i: number) => {
+                                                                    if (section.divider) return <Divider key={i} />;
+                                                                    if (section.label) return <Label key={i} text={section.label} />;
+                                                                    return (
+                                                                        <MainBtn
+                                                                            key={i}
+                                                                            text={section.text}
+                                                                            searchTerm={debouncedSearch}
+                                                                        />
+                                                                    );
+                                                                })}
+                                                            </Card>
+                                                        ))}
+                                                </div>
+                                            )
                                         )}
                                     </section>
                                 );
@@ -817,16 +954,15 @@ const EmergencyHotlines = () => {
 
 // HELPERS
 
-const Card = ({ title, children }: any) => (
+const Card = ({ title, children, searchTerm }: any) => (
     <div className="hotline-card">
         <div className="hotline-header">
-        <img src={icon} alt="" />
-        <h4>{title}</h4>
+            <img src={icon} alt="" />
+            <h4>{highlightText(title, searchTerm)}</h4>
         </div>
         {children}
     </div>
 );
-
 
 const Label = ({ text }: any) => (
     <p className="hotline-label">{text}</p>
@@ -836,25 +972,26 @@ const Divider = () => (
     <div style={{ height: '1px', background: '#E9ECEF', margin: '10px 0' }} />
 );
 
-const MainBtn = ({ text }: any) => (
+const MainBtn = ({ text, searchTerm }: any) => (
     <button className="hotline-btn main">
         <img src={icon} alt="" />
-        {text}
+        {highlightText(text, searchTerm)}
     </button>
 );
 
-const AlertBtn = ({ text }: any) => (
+const AlertBtn = ({ text, searchTerm }: any) => (
     <button className="hotline-btn alert">
         <img src={icon} alt="" />
-        {text}
+        {highlightText(text, searchTerm)}
     </button>
 );
 
-const SecondaryBtn = ({ text }: any) => (
+const SecondaryBtn = ({ text, searchTerm }: any) => (
     <button className="hotline-btn secondary">
         <img src={icon} alt="" />
-        {text}
+        {highlightText(text, searchTerm)}
     </button>
 );
+
 
 export default EmergencyHotlines;

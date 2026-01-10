@@ -74,6 +74,34 @@
     0 6px 20px rgba(238, 125, 48, 0.25);
 }
 
+.search-scope {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.scope-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #CED4DA;
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.scope-btn:hover {
+  background: #F1F3F5;
+}
+
+.scope-btn.active {
+  background: #EE7D30;
+  color: white;
+  border-color: #EE7D30;
+}
+
 /* GRID */
 .hotlines-grid {
   display: grid;
