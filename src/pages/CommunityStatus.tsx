@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import './CommunityStatus.css';
+import { useAuth } from '../hooks/useAuth';
 
 import communityIcon from '../assets/icon-community-status.svg';
 import likeIcon from '../assets/icon-like-post.svg';
@@ -111,6 +112,10 @@ const samplePost = {
 const CommunityStatus = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  const { profile } = useAuth();
+
+  const userName = profile?.first_name || 'User';
+
   // states for posts and composer
   const [loading, setLoading] = useState(false);
   const [postText, setPostText] = useState('');
@@ -156,7 +161,7 @@ const CommunityStatus = () => {
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="community-status-main">
-        <Header onMenuClick={toggleSidebar} />
+        <Header onMenuClick={toggleSidebar} username={userName} />
 
         <section className="community-status-content">
 

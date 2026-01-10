@@ -244,3 +244,67 @@
 .hotline-btn.secondary img {
     filter: none;
 }
+
+.hotline-btn {
+  text-decoration: none;
+}
+
+/* Sub feature 1 - Confirm dialog for emergency numbers */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.confirm-modal {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 14px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.confirm-actions .hotline-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirm-actions .hotline-btn.secondary {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-title {
+  margin-bottom: 12px;
+  color: #b81d1c;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.confirm-text {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* sub feature 2 */
+.hotline-btn.secondary::before {
+  content: '';
+}

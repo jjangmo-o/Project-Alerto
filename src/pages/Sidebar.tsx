@@ -35,14 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             to="/dashboard"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
-            Dashboard
-        </NavLink>
-
-        <NavLink
-            to="/hotlines"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-            Emergency Hotlines
+            Home
         </NavLink>
 
         <NavLink
@@ -53,17 +46,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         </NavLink>
 
         <NavLink
-            to="/residence"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-            Residence Card
-        </NavLink>
-
-        <NavLink
           to="/community-status"
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           Community Status
+        </NavLink>
+
+        <NavLink
+            to="/hotlines"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+            Emergency Hotlines
+        </NavLink>
+
+        <NavLink
+            to="/residence"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+            Residence Card
         </NavLink>
     </nav>
 
