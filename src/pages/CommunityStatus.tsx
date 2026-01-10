@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import './CommunityStatus.css';
@@ -7,15 +7,145 @@ import communityIcon from '../assets/icon-community-status.svg';
 import likeIcon from '../assets/icon-like-post.svg';
 import uploadIcon from '../assets/icon-upload-image.svg';
 import closeButtonIcon from '../assets/icon-close-button.svg';
+import samplePostImage from '../assets/sample-post-image.jpg';
+import prevIcon from '../assets/icon-arrow-left.svg';
+import nextIcon from '../assets/icon-arrow-right.svg';
+
+// FOR FUTURE, AFTER BACKEND INTEGRATION
+// interface Post {
+//   id: string;
+//   text: string;
+//   images: string[];
+// }
+
+// const [posts, setPosts] = useState<Post[]>([]);
+// const [activePost, setActivePost] = useState<Post | null>(null);
+// const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+
+// FUTURE IMAGE RENDERING
+// {post.images.length > 0 && (
+//   <div className="post-images">
+//     {post.images.slice(0, 3).map((img, index) => {
+//       const remaining = post.images.length - 2;
+
+//       if (index === 2 && post.images.length > 2) {
+//         return (
+//           <div
+//             key={index}
+//             className="post-image-wrapper overlay"
+//             onClick={() => {
+//               setActivePost(post);
+//               setActiveImageIndex(index);
+//             }}
+//           >
+//             <img src={img} alt="Post" />
+//             <div className="image-overlay">
+//               +{remaining} photos
+//             </div>
+//           </div>
+//         );
+//       }
+
+//       return (
+//         <div
+//           key={index}
+//           className="post-image-wrapper"
+//           onClick={() => {
+//             setActivePost(post);
+//             setActiveImageIndex(index);
+//           }}
+//         >
+//           <img src={img} alt="Post" />
+//         </div>
+//       );
+//     })}
+//   </div>
+// )}
+
+// FUTURE IMAGE VIEWER
+// {activePost && activeImageIndex !== null && (
+//   <div className="image-preview-overlay">
+//     <div className="image-viewer">
+//       <button
+//         className="nav-btn prev"
+//         onClick={() =>
+//           setActiveImageIndex((i) => (i! > 0 ? i! - 1 : i))
+//         }
+//       >
+//         <img src={prevIcon} alt="Previous" />
+//       </button>
+
+//       <img
+//         src={activePost.images[activeImageIndex]}
+//         alt="Preview"
+//       />
+
+//       <button
+//         className="nav-btn next"
+//         onClick={() =>
+//           setActiveImageIndex((i) =>
+//             i! < activePost.images.length - 1 ? i! + 1 : i
+//           )
+//         }
+//       >
+//         <img src={nextIcon} alt="Next" />
+//       </button>
+//     </div>
+//   </div>
+// )}
+
+// onClick={() => {
+//   setActivePost(post);
+//   setActiveImageIndex(index);
+// }}
+
+
+const samplePost = {
+  text: 'Tulonggggggggg……',
+  images: [
+    samplePostImage,
+    samplePostImage,
+  ],
+};
 
 const CommunityStatus = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // states for posts and composer
   const [loading, setLoading] = useState(false);
   const [postText, setPostText] = useState('');
 
+  // state for post composer modal
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showUploadUI, setShowUploadUI] = useState(false);
+
+  // This is to allow users to preview selected images from the posts
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+  if (previewImageIndex === null) return;
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setPreviewImageIndex(null);
+    }
+
+    if (e.key === 'ArrowRight') {
+      setPreviewImageIndex((prev) =>
+        prev !== null && prev < samplePost.images.length - 1 ? prev + 1 : prev
+      );
+    }
+
+    if (e.key === 'ArrowLeft') {
+      setPreviewImageIndex((prev) =>
+        prev !== null && prev > 0 ? prev - 1 : prev
+      );
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [previewImageIndex]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -41,10 +171,10 @@ const CommunityStatus = () => {
 
 
           <p className="community-description">
-            This page provides real-time insights of the community into the situation ofevery Marikeños.
+            This page provides real-time insights of the community into the situation of every Marikeños.
           </p>
 
-          {/* POST COMPOSER */}
+          {/* POST COMPOSER THING */}
             <div
               className="post-composer"
               onClick={() => setIsComposerOpen(true)}
@@ -86,7 +216,7 @@ const CommunityStatus = () => {
             {/* POSTS FEED */}
             <div className="posts-feed">
 
-              {/* NORMAL POST */}
+              {/* NORMAL POST (w/out photo) */}
               <div className="post-card">
                 <div className="post-header">
                   <div className="avatar-circle"></div>
@@ -108,7 +238,7 @@ const CommunityStatus = () => {
 
               </div>
 
-              {/* POST WITH PHOTO */}
+              {/* POST w PHOTO */}
               <div className="post-card">
                 <div className="post-header">
                   <div className="avatar-circle"></div>
@@ -120,11 +250,39 @@ const CommunityStatus = () => {
 
                 <p className="post-text">Tulonggggggggg……</p>
 
-                <img
-                  src="https://via.placeholder.com/400x250"
-                  alt="Post"
-                  className="post-image"
-                />
+                {samplePost.images.length > 0 && (
+                  <div className="post-images">
+                    {samplePost.images.slice(0, 3).map((img, index) => {
+                      const remaining = samplePost.images.length - 2;
+
+                      if (index === 2 && samplePost.images.length > 2) {
+                        return (
+                          <div
+                            key={index}
+                            className="post-image-wrapper overlay"
+                            onClick={() => setPreviewImageIndex(index)}
+                          >
+                            <img src={img} alt="Post" />
+                            <div className="image-overlay">
+                              +{remaining} photos
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={index}
+                          className="post-image-wrapper"
+                          onClick={() => setPreviewImageIndex(index)}
+                        >
+                          <img src={img} alt="Post" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
 
                 <div className="post-actions">
                   <button className="like-btn" aria-label="Like post">
@@ -133,7 +291,7 @@ const CommunityStatus = () => {
                 </div>
               </div>
 
-              {/* LOADING / SKELETON POST */}
+              {/* LOADING or SKELETON POST; to be implemented */}
               {loading && (
                 <div className="post-card skeleton">
                   <div className="post-header">
@@ -173,6 +331,8 @@ const CommunityStatus = () => {
                     </button>
                   </div>
 
+                  <hr className="composer-divider" />
+
                   <div className="composer-user">
                     <div className="avatar-circle small"></div>
                     <span>Community Member</span>
@@ -186,9 +346,12 @@ const CommunityStatus = () => {
                   </div>
 
                   <textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
                     placeholder="Write your concerns or report of situation....."
                     className="composer-textarea"
                   />
+
 
                   {showUploadUI && (
                     <div className="upload-grid">
@@ -204,6 +367,56 @@ const CommunityStatus = () => {
                 </div>
               </div>
             )}
+
+            {previewImageIndex !== null && (
+              <div
+                className="image-preview-overlay"
+                onClick={() => setPreviewImageIndex(null)}
+              >
+                <div
+                  className="image-viewer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {samplePost.images.length > 1 && (
+                    <button
+                      className="nav-btn prev"
+                      disabled={previewImageIndex === 0}
+                      onClick={() =>
+                        setPreviewImageIndex((prev) =>
+                          prev !== null && prev > 0 ? prev - 1 : prev
+                        )
+                      }
+                    >
+                      <img src={prevIcon} alt="Previous" />
+                    </button>
+                  )}
+                  
+                  <div className="image-counter">
+                    {previewImageIndex! + 1} / {samplePost.images.length}
+                  </div>
+
+                  <img
+                    src={samplePost.images[previewImageIndex]}
+                    alt="Preview"
+                  />
+
+                  {samplePost.images.length > 1 && (
+                    <button
+                      className="nav-btn next"
+                      disabled={previewImageIndex === samplePost.images.length - 1}
+                      onClick={() =>
+                        setPreviewImageIndex((prev) =>
+                          prev !== null && prev < samplePost.images.length - 1 ? prev + 1 : prev
+                        )
+                      }
+                    >
+                      <img src={nextIcon} alt="Next" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
 
         </section>
       </main>
