@@ -5,6 +5,8 @@ import './CommunityStatus.css';
 
 import communityIcon from '../assets/icon-community-status.svg';
 import likeIcon from '../assets/icon-like-post.svg';
+import uploadIcon from '../assets/icon-upload-image.svg';
+import closeButtonIcon from '../assets/icon-close-button.svg';
 
 const CommunityStatus = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -12,6 +14,8 @@ const CommunityStatus = () => {
   const [loading, setLoading] = useState(false);
   const [postText, setPostText] = useState('');
 
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [showUploadUI, setShowUploadUI] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -40,30 +44,44 @@ const CommunityStatus = () => {
             This page provides real-time insights of the community into the situation ofevery Marikeños.
           </p>
 
-<<<<<<< Updated upstream
-          <div className="community-placeholder">
-            <p>This is just a placeholder for now, still waiting for backend. Status content goes here.</p>
-          </div>
-=======
           {/* POST COMPOSER */}
-            <div className="post-composer">
+            <div
+              className="post-composer"
+              onClick={() => setIsComposerOpen(true)}
+            >
               <div className="composer-left">
                 <div className="avatar-circle small"></div>
+
+                <button
+                  className="upload-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsComposerOpen(true);
+                    setShowUploadUI(true);
+                  }}
+                  aria-label="Upload image"
+                >
+                  <img src={uploadIcon} alt="Upload" />
+                </button>
+
                 <input
                   type="text"
                   placeholder="Write your concerns or report of situation"
-                  value={postText}
-                  onChange={(e) => setPostText(e.target.value)}
+                  readOnly
                 />
               </div>
 
               <button
                 className="post-btn"
-                disabled={!postText.trim()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsComposerOpen(true);
+                }}
               >
                 POST
               </button>
             </div>
+
 
             {/* POSTS FEED */}
             <div className="posts-feed">
@@ -130,7 +148,63 @@ const CommunityStatus = () => {
               )}
             </div>
 
->>>>>>> Stashed changes
+            {isComposerOpen && (
+              <div
+                className="composer-overlay"
+                onClick={() => {
+                  setIsComposerOpen(false);
+                  setShowUploadUI(false);
+                }}
+              >
+                <div
+                  className="composer-modal"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="composer-modal-header">
+                    <h3>Create post</h3>
+                    <button
+                      className="close-modal"
+                      onClick={() => {
+                        setIsComposerOpen(false);
+                        setShowUploadUI(false);
+                      }}
+                    >
+                      <img src={closeButtonIcon} alt="Close" />
+                    </button>
+                  </div>
+
+                  <div className="composer-user">
+                    <div className="avatar-circle small"></div>
+                    <span>Community Member</span>
+
+                    <button
+                      className="upload-btn"
+                      onClick={() => setShowUploadUI(true)}
+                    >
+                      <img src={uploadIcon} alt="Upload" />
+                    </button>
+                  </div>
+
+                  <textarea
+                    placeholder="Write your concerns or report of situation....."
+                    className="composer-textarea"
+                  />
+
+                  {showUploadUI && (
+                    <div className="upload-grid">
+                      <div className="upload-box">+</div>
+                      <div className="upload-box">+</div>
+                      <div className="upload-box">+</div>
+                    </div>
+                  )}
+
+                  <button className="post-btn centered">
+                    POST
+                  </button>
+                </div>
+              </div>
+            )}
+
         </section>
       </main>
     </div>

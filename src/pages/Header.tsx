@@ -11,12 +11,7 @@ interface HeaderProps {
   username?: string;
 }
 
-<<<<<<< Updated upstream
-
-const routeTitles: Record<string, string> = {
-=======
 const routeTitles:  Record<string, string> = {
->>>>>>> Stashed changes
   '/dashboard': 'Dashboard',
   '/hotlines': 'Emergency Hotlines',
   '/map': 'Evacuation Map',
@@ -47,10 +42,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
         </div>
 
         <div className="user-profile">
-<<<<<<< Updated upstream
-            <div className="avatar-circle"></div>
-            <span>Hello, {username}!</span>
-=======
             <button
                 onClick={() => navigate('/notifications')}
                 className="notifications-btn"
@@ -60,7 +51,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
 
           <div className="avatar-circle"></div>
           <span>Hello, {username || 'User'}!</span>
->>>>>>> Stashed changes
         </div>
     </header>
   );
