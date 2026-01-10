@@ -35,6 +35,18 @@
   transform: scale(1.1);
 }
 
+.notifications-btn {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .user-profile {
   display: flex;
   align-items: center;

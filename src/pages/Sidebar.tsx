@@ -65,13 +65,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         >
           Community Status
         </NavLink>
-
-        <NavLink
-            to="/notifications"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-            Notifications
-        </NavLink>
     </nav>
 
 
