@@ -1,36 +1,94 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap');
 
+/* ================= PAGE ================= */
+
 .residence-page {
   font-family: 'Source Sans 3', sans-serif;
   padding: 3rem;
   background-color: #f3f0ee;
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
 }
 
-/* ================= CARD ================= */
+/* ================= FLIP CONTAINER ================= */
 
-.residence-card {
+.residence-card-flip {
+  position: relative;
   width: 100%;
   max-width: 980px;
+  min-height: 560px;
+  perspective: 1500px;
+}
+
+/* ================= CARD (FRONT & BACK) ================= */
+
+.residence-card {
+  position: absolute;
+  inset: 0;
   background: #ffffff;
   border: 8px solid #0b3b75;
   border-radius: 26px;
   padding: 1.8rem 2.2rem 2.4rem;
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease;
+  overflow: hidden;
+}
+
+/* ================= WATERMARK ================= */
+
+.residence-card::before {
+  content: "City of Marikina";
+  position: absolute;
+  inset: 0;
+  font-size: 6rem;
+  font-weight: 800;
+  color: rgba(11, 59, 117, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: rotate(-30deg);
+  pointer-events: none;
+}
+
+/* ================= FRONT / BACK ================= */
+
+.residence-card.front {
+  transform: rotateY(0deg);
+  z-index: 2;
+}
+
+.residence-card.back {
+  transform: rotateY(180deg);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.residence-card-flip.flipped .front {
+  transform: rotateY(-180deg);
+}
+
+.residence-card-flip.flipped .back {
+  transform: rotateY(0deg);
+  z-index: 3;
 }
 
 /* ================= TITLE ================= */
 
 .residence-title {
-  font-size: 2.1rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #000;
   margin-bottom: 1.2rem;
   padding-bottom: 0.6rem;
   border-bottom: 3px solid #0b3b75;
+  position: relative;
+  z-index: 2;
 }
 
 /* ================= CONTENT ================= */
@@ -40,6 +98,8 @@
   grid-template-columns: 240px 1fr;
   gap: 2.4rem;
   margin-top: 1.2rem;
+  position: relative;
+  z-index: 2;
 }
 
 /* ================= PHOTO ================= */
@@ -64,8 +124,6 @@
   font-size: 0.85rem;
   font-weight: 700;
   color: #f38020;
-  background: none;
-  border: none;
   cursor: pointer;
   text-decoration: underline;
 }
@@ -113,12 +171,28 @@
   font-weight: 700;
 }
 
+/* ================= BARANGAY BADGE ================= */
+
+.barangay-badge {
+  margin-top: 0.6rem;
+  align-self: flex-start;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background-color: #0b3b75;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
 /* ================= ACTIONS ================= */
 
 .residence-actions {
   margin-top: 2rem;
   display: flex;
   justify-content: center;
+  gap: 1.2rem;
+  position: relative;
+  z-index: 2;
 }
 
 .residence-actions button {
@@ -138,27 +212,47 @@
   transform: translateY(-1px);
 }
 
+/* ================= BACK SIDE (QR) ================= */
+
+.qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.qr-text {
+  font-size: 0.85rem;
+  color: #374151;
+  text-align: center;
+}
+
 /* ================= RESPONSIVE ================= */
 
 @media (max-width: 900px) {
   .residence-content {
     grid-template-columns: 1fr;
     justify-items: center;
-    text-align: left;
   }
 
   .detail-row {
     gap: 2rem;
   }
+
+  .residence-card-flip {
+    min-height: 720px;
+  }
 }
 
 @media (max-width: 600px) {
-  .residence-card {
-    padding: 1.4rem;
+  .residence-page {
+    padding: 1.5rem;
   }
 
   .residence-title {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
   }
 
   .residence-photo img {
@@ -167,3 +261,26 @@
   }
 }
 
+/* ================= PRINT OPTIMIZATION ================= */
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .residence-card-flip,
+  .residence-card-flip * {
+    visibility: visible;
+  }
+
+  .residence-card-flip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .residence-actions {
+    display: none;
+  }
+}

@@ -4,6 +4,7 @@ import Header from './Header';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import html2canvas from 'html2canvas';
+import QRCode from 'react-qr-code';
 import './Residence.css';
 
 const FALLBACK_IMAGE =
@@ -13,16 +14,16 @@ const Residence = () => {
   const { profile } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(FALLBACK_IMAGE);
+  const [imageUrl, setImageUrl] = useState<string>(FALLBACK_IMAGE);
+  const [showBack, setShowBack] = useState(false);
+
   const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!profile?.profile_image_url) {
-      // No need to setImageUrl here; initial state is already FALLBACK_IMAGE
-      return;
-    }
+  /* ================= LOAD PROFILE IMAGE ================= */
 
-    // 🔐 SECURE: signed URL
+  useEffect(() => {
+    if (!profile?.profile_image_url) return;
+
     supabase.storage
       .from('profile-images')
       .createSignedUrl(profile.profile_image_url, 3600)
@@ -87,7 +88,7 @@ const Residence = () => {
       .from('profile-images')
       .createSignedUrl(filePath, 3600);
 
-    setImageUrl(data?.signedUrl ?? FALLBACK_IMAGE);
+    if (data?.signedUrl) setImageUrl(data.signedUrl);
     setUploading(false);
   };
 
@@ -107,6 +108,8 @@ const Residence = () => {
     link.click();
   };
 
+  /* ================= RENDER ================= */
+
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={sidebarOpen} />
@@ -118,73 +121,107 @@ const Residence = () => {
         />
 
         <div className="residence-page">
-          <div className="residence-card" ref={cardRef}>
-            <h1 className="residence-title">
-              Marikeño's Residence Card
-            </h1>
+          <div
+            className={`residence-card-flip ${showBack ? 'flipped' : ''}`}
+            ref={cardRef}
+          >
+            {/* ================= FRONT ================= */}
+            <div className="residence-card front">
+              <h1 className="residence-title">
+                Marikeño's Residence Card
+              </h1>
 
-            <div className="residence-content">
-              {/* PHOTO */}
-              <div className="residence-photo">
-                <img src={imageUrl ?? FALLBACK_IMAGE} alt="Profile" />
+              <div className="residence-content">
+                <div className="residence-photo">
+                  <img src={imageUrl} alt="Profile" />
 
-                <label className="edit-photo-btn">
-                  {uploading ? 'Uploading…' : 'Edit Photo'}
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    hidden
-                    onChange={handlePhotoUpload}
-                  />
-                </label>
+                  <label className="edit-photo-btn">
+                    {uploading ? 'Uploading…' : 'Edit Photo'}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      hidden
+                      onChange={handlePhotoUpload}
+                    />
+                  </label>
+                </div>
+
+                <div className="residence-details">
+                  <div className="detail-block">
+                    <span className="label">LAST NAME, FIRST NAME</span>
+                    <span className="value name">{fullName}</span>
+                  </div>
+
+                  <div className="detail-row">
+                    <div className="detail-block">
+                      <span className="label">AGE</span>
+                      <span className="value">
+                        {calculateAge(profile.birth_date)}
+                      </span>
+                    </div>
+
+                    <div className="detail-block">
+                      <span className="label">GENDER</span>
+                      <span className="value">
+                        {formatGender(profile.gender)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="detail-block">
+                    <span className="label">ADDRESS</span>
+                    <span className="value">{profile.address}</span>
+                  </div>
+
+                  <div className="detail-block">
+                    <span className="label">CONTACT</span>
+                    <span className="value">
+                      {profile.contact_number}
+                    </span>
+                  </div>
+
+                  <div className="detail-block">
+                    <span className="label">EMAIL</span>
+                    <span className="value">{profile.email}</span>
+                  </div>
+
+                  <span className="barangay-badge">
+                    Barangay — VERIFIED
+                  </span>
+                </div>
               </div>
 
-              {/* DETAILS */}
-              <div className="residence-details">
-                <div className="detail-block">
-                  <span className="label">
-                    LAST NAME, FIRST NAME
-                  </span>
-                  <span className="value name">{fullName}</span>
-                </div>
-
-                <div className="detail-row">
-                  <div className="detail-block">
-                    <span className="label">AGE</span>
-                    <span className="value">
-                      {calculateAge(profile.birth_date)}
-                    </span>
-                  </div>
-
-                  <div className="detail-block">
-                    <span className="label">GENDER</span>
-                    <span className="value">
-                      {formatGender(profile.gender)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="detail-block">
-                  <span className="label">ADDRESS</span>
-                  <span className="value">{profile.address}</span>
-                </div>
-
-                <div className="detail-block">
-                  <span className="label">CONTACT</span>
-                  <span className="value">
-                    {profile.contact_number}
-                  </span>
-                </div>
-
-                <div className="detail-block">
-                  <span className="label">EMAIL</span>
-                  <span className="value">{profile.email}</span>
-                </div>
+              <div className="residence-actions">
+                <button onClick={() => setShowBack(true)}>
+                  View Back
+                </button>
+                <button onClick={downloadCard}>
+                  Download Card
+                </button>
               </div>
             </div>
 
-            <div className="residence-actions">
-              <button onClick={downloadCard}>Download Card</button>
+            {/* ================= BACK ================= */}
+            <div className="residence-card back">
+              <h1 className="residence-title">
+                Official ID Verification
+              </h1>
+
+              <div className="qr-wrapper">
+                <QRCode
+                  value={`https://project-alerto.app/verify/${profile.user_id}`}
+                  size={220}
+                />
+                <p className="qr-text">
+                  Scan to verify residency via Project Alerto
+                </p>
+              </div>
+
+              <div className="residence-actions">
+                <button onClick={() => setShowBack(false)}>
+                  View Front
+                </button>
+              </div>
             </div>
           </div>
         </div>
