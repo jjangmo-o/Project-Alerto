@@ -100,6 +100,34 @@ import nextIcon from '../assets/icon-arrow-right.svg';
 //   setActiveImageIndex(index);
 // }}
 
+const STATUS_OPTIONS = [
+  'Stable / Safe',
+  'Injured',
+  'Flooding',
+  'Fire',
+  'Trapped',
+  'Power Outage',
+  'Medical Assistance Needed',
+];
+
+const BARANGAY_OPTIONS = [
+  'Barangka',
+  'Calumpang',
+  'Concepcion I (Uno)',
+  'Concepcion II (Dos)',
+  'Fortune',
+  'Industrial Valley Complex (IVC)',
+  'Jesus Dela Peña',
+  'Malanday',
+  'Marikina Heights',
+  'Nangka',
+  'Parang',
+  'San Roque',
+  'Santa Elena',
+  'Santo Niño',
+  'Tañong',
+  'Tumana',
+];
 
 const samplePost = {
   text: 'Tulonggggggggg……',
@@ -119,10 +147,16 @@ const CommunityStatus = () => {
   // states for posts and composer
   const [loading, setLoading] = useState(false);
   const [postText, setPostText] = useState('');
+  const [posts, setPosts] = useState<any[]>([]);
+
 
   // state for post composer modal
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showUploadUI, setShowUploadUI] = useState(false);
+
+  // states for selects in composer
+  const [status, setStatus] = useState('Stable / Safe');
+  const [barangay, setBarangay] = useState('');
 
   // This is to allow users to preview selected images from the posts
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
@@ -222,14 +256,33 @@ const CommunityStatus = () => {
             <div className="posts-feed">
 
               {/* NORMAL POST (w/out photo) */}
-              <div className="post-card">
-                <div className="post-header">
-                  <div className="avatar-circle"></div>
-                  <div>
-                    <h4>Community Member</h4>
-                    <span>Just now</span>
+              {posts.map((post) => (
+                <div className="post-card" key={post.id}>
+                  <div className="post-header">
+                    <div className="avatar-circle"></div>
+                    <div>
+                      <h4>Community Member</h4>
+                      <span>{post.timestamp}</span>
+                    </div>
+                  </div>
+
+                  <div className="cs-post-meta">
+                    <span className={`cs-status cs-${post.status.replace(/\s+/g, '-').toLowerCase()}`}>
+                      {post.status}
+                    </span>
+                    <span className="cs-barangay">{post.barangay}</span>
+                  </div>
+
+                  <p className="post-text">{post.text}</p>
+
+                  <div className="post-actions">
+                    <button className="like-btn">
+                      <img src={likeIcon} alt="Like" />
+                    </button>
                   </div>
                 </div>
+              ))}
+
 
                 <p className="post-text">
                   Sobrang apaw na ng tubig dito sa Brgy. Kalumpang wala man lang rescue…
@@ -349,6 +402,27 @@ const CommunityStatus = () => {
                       <img src={uploadIcon} alt="Upload" />
                     </button>
                   </div>
+                  
+                  <div className="cs-post-selects">
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={barangay}
+                      onChange={(e) => setBarangay(e.target.value)}
+                    >
+                      <option value="">Select Barangay</option>
+                      {BARANGAY_OPTIONS.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
 
                   <textarea
                     value={postText}
@@ -366,7 +440,7 @@ const CommunityStatus = () => {
                     </div>
                   )}
 
-                  <button className="post-btn centered">
+                  <button className="post-btn centered" onClick={handleCreatePost}>
                     POST
                   </button>
                 </div>

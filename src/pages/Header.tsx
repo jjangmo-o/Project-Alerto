@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 const routeTitles:  Record<string, string> = {
-  '/dashboard': 'Dashboard',
+  '/dashboard': 'Home',
   '/hotlines': 'Emergency Hotlines',
   '/map': 'Evacuation Map',
   '/residence': 'Residence Card',
