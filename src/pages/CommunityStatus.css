@@ -491,8 +491,9 @@
 
 .cs-post-meta {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .cs-status {
@@ -502,16 +503,31 @@
   font-weight: 700;
 }
 
-.cs-stable-/-safe { background: #e6f4ea; color: #1e7f4f; }
+.cs-stable---safe { background: #e6f4ea; color: #1e7f4f; }
 .cs-injured { background: #fde2e2; color: #b00020; }
 .cs-flooding { background: #e3f2fd; color: #0d47a1; }
 .cs-fire { background: #ffe7d9; color: #c2410c; }
 .cs-trapped { background: #ede9fe; color: #5b21b6; }
 .cs-power-outage { background: #fff7cd; color: #92400e; }
+.cs-critical { background: #fdecea; color: #b02a37; }
+.cs-missing { background: #fff3cd; color: #856404; }
+.cs-outbreak { background: #e7f1ff; color: #084298; }
+.cs-rescue { background: #e0f7fa; color: #006064; }
+.cs-animal-rescue { background: #f3e5f5; color: #6a1b9a; }
 
 .cs-barangay {
   font-size: 12px;
-  color: #6c757d;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  margin-left: 5px;
+
+  color: #0b5ed7;
+  border: 1.5px solid #0b5ed7;
+  background: rgba(13, 110, 253, 0.05);
+
+  white-space: nowrap;
 }
 
 
