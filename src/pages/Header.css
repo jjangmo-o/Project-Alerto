@@ -44,9 +44,9 @@
 }
 
 .avatar-circle {
-    width: 45px;
-    height: 45px;
-    background-color: #E9ECEF;
-    border-radius: 50%;
-    cursor: pointer;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #d32f2f; 
 }
