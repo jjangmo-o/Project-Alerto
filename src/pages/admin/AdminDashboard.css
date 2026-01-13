@@ -5,14 +5,14 @@
   gap: 2.5rem;
 }
 
-/* ===== TOP GRID ===== */
+/* grid layout for cards */
 .admin-dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
 }
 
-/* ===== CARD BASE ===== */
+/* cards styles */
 .admin-card {
   background: #ffffff;
   border-radius: 16px;
@@ -34,7 +34,7 @@
   color: #6c757d;
 }
 
-/* ===== STATUS BUTTONS ===== */
+/* status button styles */
 .status-buttons {
   display: flex;
   flex-direction: column;
@@ -55,14 +55,14 @@
 .status-btn.urgent { background: #f39c12; }
 .status-btn.critical { background: #e74c3c; }
 
-/* ===== INPUTS ===== */
+/* input styles */
 .admin-input {
   padding: 0.6rem;
   border-radius: 6px;
   border: 1px solid #ced4da;
 }
 
-/* ===== BUTTONS ===== */
+/* button styles */
 .admin-primary-btn {
   background: #ee7d30;
   color: white;
@@ -87,7 +87,7 @@
   cursor: pointer;
 }
 
-/* ===== ALERTS ===== */
+/* alerts card styles */
 .admin-alerts-card {
   background: #ffffff;
   border-radius: 16px;
@@ -133,4 +133,112 @@
   border-radius: 8px;
   border: 1px solid #ced4da;
   resize: none;
+}
+
+/* evac center card styles */
+
+.capacity-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  max-width: 520px;
+}
+
+.capacity-header h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f3c6e;
+  margin-bottom: 1rem;
+}
+
+.capacity-search {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.capacity-search input {
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #cfd8e3;
+  font-size: 0.9rem;
+}
+
+.update-btn {
+  background: #f58220;
+  color: white;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.capacity-list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.capacity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.center-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #123b66;
+}
+
+.status-pill {
+  min-width: 88px;
+  text-align: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.status-pill.available {
+  background: #7fae3f;
+  color: white;
+}
+
+.status-pill.full {
+  background: #e24b4b;
+  color: white;
+}
+
+.capacity-footer {
+  padding-top: 0.6rem;
+}
+
+.notify-checkbox {
+  font-size: 0.8rem;
+  color: #4a5d73;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.no-results {
+  font-size: 0.8rem;
+  color: #9aa6b2;
+  text-align: center;
+  padding: 0.8rem 0;
+}
+
+.notify-checkbox input[type="checkbox"] {
+  accent-color: #123b66;
 }
