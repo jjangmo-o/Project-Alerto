@@ -1,27 +1,49 @@
 .top-header {
-  background: white;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #fbfcfe 100%
+  );
   padding: 1rem 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #E9ECEF;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 6px 18px rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
 .header-title {
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   color: #1C3E6F;
 }
 
 .menu-btn {
-  background: none;
   border: none;
-  padding: 0;
+  padding: 8px;
+  border-radius: 10px;
   cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.menu-btn:hover {
+  background: rgba(28, 62, 111, 0.12);
+}
+
+.menu-btn:active {
+  transform: scale(0.95);
 }
 
 .menu-icon-img {
@@ -31,34 +53,85 @@
   transition: transform 0.2s;
 }
 
-.menu-icon-img:hover {
-  transform: scale(1.1);
-}
-
 .notifications-btn {
-  width: 28px;
-  height: 28px;
-  background: none;
+  width: 34px;
+  height: 34px;
   border: none;
-  padding: 0;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.notifications-btn:active {
+  transform: scale(0.95);
+}
+
+.menu-btn img,
+.notifications-btn img {
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    filter 0.15s ease;
+}
+
+.menu-btn:hover img,
+.notifications-btn:hover img {
+  opacity: 0.85;
+}
+
+.menu-btn:hover,
+.notifications-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.menu-btn,
+.notifications-btn {
+  outline-offset: 2px;
+}
+
+.menu-btn:focus-visible,
+.notifications-btn:focus-visible {
+  outline: 2px solid rgba(28, 62, 111, 0.35);
 }
 
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 21px;
   color: #1C3E6F;
   font-weight: 700;
 }
 
 .avatar-circle {
-    width: 45px;
-    height: 45px;
-    background-color: #E9ECEF;
-    border-radius: 50%;
-    cursor: pointer;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px rgba(28, 62, 111, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.avatar-circle:hover {
+  box-shadow:
+    0 0 0 2px rgba(28, 62, 111, 0.35),
+    0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.avatar-circle:focus-visible {
+  outline: 2px solid rgba(28, 62, 111, 0.4);
+  outline-offset: 3px;
+}
+
+.avatar-circle:active {
+  transform: translateY(0);
 }

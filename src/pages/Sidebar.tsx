@@ -24,11 +24,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <div className="sidebar-logo">
+      <div
+        className="sidebar-logo clickable"
+        onClick={() => navigate('/dashboard')}
+        role="button"
+        aria-label="Go to Home"
+      >
         <img src={logoImg} alt="Project Alerto Logo" />
         <h2>Project Alerto</h2>
         <p>Marikeños Readiness Hub</p>
       </div>
+
 
     <nav className="nav-menu">
         <NavLink
