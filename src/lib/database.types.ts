@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       barangays: {
@@ -155,6 +180,44 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          barangay_id: string | null
+          created_at: string | null
+          created_by: string | null
+          message: string
+          notification_id: string
+          target_role: string
+          title: string
+        }
+        Insert: {
+          barangay_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          message: string
+          notification_id?: string
+          target_role?: string
+          title: string
+        }
+        Update: {
+          barangay_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          message?: string
+          notification_id?: string
+          target_role?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_barangay_id_fkey"
+            columns: ["barangay_id"]
+            isOneToOne: false
+            referencedRelation: "barangays"
+            referencedColumns: ["barangay_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string
@@ -169,6 +232,7 @@ export type Database = {
           profile_id: string
           profile_image_url: string | null
           profile_picture_path: string | null
+          role: string
           user_id: string
         }
         Insert: {
@@ -184,6 +248,7 @@ export type Database = {
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null
+          role?: string
           user_id: string
         }
         Update: {
@@ -199,6 +264,7 @@ export type Database = {
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null
+          role?: string
           user_id?: string
         }
         Relationships: []
@@ -229,6 +295,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "disaster_reports"
             referencedColumns: ["report_id"]
+          },
+        ]
+      }
+      user_notifications: {
+        Row: {
+          archived_at: string | null
+          is_archived: boolean
+          is_read: boolean
+          notification_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          is_archived?: boolean
+          is_read?: boolean
+          notification_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          is_archived?: boolean
+          is_read?: boolean
+          notification_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["notification_id"]
           },
         ]
       }
@@ -284,7 +385,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -413,6 +514,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
