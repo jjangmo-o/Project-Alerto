@@ -1,6 +1,3 @@
-// Water Level Service - Fetches water level data from external API
-// TODO: Replace with your actual API endpoint (e.g., PAGASA, local sensors)
-
 export interface WaterLevel {
   id: string;
   level: number;

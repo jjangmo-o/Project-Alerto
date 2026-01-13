@@ -15,7 +15,17 @@ import CommunityStatus from './pages/CommunityStatus';
 
 import './App.css';
 
-/* ================= LOADING ================= */
+import AdminRoute from './pages/admin/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
+
+<Route
+  path="/admin/dashboard"
+  element={
+    <AdminRoute>
+      <AdminDashboard />
+    </AdminRoute>
+  }
+/>
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -23,8 +33,6 @@ const LoadingScreen = () => (
     <p>Loading...</p>
   </div>
 );
-
-/* ================= ROUTE GUARDS ================= */
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
@@ -44,7 +52,6 @@ const PublicRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-/* ================= ROUTES ================= */
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -141,7 +148,6 @@ const AppRoutes = () => {
   );
 };
 
-/* ================= APP ROOT ================= */
 
 function App() {
   return (

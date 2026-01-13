@@ -8,7 +8,12 @@ interface SidebarProps {
   isOpen: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+interface SidebarProps {
+  isOpen: boolean;
+  role?: 'user' | 'admin';
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -37,40 +42,52 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 
 
     <nav className="nav-menu">
-        <NavLink
-            to="/dashboard"
+      {role === 'admin' ? (
+        <>
+          <NavLink
+            to="/admin/dashboard"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-            Home
-        </NavLink>
+          >
+            Dashboard
+          </NavLink>
 
-        <NavLink
-            to="/map"
+          <NavLink
+            to="/admin/map"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
+          >
             Evacuation Map
-        </NavLink>
+          </NavLink>
 
-        <NavLink
-          to="/community-status"
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          Community Status
-        </NavLink>
-
-        <NavLink
-            to="/hotlines"
+          <NavLink
+            to="/admin/community-status"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
+          >
+            Community Status
+          </NavLink>
+        </>
+      ) : (
+        <>
+          <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/map" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            Evacuation Map
+          </NavLink>
+
+          <NavLink to="/community-status" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            Community Status
+          </NavLink>
+
+          <NavLink to="/hotlines" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Emergency Hotlines
-        </NavLink>
+          </NavLink>
 
-        <NavLink
-            to="/residence"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
+          <NavLink to="/residence" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Residence Card
-        </NavLink>
+          </NavLink>
+        </>
+      )}
     </nav>
 
 

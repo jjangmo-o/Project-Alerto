@@ -262,6 +262,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 369-5833' },
+                    { type: 'secondary', text: 'Text 369-5833' },
                 ],
             },
 
@@ -270,6 +271,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 89486963' },
+                    { type: 'secondary', text: 'Text 89486963' },
                 ],
             },
 
@@ -278,6 +280,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 647-7205' },
+                    { type: 'secondary', text: 'Text 647-7205' },
                 ],
             },
 
@@ -286,6 +289,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 0289421346' },
+                    { type: 'secondary', text: 'Text 0289421346' },
                 ],
             },
 
@@ -294,6 +298,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 646-8479' },
+                    { type: 'secondary', text: 'Text 646-8479' },
                 ],
             },
 
@@ -302,6 +307,9 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 8646-1877' },
+                    { type: 'secondary', text: 'Text 8646-1877' },
+                    { type: 'main', text: 'Call 8682-4423' },
+                    { type: 'secondary', text: 'Text 8682-4423' },
                 ],
             },
 
@@ -310,6 +318,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call (02) 5349 703' },
+                    { type: 'secondary', text: 'Text (02) 5349 703' },
                 ],
             },
 
@@ -318,6 +327,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 8477 8853' },
+                    { type: 'secondary', text: 'Text 8477 8853' },
                 ],
             },
         ],
@@ -328,6 +338,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 948-6454' },
+                    { type: 'secondary', text: 'Text 948-6454' },
                 ],
             },
 
@@ -336,6 +347,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 942-0599' },
+                    { type: 'secondary', text: 'Text 942-0599' },
                 ],
             },
 
@@ -344,6 +356,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 480-7368' },
+                    { type: 'secondary', text: 'Text 480-7368' },
                 ],
             },
 
@@ -352,6 +365,7 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 942-0572' },
+                    { type: 'secondary', text: 'Text 942-0572' },
                 ],
             },
 
@@ -360,6 +374,9 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 7934-8626' },
+                    { type: 'secondary', text: 'Text 7934-8626' },
+                    { type: 'main', text: 'Call 7934-8625' },
+                    { type: 'secondary', text: 'Text 7934-8625' }
                 ],
             },
 
@@ -368,18 +385,21 @@ const HOTLINES: Record<string, any> = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 477-3817' },
+                    { type: 'secondary', text: 'Text 477-3817' },
                 ],
             },
 
             {
-                title: 'BARANGAY ',
+                title: 'BARANGAY PARANG',
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
-                    { type: 'main', text: 'Call ' },
+                    { type: 'main', text: 'Call 451-1291' },
+                    { type: 'secondary', text: 'Text 451-1291' },
                 ],
             },
         ],
     },
+    
     evacuation: {
         district1: [
             {

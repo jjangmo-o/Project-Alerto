@@ -10,6 +10,7 @@ import notificationsIcon from '../assets/icon-notification-bell.svg';
 interface HeaderProps {
   onMenuClick: () => void;
   username?: string;
+  role?: 'user' | 'admin';
 }
 
 const FALLBACK_IMAGE = 'https://ui-avatars.com/api/?size=128&background=E5E7EB&color=374151&name=User';
@@ -22,14 +23,20 @@ const routeTitles: Record<string, string> = {
   '/notifications': 'Notifications',
 };
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
+const Header: React.FC<HeaderProps> = ({
+  onMenuClick,
+  username = 'User',
+  role = 'user',
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(FALLBACK_IMAGE);
 
   const title =
-    routeTitles[location.pathname] || 'Project Alerto';
+    role == 'admin'
+      ? 'Admin Dashboard'
+      : routeTitles[location.pathname] || 'Project Alerto';
 
   useEffect(() => {
     if (!profile?.profile_image_url) return;
@@ -59,13 +66,15 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
       </div>
 
       <div className="user-profile">
-        <button
-          onClick={() => navigate('/notifications')}
-          className="notifications-btn"
-          aria-label="Notifications"
-        >
-          <img src={notificationsIcon} alt="Notifications" />
-        </button>
+        {role !== 'admin' && (
+          <button
+            onClick={() => navigate('/notifications')}
+            className="notifications-btn"
+            aria-label="Notifications"
+          >
+            <img src={notificationsIcon} alt="Notifications" />
+          </button>
+        )}
 
         <img
           src={avatarUrl}
@@ -73,7 +82,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, username = 'User' }) => {
           className="avatar-circle"
           onClick={() => navigate('/residence')}
         />
-        <span>Hello, {username || 'User'}!</span>
+        <span>
+          {role === 'admin' ? 'Admin' : `Hello, ${username || 'User'}!`}
+        </span>
       </div>
     </header>
   );
