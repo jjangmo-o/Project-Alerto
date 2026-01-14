@@ -3,9 +3,9 @@ import type { User, Session } from '@supabase/supabase-js';
 import { AuthContext } from './AuthContext';
 import { authService } from '../services/authService';
 import { profileService } from '../services/profileService';
-import type { Tables } from '../lib/database.types';
+import type { Database } from '../lib/database.types';
 
-type Profile = Tables<'profiles'>;
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -17,12 +17,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = authService.onAuthStateChange(
-      async (_event: string, session: Session | null) => {
-        if (session?.user && session.user.email_confirmed_at) {
-          setUser(session.user);
+      (_event: string, session: unknown) => {
+        const typedSession = session as Session | null;
+        if (typedSession?.user && typedSession.user.email_confirmed_at) {
+          setUser(typedSession.user);
 
           profileService
-            .getProfile(session.user.id)
+            .getProfile(typedSession.user.id)
             .then(setProfile)
             .catch(() => setProfile(null));
         } else {

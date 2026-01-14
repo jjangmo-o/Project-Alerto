@@ -1,8 +1,8 @@
 import { createContext } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Tables } from '../lib/database.types';
+import type { Database } from '../lib/database.types';
 
-type Profile = Tables<'profiles'>;
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export type AuthContextType = {
   user: User | null;

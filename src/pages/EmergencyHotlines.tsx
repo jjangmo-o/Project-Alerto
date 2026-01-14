@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../hooks/useAuth';
 import './EmergencyHotlines.css';
+import { useAuth } from '../hooks/useAuth';
 
 import icon from '../assets/icon-call.svg';
 
@@ -275,6 +276,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 997-4951' },
+                    { type: 'secondary', text: 'Text 997-4951' },
                 ],
             },
 
@@ -283,6 +285,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 369-5833' },
+                    { type: 'secondary', text: 'Text 369-5833' },
                 ],
             },
 
@@ -291,6 +294,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 89486963' },
+                    { type: 'secondary', text: 'Text 89486963' },
                 ],
             },
 
@@ -299,6 +303,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 647-7205' },
+                    { type: 'secondary', text: 'Text 647-7205' },
                 ],
             },
 
@@ -307,6 +312,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 0289421346' },
+                    { type: 'secondary', text: 'Text 0289421346' },
                 ],
             },
 
@@ -315,6 +321,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 646-8479' },
+                    { type: 'secondary', text: 'Text 646-8479' },
                 ],
             },
 
@@ -323,6 +330,9 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 8646-1877' },
+                    { type: 'secondary', text: 'Text 8646-1877' },
+                    { type: 'main', text: 'Call 8682-4423' },
+                    { type: 'secondary', text: 'Text 8682-4423' },
                 ],
             },
 
@@ -331,6 +341,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call (02) 5349 703' },
+                    { type: 'secondary', text: 'Text (02) 5349 703' },
                 ],
             },
 
@@ -339,6 +350,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 8477 8853' },
+                    { type: 'secondary', text: 'Text 8477 8853' },
                 ],
             },
         ],
@@ -349,6 +361,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 948-6454' },
+                    { type: 'secondary', text: 'Text 948-6454' },
                 ],
             },
 
@@ -357,6 +370,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 942-0599' },
+                    { type: 'secondary', text: 'Text 942-0599' },
                 ],
             },
 
@@ -365,6 +379,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 480-7368' },
+                    { type: 'secondary', text: 'Text 480-7368' },
                 ],
             },
 
@@ -373,6 +388,7 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 942-0572' },
+                    { type: 'secondary', text: 'Text 942-0572' },
                 ],
             },
 
@@ -381,6 +397,9 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 7934-8626' },
+                    { type: 'secondary', text: 'Text 7934-8626' },
+                    { type: 'main', text: 'Call 7934-8625' },
+                    { type: 'secondary', text: 'Text 7934-8625' }
                 ],
             },
 
@@ -389,10 +408,21 @@ const HOTLINES: HotlinesData = {
                 sections: [
                     { label: 'MAIN OPERATION HOTLINE' },
                     { type: 'main', text: 'Call 477-3817' },
+                    { type: 'secondary', text: 'Text 477-3817' },
+                ],
+            },
+
+            {
+                title: 'BARANGAY PARANG',
+                sections: [
+                    { label: 'MAIN OPERATION HOTLINE' },
+                    { type: 'main', text: 'Call 451-1291' },
+                    { type: 'secondary', text: 'Text 451-1291' },
                 ],
             },
         ],
     },
+    
     evacuation: {
         district1: [
             {
@@ -680,8 +710,73 @@ const getSortedDistricts = (data:  DistrictHotlines): [string, HotlineItem[]][] 
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([districtKey, items]) => [
             districtKey,
-            [... items].sort((a, b) => a.title.localeCompare(b. title)),
-        ]);
+            [...items].sort((a, b) => a.title.localeCompare(b.title)),
+    ]);
+
+
+const matchesSearch = (
+    item: any,
+    search: string,
+    scope: 'all' | 'title' | 'numbers'
+) => {
+    if (!search) return true;
+
+    const term = search.toLowerCase();
+
+    const titleMatch = item.title?.toLowerCase().includes(term);
+    const numberMatch = item.sections?.some((section: any) =>
+        section.text?.toLowerCase().includes(term)
+    );
+
+    if (scope === 'title') return titleMatch;
+    if (scope === 'numbers') return numberMatch;
+
+    return titleMatch || numberMatch;
+};
+
+const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm) return text;
+
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    return text.split(regex).map((part, index) =>
+        part.toLowerCase() === searchTerm.toLowerCase() ? (
+            <mark key={index} style={{ backgroundColor: '#FFE082', padding: '0 2px' }}>
+                {part}
+            </mark>
+        ) : (
+            part
+        )
+    );
+};
+
+// Confirm Dialog for emergency numbers
+// Emergency numbers that require confirmation
+const EMERGENCY_NUMBERS = [
+    '911', // National Emergency
+    '161', // Marikina City Rescue
+    '143', // Philippine Red Cross
+    '136', // MMDA
+    '117', // Philippine National Police
+];
+
+// sub feature 1: this remove words like "call", "Text", spaces, and non-dialable characters
+const extractPhoneNumber = (text: string) => {
+    if (!text) return '';
+    return text.replace(/call|text/gi, '').replace(/[^\d]/g, '');
+};
+
+// sub feature 2: similar to above, but this is to separate from calls
+const extractSmsNumber = (text: string) => {
+    if (!text) return '';
+    return text
+        .replace(/text|call/gi, '')
+        .replace(/[^\d]/g, '');
+};
+
+// Check if number is an emergency hotline
+const isEmergencyNumber = (phone: string) =>
+    EMERGENCY_NUMBERS.some(num => phone.startsWith(num));
+
 
 const EmergencyHotlines = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -690,29 +785,56 @@ const EmergencyHotlines = () => {
 
     // Get user's first name for header
     const userName = profile?.first_name || 'User';
-
+        
     // districts and barangays
     const sortedBarangayDistricts = getSortedDistricts(HOTLINES.barangay);
     const sortedEvacuationDistricts = getSortedDistricts(HOTLINES.evacuation);
 
-    const [collapsedDistricts, setCollapsedDistricts] = useState<Record<string, boolean>>({});
-    const [searchTerm, setSearchTerm] = useState('');
 
-    const renderHotlineItems = (items: HotlineItem[]) => {
-        return items
-            .filter((item) => item.title !== 'MARIKINA MOBILE HOTLINES')
-            .map((item, idx) => (
-                <Card key={idx} title={item.title}>
-                    {item.sections.map((section, i) => {
-                        if (section.divider) return <Divider key={i} />;
-                        if (section.label) return <Label key={i} text={section. label} />;
-                        if (section.type === 'main') return <MainBtn key={i} text={section. text || ''} />;
-                        if (section.type === 'alert') return <AlertBtn key={i} text={section.text || ''} />;
-                        return <SecondaryBtn key={i} text={section.text || ''} />;
-                    })}
-                </Card>
-            ));
-    };
+    const [collapsedDistricts, setCollapsedDistricts] =
+    useState<Record<string, boolean>>({});
+
+    const [searchTerm, setSearchTerm] = useState(() =>
+    localStorage.getItem('hotlinesSearch') || ''
+    );
+
+    const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+
+    const [searchScope, setSearchScope] = useState<'all' | 'title' | 'numbers'>(
+        () => (localStorage.getItem('hotlinesScope') as any) || 'all'
+    );
+
+    /* 
+    Stores: Which  number is being called
+     label is shown to the user; null means no dialog is visible
+    */
+    const [confirmDialog, setConfirmDialog] = useState<{
+        phone: string;
+        label: string;
+    } | null>(null);
+
+    useEffect(() => {
+    const timeout = setTimeout(() => {
+        setDebouncedSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+    }, [searchTerm]);
+    
+    useEffect(() => {
+        localStorage.setItem('hotlinesSearch', searchTerm);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        localStorage.setItem('hotlinesScope', searchScope);
+    }, [searchScope]);
+
+    useEffect(() => {
+        if (!debouncedSearch) return;
+
+        setCollapsedDistricts({});
+    }, [debouncedSearch]);
 
     return (
         <div className="hotlines-container">
@@ -749,59 +871,132 @@ const EmergencyHotlines = () => {
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
+
+                        <div className="search-scope">
+                            {[
+                                { key: 'all', label: 'All' },
+                                { key: 'title', label: 'By Title' },
+                                { key: 'numbers', label: 'By Contact Number' },
+                            ].map(option => (
+                                <button
+                                    key={option.key}
+                                    className={`scope-btn ${
+                                        searchScope === option.key ? 'active' : ''
+                                    }`}
+                                    onClick={() =>
+                                        setSearchScope(option.key as any)
+                                    }
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* GRID for general tab */}
-                    {activeTab === 'general' && (
-                        <div className="hotlines-grid animated-grid" key={activeTab}>
-                            {renderHotlineItems(HOTLINES. general)}
-                        </div>
+                    {/* GRID */}
+                    {activeTab !== 'barangay' && Array.isArray(HOTLINES[activeTab]) && (
+                        <>
+                            {HOTLINES[activeTab]
+                                .filter((item: any) =>
+                                    item.type !== 'sectionLabel' &&
+                                    item.title !== 'MARIKINA MOBILE HOTLINES' &&
+                                    matchesSearch(item, debouncedSearch, searchScope)
+                                ).length === 0 ? (
+                                    <p style={{ textAlign: 'center', color: '#6C757D', marginTop: 40 }}>
+                                        No hotlines found matching "<strong>{searchTerm}</strong>"
+                                    </p>
+                                ) : (
+                                    <div className="hotlines-grid animated-grid" key={activeTab}>
+                                        {HOTLINES[activeTab]
+                                            .filter((item: any) =>
+                                                item.type !== 'sectionLabel' &&
+                                                item.title !== 'MARIKINA MOBILE HOTLINES' &&
+                                                matchesSearch(item, debouncedSearch, searchScope)
+                                            )
+                                            .map((item: any, idx: number) => (
+                                                <Card
+                                                    key={idx}
+                                                    title={item.title}
+                                                    searchTerm={searchTerm}
+                                                >
+                                                    {item.sections.map((section: any, i: number) => {
+                                                        if (section.divider) return <Divider key={i} />;
+                                                        if (section.label) return <Label key={i} text={section.label} />;
+                                                        if (section.type === 'main')
+                                                            return <MainBtn
+                                                                key={i}
+                                                                text={section.text}
+                                                                searchTerm={searchTerm}
+                                                                onConfirm={(phone: string, label: string) =>
+                                                                    setConfirmDialog({ phone, label })
+                                                                }
+                                                            />;
+                                                        if (section.type === 'alert')
+                                                            return <AlertBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                        return <SecondaryBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                    })}
+                                                </Card>
+                                            ))}
+                                    </div>
+                                )}
+                        </>
                     )}
 
-                    {/* GRID for marikina tab */}
+
+                        
+                    {/* MOBILE HOTLINES SECTION */}
                     {activeTab === 'marikina' && (
                         <>
                             <div className="hotlines-grid animated-grid" key={activeTab}>
                                 {renderHotlineItems(HOTLINES.marikina)}
                             </div>
 
-                            {/* MOBILE HOTLINES SECTION */}
-                            <h3 className="section-label">Mobile Hotlines</h3>
-                            <div className="hotlines-grid">
-                                {HOTLINES.marikina
-                                    .filter((item) => item.title === 'MARIKINA MOBILE HOTLINES')
-                                    .map((item, idx) => (
-                                        <Card key={idx} title={item.title}>
-                                            {item. sections.map((section, i) => {
-                                                if (section.divider) return <Divider key={i} />;
-                                                if (section. label) return <Label key={i} text={section.label} />;
-                                                return <SecondaryBtn key={i} text={section.text || ''} />;
-                                            })}
-                                        </Card>
-                                    ))}
+                        <div className="hotlines-grid">
+                            {HOTLINES.marikina
+                                .filter((item: any) => item.title === 'MARIKINA MOBILE HOTLINES')
+                                .map((item: any, idx: number) => (
+                                <Card key={idx} title={item.title} searchTerm={searchTerm}>
+                                    {item.sections.map((section: any, i: number) => {
+                                        if (section.divider) return <Divider key={i} />;
+                                        if (section.label) return <Label key={i} text={section.label} />;
+
+                                        return (
+                                            <SecondaryBtn
+                                                key={i}
+                                                text={section.text}
+                                                searchTerm={searchTerm}
+                                            />
+                                        );
+                                    })}
+                                </Card>
+                            ))}
                             </div>
                         </>
                     )}
 
                     {/* District-based tabs (barangay & evacuation) */}
                     {(activeTab === 'barangay' || activeTab === 'evacuation') && (
-                        <>
-                            {(activeTab === 'barangay'
-                                ? sortedBarangayDistricts
-                                :  sortedEvacuationDistricts
-                            ).map(([districtKey, items]) => {
-                                const isCollapsed = collapsedDistricts[districtKey];
-                                return (
-                                    <section key={districtKey}>
-                                        <h3
-                                            className="section-label"
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() =>
-                                                setCollapsedDistricts(prev => ({
-                                                    ...prev,
-                                                    [districtKey]: !prev[districtKey],
-                                                }))
-                                            }
+                    <>
+                        {(activeTab === 'barangay'
+                            ? sortedBarangayDistricts
+                            : sortedEvacuationDistricts
+                        ).map(([districtKey, items]: any) => {
+
+                            const isCollapsed = collapsedDistricts[districtKey];
+                            return (
+                                <section key={districtKey}>
+                                    <h3
+                                        className="section-label"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => {
+                                            if (debouncedSearch) return;
+
+                                            setCollapsedDistricts(prev => ({
+                                                ...prev,
+                                                [districtKey]: !prev[districtKey],
+                                            }));
+                                        }}
+
                                         >
                                             {districtKey === 'district1' ?  'District I' : 'District II'}
                                             <span style={{ marginLeft: 8 }}>
@@ -809,28 +1004,92 @@ const EmergencyHotlines = () => {
                                             </span>
                                         </h3>
 
-                                        {! isCollapsed && (
-                                            <div className="hotlines-grid">
-                                                {items
-                                                    .filter((item) =>
-                                                        item.title. toLowerCase().includes(searchTerm. toLowerCase())
-                                                    )
-                                                    .map((item, idx) => (
-                                                        <Card key={idx} title={item.title}>
-                                                            {item.sections.map((section, i) => {
-                                                                if (section.divider) return <Divider key={i} />;
-                                                                if (section.label) return <Label key={i} text={section.label} />;
-                                                                return <MainBtn key={i} text={section.text || ''} />;
-                                                            })}
-                                                        </Card>
-                                                    ))}
-                                            </div>
+                                        {!isCollapsed && (
+                                            items.filter((item: any) =>
+                                                matchesSearch(item, debouncedSearch, searchScope)
+                                            ).length === 0 ? (
+                                                <p style={{ color: '#6C757D', marginBottom: 24 }}>
+                                                    No results found in this district
+                                                </p>
+                                            ) : (
+                                                <div className="hotlines-grid">
+                                                    {items
+                                                        .filter((item: any) =>
+                                                            matchesSearch(item, debouncedSearch, searchScope)
+                                                        )
+                                                        .map((item: any, idx: number) => (
+                                                            <Card
+                                                                key={idx}
+                                                                title={item.title}
+                                                                searchTerm={debouncedSearch}
+                                                            >
+                                                                {item.sections.map((section: any, i: number) => {
+                                                                    if (section.divider) return <Divider key={i} />;
+                                                                    if (section.label) return <Label key={i} text={section.label} />;
+                                                                    // SMS support ONLY for Barangay & Evacuation
+                                                                    if (section.text?.toLowerCase().includes('text')) {
+                                                                        return (
+                                                                            <SmsBtn
+                                                                                key={i}
+                                                                                text={section.text}
+                                                                                searchTerm={debouncedSearch}
+                                                                            />
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <MainBtn
+                                                                            key={i}
+                                                                            text={section.text}
+                                                                            searchTerm={debouncedSearch}
+                                                                        />
+                                                                    );
+
+                                                                })}
+                                                            </Card>
+                                                        ))}
+                                                </div>
+                                            )
                                         )}
                                     </section>
                                 );
                             })}
                         </>
                     )}
+
+                    {/* for conifrming dialog */}
+                    {confirmDialog && (
+                        <div className="confirm-overlay">
+                            <div className="confirm-modal">
+                                <h3 className="confirm-title">
+                                    Confirm Emergency Call
+                                </h3>
+
+                                <p className="confirm-text">
+                                    You are about to call an <strong>emergency hotline</strong>:<br />
+                                    <strong>{confirmDialog.label}</strong>
+                                </p>
+
+                                <div className="confirm-actions">
+                                    <button
+                                        className="hotline-btn secondary"
+                                        onClick={() => setConfirmDialog(null)}
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <a
+                                        href={`tel:${confirmDialog.phone}`}
+                                        className="hotline-btn main"
+                                        onClick={() => setConfirmDialog(null)}
+                                    >
+                                        Call Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 </section>
             </main>
         </div>
@@ -844,19 +1103,15 @@ interface CardProps {
     children: React.ReactNode;
 }
 
-const Card: React.FC<CardProps> = ({ title, children }) => (
+const Card = ({ title, children, searchTerm }: any) => (
     <div className="hotline-card">
         <div className="hotline-header">
             <img src={icon} alt="" />
-            <h4>{title}</h4>
+            <h4>{highlightText(title, searchTerm)}</h4>
         </div>
         {children}
     </div>
 );
-
-interface LabelProps {
-    text: string;
-}
 
 const Label: React.FC<LabelProps> = ({ text }) => (
     <p className="hotline-label">{text}</p>
@@ -866,29 +1121,76 @@ const Divider: React.FC = () => (
     <div style={{ height: '1px', background: '#E9ECEF', margin: '10px 0' }} />
 );
 
-interface ButtonProps {
-    text: string;
-}
+const MainBtn = ({ text, searchTerm, onConfirm }: any) => {
+    const phone = extractPhoneNumber(text);
 
-const MainBtn: React.FC<ButtonProps> = ({ text }) => (
-    <button className="hotline-btn main">
-        <img src={icon} alt="" />
-        {text}
-    </button>
-);
+    const handleClick = () => {
+        if (!phone) return;
 
-const AlertBtn: React.FC<ButtonProps> = ({ text }) => (
-    <button className="hotline-btn alert">
-        <img src={icon} alt="" />
-        {text}
-    </button>
-);
+        if (isEmergencyNumber(phone) && onConfirm) {
+            onConfirm(phone, text);
+        } else {
+            window.location.href = `tel:${phone}`;
+        }
+    };
 
-const SecondaryBtn: React.FC<ButtonProps> = ({ text }) => (
-    <button className="hotline-btn secondary">
-        <img src={icon} alt="" />
-        {text}
-    </button>
-);
+    return (
+        <button className="hotline-btn main" onClick={handleClick}>
+            <img src={icon} alt="" />
+            {highlightText(text, searchTerm)}
+        </button>
+    );
+};
+
+const AlertBtn = ({ text, searchTerm, onConfirm }: any) => {
+    const phone = extractPhoneNumber(text);
+
+    const handleClick = () => {
+        if (!phone) return;
+
+        if (isEmergencyNumber(phone) && onConfirm) {
+            onConfirm(phone, text);
+        } else {
+            window.location.href = `tel:${phone}`;
+        }
+    };
+
+    return (
+        <button className="hotline-btn alert" onClick={handleClick}>
+            <img src={icon} alt="" />
+            {highlightText(text, searchTerm)}
+        </button>
+    );
+};
+
+// sub feature 2: button for sending sms
+const SmsBtn = ({ text, searchTerm }: any) => {
+    const phone = extractSmsNumber(text);
+
+    if (!phone) return null;
+
+    return (
+        <a
+            href={`sms:${phone}`}
+            className="hotline-btn secondary"
+        >
+            💬 {highlightText(text, searchTerm)}
+        </a>
+    );
+};
+
+const SecondaryBtn = ({ text, searchTerm }: any) => {
+    const phone = extractPhoneNumber(text);
+
+    return (
+        <a
+            href={phone ? `tel:${phone}` : undefined}
+            className="hotline-btn secondary"
+        >
+            <img src={icon} alt="" />
+            {highlightText(text, searchTerm)}
+        </a>
+    );
+};
 
 export default EmergencyHotlines;

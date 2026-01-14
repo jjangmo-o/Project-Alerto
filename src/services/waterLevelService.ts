@@ -1,5 +1,3 @@
-
-
 export interface WaterLevel {
   id: string;
   level: number;

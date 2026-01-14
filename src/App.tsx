@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import type { ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthProvider';
 import { useAuth } from './hooks/useAuth';
@@ -12,10 +12,10 @@ import EmergencyHotlines from './pages/EmergencyHotlines';
 import Notifications from './pages/Notifications';
 import Residence from './pages/Residence';
 import CommunityStatus from './pages/CommunityStatus';
-
 import './App.css';
 
-/* ================= LOADING ================= */
+import AdminRoute from './pages/admin/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -24,9 +24,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-/* ================= ROUTE GUARDS ================= */
-
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
@@ -35,7 +33,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-const PublicRoute = ({ children }: { children: JSX.Element }) => {
+const PublicRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
@@ -44,7 +42,6 @@ const PublicRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-/* ================= ROUTES ================= */
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -59,7 +56,17 @@ const AppRoutes = () => {
         element={<Navigate to={user ? '/dashboard' : '/login'} replace />}
       />
 
-      {/* Public */}
+      {/* for admin */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+
+      {/* for normal users */}
       <Route
         path="/login"
         element={
@@ -89,7 +96,7 @@ const AppRoutes = () => {
 
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* Protected */}
+      {/* protected */}
       <Route
         path="/dashboard"
         element={
@@ -135,13 +142,12 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Fallback */}
+      {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
-/* ================= APP ROOT ================= */
 
 function App() {
   return (
