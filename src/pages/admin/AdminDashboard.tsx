@@ -35,18 +35,32 @@ const highlightText = (text: string, searchTerm: string) => {
 };
 
 const AdminDashboard = () => {
+
+  // Evacuation centers state
   const [centers, setCenters] = useState<EvacuationCenter[]>([]);
+
+  // For search
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [notifyResidents, setNotifyResidents] = useState(true);
+
+  // For loading and error states
+  const [loadingCenters, setLoadingCenters] = useState(true);
+  const [centersError, setCentersError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCenters = async () => {
+      setLoadingCenters(true);
+      setCentersError(null);
+
       const { data, error } = await supabase
         .from('evacuation_centers')
         .select('center_id, name, capacity, current_occupancy');
 
       if (error) {
         console.error('Failed to fetch evacuation centers:', error);
+        setCentersError('Failed to load evacuation centers.');
+        setLoadingCenters(false);
         return;
       }
 
@@ -60,14 +74,23 @@ const AdminDashboard = () => {
           currentOccupancy: occupancy,
           status: occupancy >= c.capacity ? 'full' : 'available',
           dirty: false,
-        }
+        };
       });
 
       setCenters(mapped);
+      setLoadingCenters(false);
     };
 
     fetchCenters();
   }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300); // same delay as EmergencyHotlines
+
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   const toggleStatus = (id: string) => {
     setCenters(prev =>
@@ -121,11 +144,10 @@ const AdminDashboard = () => {
     );
   };
 
-  const normalizedSearch = search.trim().toLowerCase();
+const normalizedSearch = debouncedSearch.trim().toLowerCase();
 
   const filteredCenters = centers.filter(center => {
     if (!normalizedSearch) return true;
-
     return center.name.toLowerCase().includes(normalizedSearch);
   });
 
@@ -136,6 +158,23 @@ const AdminDashboard = () => {
   const availableCount = centers.filter(
     c => c.currentOccupancy < c.capacity
   ).length;
+
+  const renderHighlightedText = (text: string, query: string) => {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span key={index} className="search-highlight">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   return (
     <AdminLayout>
@@ -178,7 +217,7 @@ const AdminDashboard = () => {
         {/* evac center capacity card */}
         <section className="capacity-card">
           <div className="capacity-header">
-            <h2>Toggle Capacity Status of Evacuation Centers</h2>
+            <h2>Manage Evacuation Center Status</h2>
           </div>
 
           <div className="capacity-search">
@@ -188,17 +227,38 @@ const AdminDashboard = () => {
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
-            <button className="update-btn" onClick={handleUpdate}>
+            <button
+              className="update-btn"
+              onClick={handleUpdate}
+              disabled={loadingCenters || !!centersError}
+            >
               Update
             </button>
           </div>
 
           <div className="capacity-list">
-            {filteredCenters.map(center => (
+            {loadingCenters && (
+              <div className="capacity-message">
+                Loading evacuation centers…
+              </div>
+            )}
+            {!loadingCenters && centersError && (
+              <div className="capacity-message error">
+                {centersError}
+              </div>
+            )}
+
+            {!loadingCenters && !centersError && filteredCenters.length === 0 && (
+              <div className="capacity-message">
+                No evacuation centers found.
+              </div>
+            )}
+
+            {!loadingCenters && !centersError && filteredCenters.map(center => (
               <div key={center.id} className="capacity-row">
                 <span className="center-name">
-                    {highlightText(center.name, search)}
-                </span>
+                {renderHighlightedText(center.name, debouncedSearch)}
+              </span>
 
                 <button
                   className={`status-pill ${center.status}`}
@@ -209,11 +269,6 @@ const AdminDashboard = () => {
               </div>
             ))}
 
-            {filteredCenters.length === 0 && (
-              <div className="no-results">
-                No evacuation centers found matching "<strong>{search}</strong>".
-              </div>
-            )}
           </div>
 
           <div className="capacity-footer">
