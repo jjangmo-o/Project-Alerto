@@ -70,6 +70,7 @@ export type Database = {
         Row: {
           barangay_id: string | null
           created_at: string | null
+          moderation_status: string
           report_id: string
           report_text: string | null
           status_type: string
@@ -78,6 +79,7 @@ export type Database = {
         Insert: {
           barangay_id?: string | null
           created_at?: string | null
+          moderation_status?: string
           report_id?: string
           report_text?: string | null
           status_type: string
@@ -86,6 +88,7 @@ export type Database = {
         Update: {
           barangay_id?: string | null
           created_at?: string | null
+          moderation_status?: string
           report_id?: string
           report_text?: string | null
           status_type?: string

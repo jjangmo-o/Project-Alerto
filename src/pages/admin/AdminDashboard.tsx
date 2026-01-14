@@ -2,7 +2,6 @@ import { useState } from 'react';
 import AdminLayout from './AdminLayout';
 import './AdminDashboard.css';
 import { supabase } from '../../lib/supabase';
-import type { Database } from '../../lib/database.types';
 import { useEffect } from 'react';
 
 import notificationsIcon from '../../assets/icon-notification.svg';
@@ -18,6 +17,7 @@ interface EvacuationCenter {
   dirty: boolean;
 }
 
+/*
 const highlightText = (text: string, searchTerm: string) => {
   if (!searchTerm) return text;
 
@@ -32,7 +32,7 @@ const highlightText = (text: string, searchTerm: string) => {
       part
     )
   );
-};
+}; */
 
 const AdminDashboard = () => {
 

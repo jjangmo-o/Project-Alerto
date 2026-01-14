@@ -16,6 +16,7 @@ import './App.css';
 
 import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCommunityStatus from './pages/admin/AdminCommunityStatus'; // ✅ ADD THIS
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -42,7 +43,6 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
   return children;
 };
 
-
 const AppRoutes = () => {
   const { user, loading } = useAuth();
 
@@ -56,7 +56,7 @@ const AppRoutes = () => {
         element={<Navigate to={user ? '/dashboard' : '/login'} replace />}
       />
 
-      {/* for admin */}
+      {/* ADMIN ROUTES */}
       <Route
         path="/admin/dashboard"
         element={
@@ -66,7 +66,16 @@ const AppRoutes = () => {
         }
       />
 
-      {/* for normal users */}
+      <Route
+        path="/admin/community-status"
+        element={
+          <AdminRoute>
+            <AdminCommunityStatus />
+          </AdminRoute>
+        }
+      />
+
+      {/* PUBLIC */}
       <Route
         path="/login"
         element={
@@ -96,7 +105,7 @@ const AppRoutes = () => {
 
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* protected */}
+      {/* PROTECTED USER ROUTES */}
       <Route
         path="/dashboard"
         element={
@@ -142,12 +151,11 @@ const AppRoutes = () => {
         }
       />
 
-      {/* fallback */}
+      {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
-
 
 function App() {
   return (

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { useAuth } from '../hooks/useAuth';
 import './CommunityStatus.css';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -175,9 +174,19 @@ const CommunityStatus = () => {
   const userName = profile?.first_name || 'User';
 
   // states for posts and composer
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [postText, setPostText] = useState('');
-  const [posts, setPosts] = useState<any[]>([]);
+  interface DisasterReport {
+    report_id: string;
+    user_id: string;
+    barangay_id: string;
+    report_text: string;
+    status_type: string;
+    timestamp?: string;
+    // Add other fields as needed
+  }
+
+  const [posts, setPosts] = useState<DisasterReport[]>([]);
 
 
   // state for post composer modal
@@ -195,6 +204,7 @@ const CommunityStatus = () => {
     const { data, error } = await supabase
       .from('disaster_reports')
       .select('*')
+      .eq('moderation_status', 'ACTIVE')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -202,12 +212,46 @@ const CommunityStatus = () => {
       return;
     }
 
-    setPosts(data);
+    setPosts(
+      (data ?? []).map((item) => ({
+        report_id: item.report_id ?? '',
+        user_id: item.user_id ?? '',
+        barangay_id: item.barangay_id ?? '',
+        report_text: item.report_text ?? '',
+        status_type: item.status_type ?? '',
+        timestamp: item.created_at ?? '',
+        // Add other fields as needed
+      }))
+    );
   };
 
   useEffect(() => {
-    fetchPosts();
+    const fetchData = async () => {
+      await fetchPosts();
+    };
+    fetchData();
   }, []);
+
+  useEffect(() => {
+  const channel = supabase
+    .channel('realtime-community-posts')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'disaster_reports',
+      },
+      () => {
+        fetchPosts();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   useEffect(() => {
   if (previewImageIndex === null) return;

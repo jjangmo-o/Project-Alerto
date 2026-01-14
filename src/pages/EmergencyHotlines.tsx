@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { useAuth } from '../hooks/useAuth';
 import './EmergencyHotlines.css';
 import { useAuth } from '../hooks/useAuth';
 
@@ -715,7 +714,7 @@ const getSortedDistricts = (data:  DistrictHotlines): [string, HotlineItem[]][] 
 
 
 const matchesSearch = (
-    item: any,
+    item: HotlineItem,
     search: string,
     scope: 'all' | 'title' | 'numbers'
 ) => {
@@ -724,7 +723,7 @@ const matchesSearch = (
     const term = search.toLowerCase();
 
     const titleMatch = item.title?.toLowerCase().includes(term);
-    const numberMatch = item.sections?.some((section: any) =>
+    const numberMatch = item.sections?.some((section: HotlineSection) =>
         section.text?.toLowerCase().includes(term)
     );
 
@@ -802,7 +801,13 @@ const EmergencyHotlines = () => {
 
 
     const [searchScope, setSearchScope] = useState<'all' | 'title' | 'numbers'>(
-        () => (localStorage.getItem('hotlinesScope') as any) || 'all'
+        () => {
+            const stored = localStorage.getItem('hotlinesScope');
+            if (stored === 'all' || stored === 'title' || stored === 'numbers') {
+                return stored;
+            }
+            return 'all';
+        }
     );
 
     /* 
@@ -830,11 +835,50 @@ const EmergencyHotlines = () => {
         localStorage.setItem('hotlinesScope', searchScope);
     }, [searchScope]);
 
-    useEffect(() => {
-        if (!debouncedSearch) return;
+    function renderHotlineItems(marikina: HotlineItem[]): React.ReactNode {
+        return marikina
+            .filter((item: HotlineItem) =>
+                item.type !== 'sectionLabel' &&
+                item.title !== 'MARIKINA MOBILE HOTLINES' &&
+                matchesSearch(item, debouncedSearch, searchScope)
+            )
+            .map((item: HotlineItem, idx: number) => (
+                <Card key={idx} title={item.title} searchTerm={searchTerm}>
+                    {item.sections.map((section: HotlineSection, i: number) => {
+                        if (section.divider) return <Divider key={i} />;
+                        if (section.label) return <Label key={i} text={section.label} />;
+                        if (section.type === 'main')
+                            return (
+                                <MainBtn
+                                    key={i}
+                                    text={section.text ?? ''}
+                                    searchTerm={searchTerm}
+                                    onConfirm={(phone: string, label: string) =>
+                                        setConfirmDialog({ phone, label })
+                                    }
+                                />
+                            );
+                        if (section.type === 'alert')
+                            return (
+                                <AlertBtn
+                                    key={i}
+                                    text={section.text ?? ''}
+                                    searchTerm={searchTerm}
+                                />
+                            );
+                        return (
+                            <SecondaryBtn
+                                key={i}
+                                text={section.text}
+                                searchTerm={searchTerm}
+                            />
+                        );
+                    })}
+                </Card>
+            ));
+    }
 
-        setCollapsedDistricts({});
-    }, [debouncedSearch]);
+    // Removed effect that resets collapsedDistricts on debouncedSearch change
 
     return (
         <div className="hotlines-container">
@@ -869,7 +913,10 @@ const EmergencyHotlines = () => {
                             type="text"
                             placeholder="Search for hotlines..."
                             value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
+                            onChange={e => {
+                                setSearchTerm(e.target.value);
+                                setCollapsedDistricts({});
+                            }}
                         />
 
                         <div className="search-scope">
@@ -884,7 +931,7 @@ const EmergencyHotlines = () => {
                                         searchScope === option.key ? 'active' : ''
                                     }`}
                                     onClick={() =>
-                                        setSearchScope(option.key as any)
+                                        setSearchScope(option.key as 'all' | 'title' | 'numbers')
                                     }
                                 >
                                     {option.label}
@@ -897,7 +944,7 @@ const EmergencyHotlines = () => {
                     {activeTab !== 'barangay' && Array.isArray(HOTLINES[activeTab]) && (
                         <>
                             {HOTLINES[activeTab]
-                                .filter((item: any) =>
+                                .filter((item: HotlineItem) =>
                                     item.type !== 'sectionLabel' &&
                                     item.title !== 'MARIKINA MOBILE HOTLINES' &&
                                     matchesSearch(item, debouncedSearch, searchScope)
@@ -908,31 +955,31 @@ const EmergencyHotlines = () => {
                                 ) : (
                                     <div className="hotlines-grid animated-grid" key={activeTab}>
                                         {HOTLINES[activeTab]
-                                            .filter((item: any) =>
+                                            .filter((item: HotlineItem) =>
                                                 item.type !== 'sectionLabel' &&
                                                 item.title !== 'MARIKINA MOBILE HOTLINES' &&
                                                 matchesSearch(item, debouncedSearch, searchScope)
                                             )
-                                            .map((item: any, idx: number) => (
+                                            .map((item: HotlineItem, idx: number) => (
                                                 <Card
                                                     key={idx}
                                                     title={item.title}
                                                     searchTerm={searchTerm}
                                                 >
-                                                    {item.sections.map((section: any, i: number) => {
+                                                    {item.sections.map((section: HotlineSection, i: number) => {
                                                         if (section.divider) return <Divider key={i} />;
                                                         if (section.label) return <Label key={i} text={section.label} />;
                                                         if (section.type === 'main')
                                                             return <MainBtn
                                                                 key={i}
-                                                                text={section.text}
+                                                                text={section.text ?? ''}
                                                                 searchTerm={searchTerm}
                                                                 onConfirm={(phone: string, label: string) =>
                                                                     setConfirmDialog({ phone, label })
                                                                 }
                                                             />;
                                                         if (section.type === 'alert')
-                                                            return <AlertBtn key={i} text={section.text} searchTerm={searchTerm} />;
+                                                            return <AlertBtn key={i} text={section.text ?? ''} searchTerm={searchTerm} />;
                                                         return <SecondaryBtn key={i} text={section.text} searchTerm={searchTerm} />;
                                                     })}
                                                 </Card>
@@ -953,10 +1000,10 @@ const EmergencyHotlines = () => {
 
                         <div className="hotlines-grid">
                             {HOTLINES.marikina
-                                .filter((item: any) => item.title === 'MARIKINA MOBILE HOTLINES')
-                                .map((item: any, idx: number) => (
+                                .filter((item: HotlineItem) => item.title === 'MARIKINA MOBILE HOTLINES')
+                                .map((item: HotlineItem, idx: number) => (
                                 <Card key={idx} title={item.title} searchTerm={searchTerm}>
-                                    {item.sections.map((section: any, i: number) => {
+                                    {item.sections.map((section: HotlineSection, i: number) => {
                                         if (section.divider) return <Divider key={i} />;
                                         if (section.label) return <Label key={i} text={section.label} />;
 
@@ -980,7 +1027,7 @@ const EmergencyHotlines = () => {
                         {(activeTab === 'barangay'
                             ? sortedBarangayDistricts
                             : sortedEvacuationDistricts
-                        ).map(([districtKey, items]: any) => {
+                        ).map(([districtKey, items]: [string, HotlineItem[]]) => {
 
                             const isCollapsed = collapsedDistricts[districtKey];
                             return (
@@ -1005,7 +1052,7 @@ const EmergencyHotlines = () => {
                                         </h3>
 
                                         {!isCollapsed && (
-                                            items.filter((item: any) =>
+                                            items.filter((item: HotlineItem) =>
                                                 matchesSearch(item, debouncedSearch, searchScope)
                                             ).length === 0 ? (
                                                 <p style={{ color: '#6C757D', marginBottom: 24 }}>
@@ -1014,16 +1061,16 @@ const EmergencyHotlines = () => {
                                             ) : (
                                                 <div className="hotlines-grid">
                                                     {items
-                                                        .filter((item: any) =>
+                                                        .filter((item: HotlineItem) =>
                                                             matchesSearch(item, debouncedSearch, searchScope)
                                                         )
-                                                        .map((item: any, idx: number) => (
+                                                        .map((item: HotlineItem, idx: number) => (
                                                             <Card
                                                                 key={idx}
                                                                 title={item.title}
                                                                 searchTerm={debouncedSearch}
                                                             >
-                                                                {item.sections.map((section: any, i: number) => {
+                                                                {item.sections.map((section: HotlineSection, i: number) => {
                                                                     if (section.divider) return <Divider key={i} />;
                                                                     if (section.label) return <Label key={i} text={section.label} />;
                                                                     // SMS support ONLY for Barangay & Evacuation
@@ -1031,7 +1078,7 @@ const EmergencyHotlines = () => {
                                                                         return (
                                                                             <SmsBtn
                                                                                 key={i}
-                                                                                text={section.text}
+                                                                                text={section.text ?? ''}
                                                                                 searchTerm={debouncedSearch}
                                                                             />
                                                                         );
@@ -1040,7 +1087,7 @@ const EmergencyHotlines = () => {
                                                                     return (
                                                                         <MainBtn
                                                                             key={i}
-                                                                            text={section.text}
+                                                                            text={section.text ?? ''}
                                                                             searchTerm={debouncedSearch}
                                                                         />
                                                                     );
@@ -1103,7 +1150,13 @@ interface CardProps {
     children: React.ReactNode;
 }
 
-const Card = ({ title, children, searchTerm }: any) => (
+interface CardProps {
+    title: string;
+    children: React.ReactNode;
+    searchTerm: string;
+}
+
+const Card = ({ title, children, searchTerm }: CardProps) => (
     <div className="hotline-card">
         <div className="hotline-header">
             <img src={icon} alt="" />
@@ -1113,6 +1166,10 @@ const Card = ({ title, children, searchTerm }: any) => (
     </div>
 );
 
+interface LabelProps {
+    text: string;
+}
+
 const Label: React.FC<LabelProps> = ({ text }) => (
     <p className="hotline-label">{text}</p>
 );
@@ -1121,7 +1178,13 @@ const Divider: React.FC = () => (
     <div style={{ height: '1px', background: '#E9ECEF', margin: '10px 0' }} />
 );
 
-const MainBtn = ({ text, searchTerm, onConfirm }: any) => {
+interface MainBtnProps {
+    text: string;
+    searchTerm: string;
+    onConfirm?: (phone: string, label: string) => void;
+}
+
+const MainBtn = ({ text, searchTerm, onConfirm }: MainBtnProps) => {
     const phone = extractPhoneNumber(text);
 
     const handleClick = () => {
@@ -1142,7 +1205,13 @@ const MainBtn = ({ text, searchTerm, onConfirm }: any) => {
     );
 };
 
-const AlertBtn = ({ text, searchTerm, onConfirm }: any) => {
+interface AlertBtnProps {
+    text: string;
+    searchTerm: string;
+    onConfirm?: (phone: string, label: string) => void;
+}
+
+const AlertBtn = ({ text, searchTerm, onConfirm }: AlertBtnProps) => {
     const phone = extractPhoneNumber(text);
 
     const handleClick = () => {
@@ -1164,7 +1233,12 @@ const AlertBtn = ({ text, searchTerm, onConfirm }: any) => {
 };
 
 // sub feature 2: button for sending sms
-const SmsBtn = ({ text, searchTerm }: any) => {
+interface SmsBtnProps {
+    text: string;
+    searchTerm: string;
+}
+
+const SmsBtn = ({ text, searchTerm }: SmsBtnProps) => {
     const phone = extractSmsNumber(text);
 
     if (!phone) return null;
@@ -1179,8 +1253,13 @@ const SmsBtn = ({ text, searchTerm }: any) => {
     );
 };
 
-const SecondaryBtn = ({ text, searchTerm }: any) => {
-    const phone = extractPhoneNumber(text);
+interface SecondaryBtnProps {
+    text?: string;
+    searchTerm: string;
+}
+
+const SecondaryBtn = ({ text, searchTerm }: SecondaryBtnProps) => {
+    const phone = extractPhoneNumber(text ?? '');
 
     return (
         <a
@@ -1188,7 +1267,7 @@ const SecondaryBtn = ({ text, searchTerm }: any) => {
             className="hotline-btn secondary"
         >
             <img src={icon} alt="" />
-            {highlightText(text, searchTerm)}
+            {highlightText(text ?? '', searchTerm)}
         </a>
     );
 };
