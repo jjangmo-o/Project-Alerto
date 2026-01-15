@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
       >
         <img src={logoImg} alt="Project Alerto Logo" />
         <h2>Project Alerto</h2>
-        <p>Marikeños Readiness Hub</p>
+        <p>MarikeÃ±os Readiness Hub</p>
       </div>
 
 

@@ -142,7 +142,7 @@ const AdminCommunityStatus = () => {
                       updateStatus(post.report_id, 'ACTIVE')
                     }
                   >
-                    View
+                    Restore
                   </button>
                 )}
 

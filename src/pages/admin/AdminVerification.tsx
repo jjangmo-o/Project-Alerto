@@ -11,7 +11,6 @@ interface PendingResident {
   address: string;
   contact_number: string;
   verification_requested_at: string | null;
-  barangay_id: string | null;
 }
 
 interface Barangay {
@@ -40,8 +39,7 @@ const AdminVerification = () => {
         email,
         address,
         contact_number,
-        verification_requested_at,
-        barangay_id
+        verification_requested_at
       `)
       .eq('residence_verification_status', 'PENDING')
       .order('verification_requested_at', { ascending: true });
@@ -49,8 +47,11 @@ const AdminVerification = () => {
     if (error) {
       console.error('Fetch error:', error.message);
       setPendingResidents([]);
-    } else {
+    } else if (Array.isArray(data)) {
       setPendingResidents(data as PendingResident[]);
+    } else {
+      // Defensive: handle unexpected data shape
+      setPendingResidents([]);
     }
 
     setLoading(false);
@@ -150,11 +151,9 @@ const AdminVerification = () => {
   /* ================= FILTER LOGIC ================= */
 
   const filteredResidents = useMemo(() => {
-    if (barangayFilter === 'ALL') return pendingResidents;
-    return pendingResidents.filter(
-      r => r.barangay_id === barangayFilter
-    );
-  }, [pendingResidents, barangayFilter]);
+    // Filtering by barangay is not possible if barangay_id is not present
+    return pendingResidents;
+  }, [pendingResidents]);
 
   /* ================= UI ================= */
 
