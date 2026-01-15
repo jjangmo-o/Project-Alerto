@@ -135,3 +135,11 @@
 .avatar-circle:active {
   transform: translateY(0);
 }
+
+.avatar-loading {
+  background-color: #e5e7eb;
+}
+
+.avatar-loaded {
+  background-color: transparent;
+}

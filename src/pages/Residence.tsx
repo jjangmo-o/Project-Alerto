@@ -8,14 +8,19 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './Residence.css';
 
+const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
+const IMAGE_PLACEHOLDER = '/id-placeholder.png';
+
 const Residence = () => {
   const { profile } = useAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [showBack, setShowBack] = useState(false);
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const [formData, setFormData] = useState({
     address: '',
@@ -23,7 +28,7 @@ const Residence = () => {
     email: '',
   });
 
-  /* ================= REFS (PDF) ================= */
+  /* ================= REFS ================= */
 
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -32,45 +37,70 @@ const Residence = () => {
 
   useEffect(() => {
     if (!profile) return;
-    // Only update if values are different
-    setFormData(prev => {
-      const next = {
-        address: profile.address ?? '',
-        contact_number: profile.contact_number ?? '',
-        email: profile.email ?? '',
-      };
-      // Shallow compare
-      if (
-        prev.address === next.address &&
-        prev.contact_number === next.contact_number &&
-        prev.email === next.email
-      ) {
-        return prev;
-      }
-      return next;
-    });
+    const next = {
+      address: profile.address ?? '',
+      contact_number: profile.contact_number ?? '',
+      email: profile.email ?? '',
+    };
+    // Shallow compare
+    if (
+      formData.address !== next.address ||
+      formData.contact_number !== next.contact_number ||
+      formData.email !== next.email
+    ) {
+      setFormData(next);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
-  /* ================= PROFILE IMAGE ================= */
+  /* ================= PROFILE IMAGE (CACHED + PRELOADED) ================= */
 
   useEffect(() => {
-    if (!profile?.profile_image_url) {
-      if (imageUrl !== null) setImageUrl(null);
-      return;
+  if (!profile?.profile_image_url) {
+    setImageUrl(null);
+    return;
+  }
+
+  const cacheKey = `avatar:${profile.profile_image_url}`;
+  const cached = localStorage.getItem(cacheKey);
+
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached) as {
+        url: string;
+        expiresAt: number;
+      };
+
+      if (Date.now() < parsed.expiresAt) {
+        setImageUrl(parsed.url);
+        return; // 🚀 INSTANT — NO NETWORK
+      }
+    } catch {
+      localStorage.removeItem(cacheKey);
     }
-    supabase.storage
-      .from('profile-images')
-      .createSignedUrl(profile.profile_image_url, 3600)
-      .then(({ data, error }) => {
-        if (error) {
-          if (imageUrl !== null) setImageUrl(null);
-          console.error(error.message);
-        } else {
-          if (imageUrl !== data?.signedUrl) setImageUrl(data?.signedUrl ?? null);
-        }
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.profile_image_url]);
+  }
+
+  // Fallback ONLY if header never loaded yet
+  supabase.storage
+    .from('profile-images')
+    .createSignedUrl(profile.profile_image_url, SIGNED_URL_TTL_SECONDS)
+    .then(({ data }) => {
+      if (!data?.signedUrl) return;
+
+      const expiresAt =
+        Date.now() + SIGNED_URL_TTL_SECONDS * 1000;
+
+      setImageUrl(data.signedUrl);
+
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          url: data.signedUrl,
+          expiresAt,
+        })
+      );
+    });
+}, [profile?.profile_image_url]);
 
   /* ================= REALTIME UPDATES ================= */
 
@@ -104,14 +134,14 @@ const Residence = () => {
     };
   }, [profile?.user_id]);
 
-  /* ================= LOADING ================= */
+  /* ================= LOADING STATE ================= */
 
   if (!profile) {
     return (
       <div className="dashboard-container">
         <Sidebar isOpen={sidebarOpen} />
         <main className="main-content">
-          <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} username="" />
+          <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
           <div className="residence-wrapper">
             <div className="residence-card">Loading profile…</div>
           </div>
@@ -186,7 +216,7 @@ const Residence = () => {
     setSaving(false);
   };
 
-  /* ================= QR PAYLOAD ================= */
+  /* ================= QR ================= */
 
   const qrPayload = JSON.stringify({
     user_id: profile.user_id,
@@ -196,35 +226,29 @@ const Residence = () => {
     verified_at: profile.verified_at,
   });
 
-  /* ================= PDF DOWNLOAD (FINAL) ================= */
+  /* ================= PDF ================= */
 
   const handleDownloadPDF = async () => {
     if (!frontRef.current || !backRef.current) return;
 
     document.body.classList.add('printing');
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-    });
-
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 15;
     const contentWidth = pageWidth - margin * 2;
 
-    /* ---------- FRONT PAGE ---------- */
     const frontCanvas = await html2canvas(frontRef.current, {
       scale: 2,
       backgroundColor: '#ffffff',
     });
 
     const frontImg = frontCanvas.toDataURL('image/png');
-    const frontHeight = contentWidth * (frontCanvas.height / frontCanvas.width);
+    const frontHeight =
+      contentWidth * (frontCanvas.height / frontCanvas.width);
 
     pdf.addImage(frontImg, 'PNG', margin, margin, contentWidth, frontHeight);
 
-    /* ---------- BACK PAGE ---------- */
     pdf.addPage();
 
     const backCanvas = await html2canvas(backRef.current, {
@@ -233,7 +257,8 @@ const Residence = () => {
     });
 
     const backImg = backCanvas.toDataURL('image/png');
-    const backHeight = contentWidth * (backCanvas.height / backCanvas.width);
+    const backHeight =
+      contentWidth * (backCanvas.height / backCanvas.width);
 
     pdf.addImage(backImg, 'PNG', margin, margin, contentWidth, backHeight);
 
@@ -257,11 +282,10 @@ const Residence = () => {
         <div className="residence-wrapper">
           <div className={`residence-card-flip ${showBack ? 'flipped' : ''}`}>
 
-            {/* ================= FRONT ================= */}
+            {/* FRONT */}
             <div className="residence-card front" ref={frontRef}>
               <div className="card-header">
                 <h2>MARIKEÑO&apos;S RESIDENCE CARD</h2>
-
                 {isVerified && !editMode && (
                   <button className="edit-btn" onClick={() => setEditMode(true)}>
                     ✏️
@@ -278,7 +302,14 @@ const Residence = () => {
 
               <div className="card-body">
                 <div className="photo-box">
-                  <img src={imageUrl ?? '/id-placeholder.png'} alt="Resident" />
+                  <img
+                    src={imageUrl ?? IMAGE_PLACEHOLDER}
+                    alt="Resident"
+                    loading="eager"
+                    decoding="async"
+                    onLoad={() => setImageLoaded(true)}
+                    className={imageLoaded ? 'img-loaded' : 'img-loading'}
+                  />
                 </div>
 
                 <div className="info-box">
@@ -361,11 +392,17 @@ const Residence = () => {
                   </button>
                 ) : (
                   <>
-                    <button disabled={!isVerified} onClick={() => setShowBack(true)}>
+                    <button
+                      disabled={!isVerified}
+                      onClick={() => setShowBack(true)}
+                    >
                       View Back of Card
                     </button>
 
-                    <button disabled={!isVerified} onClick={handleDownloadPDF}>
+                    <button
+                      disabled={!isVerified}
+                      onClick={handleDownloadPDF}
+                    >
                       Download PDF
                     </button>
                   </>
@@ -373,15 +410,13 @@ const Residence = () => {
               </div>
             </div>
 
-            {/* ================= BACK ================= */}
+            {/* BACK */}
             <div className="residence-card back" ref={backRef}>
               <h3>Official QR Code</h3>
               <div className="qr-frame">
                 <QRCodeCanvas value={qrPayload} size={180} />
               </div>
-              <p className="qr-note">
-                Scan to verify residence authenticity
-              </p>
+              <p className="qr-note">Scan to verify residence authenticity</p>
 
               <div className="card-actions">
                 <button onClick={() => setShowBack(false)}>
