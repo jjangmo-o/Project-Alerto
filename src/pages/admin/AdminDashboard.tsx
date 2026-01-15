@@ -163,6 +163,8 @@ const AdminDashboard = () => {
       message,
       target_role: 'USER',
       created_by: user.id,
+      disaster_type: 'Evacuation', // or another appropriate value
+      severity: 'info', // or another appropriate value
     });
   };
 

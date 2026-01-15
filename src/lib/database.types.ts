@@ -183,13 +183,45 @@ export type Database = {
           },
         ]
       }
+      notification_barangays: {
+        Row: {
+          barangay_id: string
+          notification_id: string
+        }
+        Insert: {
+          barangay_id: string
+          notification_id: string
+        }
+        Update: {
+          barangay_id?: string
+          notification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_barangays_barangay_id_fkey"
+            columns: ["barangay_id"]
+            isOneToOne: false
+            referencedRelation: "barangays"
+            referencedColumns: ["barangay_id"]
+          },
+          {
+            foreignKeyName: "notification_barangays_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["notification_id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           barangay_id: string | null
           created_at: string | null
           created_by: string | null
+          disaster_type: string
           message: string
           notification_id: string
+          severity: string
           target_role: string
           title: string
         }
@@ -197,8 +229,10 @@ export type Database = {
           barangay_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          disaster_type: string
           message: string
           notification_id?: string
+          severity: string
           target_role?: string
           title: string
         }
@@ -206,8 +240,10 @@ export type Database = {
           barangay_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          disaster_type?: string
           message?: string
           notification_id?: string
+          severity?: string
           target_role?: string
           title?: string
         }
@@ -224,53 +260,82 @@ export type Database = {
       profiles: {
         Row: {
           address: string
+          barangay_id: string | null
           birth_date: string
           contact_number: string
           created_at: string | null
           email: string
           first_name: string
           gender: string
+          is_verified: boolean | null
           last_name: string
           middle_name: string | null
           profile_id: string
           profile_image_url: string | null
           profile_picture_path: string | null
+          residence_verification_status: string | null
           role: string
           user_id: string
+          verification_requested_at: string | null
+          verified_at: string | null
+          verified_by: string | null
+          verified_override: boolean | null
         }
         Insert: {
           address: string
+          barangay_id?: string | null
           birth_date: string
           contact_number: string
           created_at?: string | null
           email: string
           first_name: string
           gender: string
+          is_verified?: boolean | null
           last_name: string
           middle_name?: string | null
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null
+          residence_verification_status?: string | null
           role?: string
           user_id: string
+          verification_requested_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          verified_override?: boolean | null
         }
         Update: {
           address?: string
+          barangay_id?: string | null
           birth_date?: string
           contact_number?: string
           created_at?: string | null
           email?: string
           first_name?: string
           gender?: string
+          is_verified?: boolean | null
           last_name?: string
           middle_name?: string | null
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null
+          residence_verification_status?: string | null
           role?: string
           user_id?: string
+          verification_requested_at?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          verified_override?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_barangay_id_fkey"
+            columns: ["barangay_id"]
+            isOneToOne: false
+            referencedRelation: "barangays"
+            referencedColumns: ["barangay_id"]
+          },
+        ]
       }
       report_images: {
         Row: {

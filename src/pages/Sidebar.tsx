@@ -64,6 +64,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
           >
             Community Status
           </NavLink>
+
+           <NavLink
+            to="/admin/verification"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            Verification
+          </NavLink>
         </>
       ) : (
         <>
