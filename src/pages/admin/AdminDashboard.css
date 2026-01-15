@@ -250,8 +250,7 @@
 .capacity-search input:focus {
   outline: none;
   border-color: #7AA654;
-  box-shadow: 
-    0 0 0 2px rgba(122, 166, 84, 0.25);
+  box-shadow: 0 0 0 3px rgba(84, 89, 166, 0.25);
 }
 
 .update-btn {
@@ -376,4 +375,235 @@
 .update-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+
+/* update Alerts */
+
+.update-alerts-section {
+  background: #fff;
+  padding: 28px;
+  border-radius: 14px;
+}
+
+.update-alerts-title {
+  text-align: center;
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color:#003077;
+  border-bottom: 1px solid #CCCCB4;
+}
+
+.update-alerts-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+
+.alert-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #003077;
+  margin-bottom: 10px;
+}
+
+.alert-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.severity-btn,
+.type-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid #d0d7e2;
+  background: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #1c3e6f;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.severity-btn:hover,
+.type-btn:hover {
+  background: #f1f5fb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(28, 62, 111, 0.12);
+}
+
+
+.severity-btn.active.normal {
+  background: #7aa654;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(122, 166, 84, 0.35);
+}
+
+.severity-btn.active.alert {
+  background: #f6c23e;
+  color: #1c3e6f;
+  box-shadow: 0 0 0 3px rgba(246, 194, 62, 0.35);
+}
+
+.severity-btn.active.urgent {
+  background: #f39c12;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.35);
+}
+
+.severity-btn.active.critical {
+  background: #e74c3c;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.35);
+}
+
+.type-btn.active {
+  background: #ee7d30;
+  color: #ffffff;
+  border-color: #ee7d30;
+  box-shadow: 0 0 0 3px rgba(238, 125, 48, 0.35);
+}
+
+.alert-textarea {
+  width: 100%;
+  min-height: 140px;
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #cfd8e3;
+  font-size: 0.9rem;
+  resize: vertical;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.alert-textarea:hover {
+  border-color: #7aa654;
+}
+
+.alert-textarea:focus {
+  outline: none;
+  border-color: #7aa654;
+  box-shadow: 0 0 0 3px rgba(84, 89, 166, 0.25);
+}
+
+.alert-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.alert-checkbox input[type="checkbox"] {
+  accent-color: #123b66;
+}
+
+.send-alert-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.send-alert-btn {
+  padding: 10px 36px;
+  border-radius: 10px;
+  border: none;
+  background: #f57c00;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Success feedback for alert sending */
+.alert-success {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #7aa654;
+  background: rgba(122, 166, 84, 0.12);
+  padding: 8px 14px;
+  border-radius: 8px;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* barangay selector */
+
+.barangay-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.barangay-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.barangay-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f1f5fb;
+  border: 1px solid #d0d7e2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1c3e6f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.barangay-option:hover {
+  background: #e7effa;
+}
+
+.barangay-option input[type="checkbox"] {
+  accent-color: #ee7d30;
+}
+
+/* Select / Clear controls */
+.barangay-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.barangay-control-btn {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ced4da;
+  background: #ffffff;
+  color: #1c3e6f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.barangay-control-btn:hover {
+  background: #f1f5fb;
 }

@@ -21,7 +21,6 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  /* gap: 10px; // not sure if to keep this */
 }
 
 /* CONTROLS */
@@ -30,9 +29,7 @@
   display: flex;
   gap: 16px;
   width: 100%;
-  max-width: 1400px;
   margin-bottom: 28px;
-  flex-wrap: nowrap;
 }
 
 .notifications-tabs {
@@ -42,26 +39,25 @@
   overflow: hidden;
   width: 100%;
   max-width: 1000px;
-  height: 52px;
+  height: 46px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .tab-btn {
   flex: 1;
   min-width: 220px;
-  height: 52px;
-  text-align: center;
-  padding: 0;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: transparent;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #1c3e6f;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .tab-btn.active {
@@ -96,16 +92,13 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
   background: #f3efec;
   border: none;
   border-radius: 8px;
-
   padding: 8px 34px 8px 14px;
   font-weight: 800;
   font-size: 0.75rem;
   color: #003077;
-
   cursor: pointer;
 }
 
@@ -127,26 +120,20 @@
   color: #003077;
 }
 
-
 /* REFRESH BUTTON */
 .refresh-btn {
   background-color: #003077;
   color: #ffffff;
-
   border: none;
   border-radius: 8px;
-
   padding: 10px 18px;
   font-weight: 800;
   font-size: 0.85rem;
-
   display: flex;
   align-items: center;
   gap: 8px;
-
   cursor: pointer;
   white-space: nowrap;
-
   box-shadow: 0 4px 10px rgba(0, 48, 119, 0.25);
   transition: all 0.2s ease;
 }
@@ -192,54 +179,92 @@
 }
 
 .notifications-section-title h2 {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: #1c3e6f;
+  color: #102a4d;
+  letter-spacing: -0.3px;
 }
 
 /* LIST */
 .notifications-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
-  max-width: 1400px;
   min-height: 420px;
 }
 
 /* CARD */
 .notification-card {
   background: #fff;
-  border-radius: 10px;
-  padding: 20px 22px;
+  border-radius: 12px;
+  padding: 18px 22px;
   width: 100%;
-  max-width: 1400px;
   box-sizing: border-box;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   position: relative;
-  border-left: 5px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  overflow: hidden;
 }
 
-.notification-card.severity-critical {
-  border-left-color: #e53935;
+.notification-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  border-radius: 12px 0 0 12px;
 }
 
-.notification-card.severity-urgent {
-  border-left-color: #fb8c00;
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
 }
 
-.notification-card.severity-normal {
-  border-left-color: #fbc02d;
+.notification-card.severity-critical::before {
+  background: linear-gradient(to bottom,#ff6b6b,#e53935,#b71c1c);
+}
+
+.notification-card.severity-urgent::before {
+  background: linear-gradient(to bottom,#ffb74d,#fb8c00,#ef6c00);
+}
+
+.notification-card.severity-normal::before {
+  background: linear-gradient(to bottom,#fff176,#fbc02d,#f9a825);
 }
 
 .no-notifications {
   min-height: 300px;
   display: flex;
-  align-items: flex-start;
-  padding-top: 32px;
-
+  justify-content: center;
+  padding-top: 48px;
   font-size: 0.95rem;
-  color: #555;
+  color: #666;
+}
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  color: #1c3e6f;
+  margin-top: 2px;
+}
+
+.notification-card .notification-icon {
+  color: #1c3e6f;
+}
+
+.notification-card.severity-critical .notification-icon {
+  color: #e53935;
+}
+
+.notification-card.severity-urgent .notification-icon {
+  color: #fb8c00;
+}
+
+.notification-card.severity-normal .notification-icon {
+  color: #f9a825;
 }
 
 /* CLOSE */
@@ -272,22 +297,21 @@
 .notification-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .notification-title {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #1c3e6f;
   flex: 1;
 }
 
 .notification-time {
-  font-size: 0.75rem;
-  color: #6c757d;
+  font-size: 0.72rem;
+  color: #7a8593;
   margin-right: 28px;
-  white-space: nowrap;
 }
 
 /* BODY */
@@ -308,9 +332,9 @@
 .severity-badge {
   font-size: 0.65rem;
   font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.6px;
 }
 
 .severity-badge.severity-critical {
@@ -348,6 +372,7 @@
   font-weight: 700;
   color: #003077;
   cursor: pointer;
+  text-decoration: underline;
 }
 
 /* OVERLAY */
@@ -379,6 +404,35 @@
   font-size: 1rem;
   line-height: 1.7;
 }
+
+/* Barangay Badges */
+
+.notification-barangays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.barangay-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(28, 62, 111, 0.1);
+  color: #1c3e6f;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+/* Targeted alert hint */
+.notification-targeted {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ee7d30;
+  margin-top: 6px;
+}
+
 
 /* ANIMATIONS */
 @keyframes fadeIn {

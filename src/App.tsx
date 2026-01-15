@@ -16,6 +16,10 @@ import './App.css';
 
 import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCommunityStatus from './pages/admin/AdminCommunityStatus';
+import AdminVerification from './pages/admin/AdminVerification'; // ✅ ADDED
+
+/* ================= LOADING ================= */
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -23,6 +27,8 @@ const LoadingScreen = () => (
     <p>Loading...</p>
   </div>
 );
+
+/* ================= ROUTE GUARDS ================= */
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
@@ -42,6 +48,7 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
   return children;
 };
 
+/* ================= ROUTES ================= */
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -50,13 +57,14 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Root */}
+      {/* ROOT */}
       <Route
         path="/"
         element={<Navigate to={user ? '/dashboard' : '/login'} replace />}
       />
 
-      {/* for admin */}
+      {/* ================= ADMIN ROUTES ================= */}
+
       <Route
         path="/admin/dashboard"
         element={
@@ -66,7 +74,26 @@ const AppRoutes = () => {
         }
       />
 
-      {/* for normal users */}
+      <Route
+        path="/admin/community-status"
+        element={
+          <AdminRoute>
+            <AdminCommunityStatus />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/verification" // ✅ NEW ADMIN VERIFICATION DASHBOARD
+        element={
+          <AdminRoute>
+            <AdminVerification />
+          </AdminRoute>
+        }
+      />
+
+      {/* ================= PUBLIC ROUTES ================= */}
+
       <Route
         path="/login"
         element={
@@ -96,7 +123,8 @@ const AppRoutes = () => {
 
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* protected */}
+      {/* ================= USER ROUTES ================= */}
+
       <Route
         path="/dashboard"
         element={
@@ -142,12 +170,13 @@ const AppRoutes = () => {
         }
       />
 
-      {/* fallback */}
+      {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
+/* ================= APP ROOT ================= */
 
 function App() {
   return (

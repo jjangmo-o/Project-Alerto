@@ -1,62 +1,84 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../hooks/useAuth';
-import { notificationService, type Notification, type NotificationType, type SeverityLevel } from '../services/notificationService';
+import { supabase } from '../lib/supabase';
 import closeIcon from '../assets/icon-close-button.svg';
 import './Notifications.css';
 
+import {
+  BellIcon,
+  CloudRainWindIcon,
+  ActivityIcon,
+  FireAlertIcon
+} from './NotificationsIcons';
 
 type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire';
 type SortOption = 'newest' | 'oldest';
+
+const BARANGAY_MAP: Record<string, string> = {
+  '3fee7818-0f5f-424e-ad29-4c4a7a217a0c': 'Barangka',
+  'c8b28f65-8466-4b52-8a98-2f95bc4f45ab': 'Calumpang',
+  '11af9721-639d-4237-ac99-f226ff413329': 'Concepcion I',
+  '440c0ddf-c31d-4031-95a2-813b5159f144': 'Concepcion II',
+  '7d948164-954c-43b8-9463-22a7a494b40b': 'Fortune',
+  '736a9cdd-e8ec-4f49-a413-db138c5d06a7': 'Industrial Valley',
+  '26ea0dd6-f2dd-4914-8f6c-196587c9413a': 'Jesus Dela Peña',
+  '4119162b-f6f6-414b-8db1-c9c4462e6380': 'Malanday',
+  '7b32821a-285f-4c78-ac57-fd0812ca36ed': 'Marikina Heights',
+  'f668a15e-ffea-4a93-abf3-e63c8edb5ea1': 'Nangka',
+  '299a25fe-197a-43fb-ade2-0c3cc76d91cb': 'Parang',
+  '19f6fc41-38b8-4a1b-83e7-a2ceb14bdb06': 'San Roque',
+  'f1a0f639-eae6-475c-ba71-7c6a8da52de7': 'Santa Elena',
+  'ed6073e5-688f-445e-93a2-e5b913840b30': 'Santo Niño',
+  '7584c655-3867-4529-b381-518cfd61f6c0': 'Tañong',
+  'f459284f-9a62-4adb-b5a2-807f833dafac': 'Tumana',
+}
 
 const Notifications = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [focusedNotification, setFocusedNotification] = useState<Notification | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [focusedNotification, setFocusedNotification] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { profile } = useAuth();
-
+  
   const userName = profile?.first_name || 'User';
 
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const data = await notificationService.getAll();
-        setNotifications(data);
-      } catch (err) {
-        console.error('Failed to fetch notifications:', err);
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('target_role', 'USER')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error(error);
         setError('Failed to load notifications. Please try again.');
-      } finally {
-        setLoading(false);
+      } else {
+        setNotifications(data || []);
       }
+
+      setLoading(false);
     };
 
     fetchNotifications();
-  }, []);
-
-  useEffect(() => {
-    const subscription = notificationService.subscribeToRealtime((newNotification) => {
-      setNotifications(prev => [newNotification, ...prev]);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const filteredNotifications = activeTab === 'all'
+  const filteredNotifications =
+    activeTab === 'all'
     ? notifications
-    : notifications.filter(n => n.type === activeTab);
+    : notifications.filter(n => n.disaster_type === activeTab);
 
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
@@ -64,7 +86,7 @@ const Notifications = () => {
     return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
   });
 
-  const getSeverityClass = (severity: SeverityLevel) => {
+  const getSeverityClass = (severity: string) => {
     switch (severity) {
       case 'critical': return 'severity-critical';
       case 'urgent': return 'severity-urgent';
@@ -73,41 +95,46 @@ const Notifications = () => {
     }
   };
 
-    const getSeverityLabel = (severity: SeverityLevel) => {
+  const getSeverityLabel = (severity: string) => {
     switch (severity) {
         case 'critical': return 'CRITICAL';
         case 'urgent': return 'URGENT';
         case 'normal': return 'ALERT';
         default: return '';
     }
-    };
-
-
-  const getTypeIcon = (type: NotificationType) => {
+  };
+  
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'typhoon': return '🌀';
-      case 'earthquake': return '🌍';
-      case 'fire': return '🔥';
-      default: return '⚠️';
+      case 'typhoon':
+        return <CloudRainWindIcon />;
+      case 'earthquake':
+        return <ActivityIcon />;
+      case 'fire':
+        return <FireAlertIcon />;
+      default:
+        return <BellIcon />;
     }
   };
 
   const getTabIcon = (tab: FilterType) => {
-  switch (tab) {
-    case 'typhoon': return '🌀';
-    case 'earthquake': return '🌍';
-    case 'fire': return '🔥';
-    case 'all':
-    default:
-      return '🔔';
-  }
-};
-
+    switch (tab) {
+      case 'typhoon':
+        return <CloudRainWindIcon size={20} />;
+      case 'earthquake':
+        return <ActivityIcon size={20} />;
+      case 'fire':
+        return <FireAlertIcon size={20} />;
+      case 'all':
+      default:
+        return <BellIcon size={20} />;
+    }
+  };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const date = new Date(dateString).getTime();
+    const now = Date.now();
+    const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -117,7 +144,7 @@ const Notifications = () => {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     
-    return date.toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('en-PH', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -138,23 +165,23 @@ const Notifications = () => {
     }
   }, [focusedNotification]);
 
-
-  const handleDismiss = useCallback(async (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    await notificationService.dismiss(id);
-  }, []);
-
   const handleRefresh = async () => {
     setLoading(true);
-    try {
-      const data = await notificationService.getAll();
-      setNotifications(data);
-      setError(null);
-    } catch {
+    setError(null);
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('target_role', 'USER')
+      .order('created_at', { ascending: false });
+
+    if (error) {
       setError('Failed to refresh notifications.');
-    } finally {
-      setLoading(false);
+    } else {
+      setNotifications(data || []);
     }
+
+    setLoading(false);
   };
 
   const tabTitles: Record<FilterType, string> = {
@@ -264,7 +291,7 @@ const Notifications = () => {
             ) : (
               sortedNotifications.map(notification => (
                 <div
-                  key={notification.id}
+                  key={notification.notification_id}
                   className={`notification-card ${getSeverityClass(notification.severity)} ${!notification.is_read ? 'unread' : ''}`}
                   onClick={() => setFocusedNotification(notification)}
                   role="button"
@@ -274,7 +301,9 @@ const Notifications = () => {
                     className="notification-close"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDismiss(notification.id);
+                      setNotifications(prev =>
+                        prev.filter(n => n.notification_id !== notification.notification_id)
+                      );
                     }}
                     aria-label="Dismiss notification"
                   >
@@ -282,7 +311,7 @@ const Notifications = () => {
                   </button>
 
                   <div className="notification-header">
-                    <span className="notification-icon">{getTypeIcon(notification.type)}</span>
+                    <span className="notification-icon">{getTypeIcon(notification.disaster_type)}</span>
                     <span className="notification-title">{notification.title}</span>
                     <span className="notification-time">{formatTime(notification.created_at)}</span>
                   </div>
@@ -296,6 +325,16 @@ const Notifications = () => {
                     </p>
                   </div>
 
+                  {Array.isArray(notification.barangay_ids) &&
+                    notification.barangay_ids.length > 0 && (
+                      <div className="notification-barangays">
+                        {notification.barangay_ids.map((id: string) => (
+                          <span key={id} className="barangay-badge">
+                            {BARANGAY_MAP[id] || 'Unknown Barangay'}
+                          </span>
+                        ))}
+                      </div>
+                  )}
 
                   <div className="notification-footer">
                     <span className={`severity-badge ${getSeverityClass(notification.severity)}`}>
@@ -325,7 +364,7 @@ const Notifications = () => {
 
                 <div className="notification-header">
                   <span className="notification-icon">
-                    {getTypeIcon(focusedNotification.type)}
+                    {getTypeIcon(focusedNotification.disaster_type)}
                   </span>
                   <span className="notification-title">
                     {focusedNotification.title}
@@ -338,6 +377,17 @@ const Notifications = () => {
                 <div className="notification-body expanded">
                   <p>{focusedNotification.message}</p>
                 </div>
+
+                {Array.isArray(focusedNotification.barangay_ids) &&
+                  focusedNotification.barangay_ids.length > 0 && (
+                    <div className="notification-barangays">
+                      {focusedNotification.barangay_ids.map((id: string) => (
+                        <span key={id} className="barangay-badge">
+                          {BARANGAY_MAP[id] || 'Unknown Barangay'}
+                        </span>
+                      ))}
+                    </div>
+                )}
 
                 <div className="notification-footer">
                   <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)}`}>

@@ -182,31 +182,37 @@ export type Database = {
       }
       notifications: {
         Row: {
-          barangay_id: string | null
-          created_at: string | null
-          created_by: string | null
-          message: string
           notification_id: string
-          target_role: string
           title: string
+          message: string
+          barangay_id: string | null
+          target_role: string
+          disaster_type: 'typhoon' | 'earthquake' | 'fire'
+          severity: 'normal' | 'alert' | 'urgent' | 'critical'
+          created_at: string
+          created_by: string | null
         }
         Insert: {
-          barangay_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          message: string
           notification_id?: string
-          target_role?: string
           title: string
+          message: string
+          barangay_id?: string | null
+          target_role: string
+          disaster_type: 'typhoon' | 'earthquake' | 'fire'
+          severity: 'normal' | 'alert' | 'urgent' | 'critical'
+          created_at?: string
+          created_by?: string | null
         }
         Update: {
-          barangay_id?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          message?: string
           notification_id?: string
-          target_role?: string
           title?: string
+          message?: string
+          barangay_id?: string | null
+          target_role?: string
+          disaster_type?: 'typhoon' | 'earthquake' | 'fire'
+          severity?: 'normal' | 'alert' | 'urgent' | 'critical'
+          created_at?: string
+          created_by?: string | null
         }
         Relationships: [
           {

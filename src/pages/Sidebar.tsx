@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
       >
         <img src={logoImg} alt="Project Alerto Logo" />
         <h2>Project Alerto</h2>
-        <p>Marikeños Readiness Hub</p>
+        <p>MarikeÃ±os Readiness Hub</p>
       </div>
 
 
@@ -63,6 +63,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             Community Status
+          </NavLink>
+
+           <NavLink
+            to="/admin/verification"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            Verification
           </NavLink>
         </>
       ) : (
