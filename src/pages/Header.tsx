@@ -13,15 +13,11 @@ interface HeaderProps {
   role?: 'user' | 'admin';
 }
 
-/**
- * Fallback avatar (instant, cached by browser)
- */
 const FALLBACK_IMAGE =
   'https://ui-avatars.com/api/?size=128&background=E5E7EB&color=374151&name=User';
 
-/**
- * Page titles
- */
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
+
 const routeTitles: Record<string, string> = {
   '/dashboard': 'Home',
   '/hotlines': 'Emergency Hotlines',
@@ -31,7 +27,30 @@ const routeTitles: Record<string, string> = {
   '/community-status': 'Community Status',
 };
 
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
+/**
+ * 🔥 Synchronously read cached avatar BEFORE render
+ */
+const getCachedAvatar = (path?: string) => {
+  if (!path) return FALLBACK_IMAGE;
+
+  try {
+    const cached = localStorage.getItem(`avatar:${path}`);
+    if (!cached) return FALLBACK_IMAGE;
+
+    const parsed = JSON.parse(cached) as {
+      url: string;
+      expiresAt: number;
+    };
+
+    if (Date.now() < parsed.expiresAt) {
+      return parsed.url; // 🚀 INSTANT
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return FALLBACK_IMAGE;
+};
 
 const Header: React.FC<HeaderProps> = ({
   onMenuClick,
@@ -42,72 +61,48 @@ const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const { profile } = useAuth();
 
-  /**
-   * Avatar state
-   */
-  const [avatarUrl, setAvatarUrl] = useState<string>(
-    profile?.profile_image_url ? '' : FALLBACK_IMAGE
-  );
-  const [isAvatarLoaded, setIsAvatarLoaded] = useState<boolean>(false);
 
-  /**
-   * Title memoized (minor perf boost)
-   */
+  const [avatarUrl, setAvatarUrl] = useState(() =>
+    getCachedAvatar(profile?.profile_image_url ?? undefined)
+  );
+
   const title = useMemo(() => {
     return role === 'admin'
       ? 'Admin Dashboard'
       : routeTitles[location.pathname] || 'Project Alerto';
   }, [location.pathname, role]);
 
-  /**
-   * Load + cache signed avatar URL
-   */
-  useEffect(() => {
-    if (!profile?.profile_image_url) {
-      // No need to set state here; initial state handles fallback
-      return;
-    }
 
-    const storagePath = profile.profile_image_url;
-    const cacheKey = `avatar-cache:${storagePath}`;
+  useEffect(() => {
+    if (!profile?.profile_image_url) return;
+
+    const cacheKey = `avatar:${profile.profile_image_url}`;
 
     try {
       const cached = localStorage.getItem(cacheKey);
-
       if (cached) {
-        const parsed = JSON.parse(cached) as {
-          url: string;
-          expiresAt: number;
-        };
-
-        // ✅ Use cached URL if still valid
+        const parsed = JSON.parse(cached);
         if (Date.now() < parsed.expiresAt) {
-          setTimeout(() => setAvatarUrl(parsed.url), 0);
-          return;
+          return; 
         }
       }
     } catch {
-      // ignore corrupted cache
       localStorage.removeItem(cacheKey);
     }
 
-    // ❌ No valid cache → generate new signed URL
+
     supabase.storage
       .from('profile-images')
-      .createSignedUrl(storagePath, SIGNED_URL_TTL_SECONDS)
-      .then(({ data, error }) => {
-        if (error || !data?.signedUrl) {
-          console.error('Failed to create signed avatar URL:', error);
-          return;
-        }
+      .createSignedUrl(
+        profile.profile_image_url,
+        SIGNED_URL_TTL_SECONDS
+      )
+      .then(({ data }) => {
+        if (!data?.signedUrl) return;
 
         const expiresAt =
           Date.now() + SIGNED_URL_TTL_SECONDS * 1000;
 
-        // ✅ Save to state
-        setAvatarUrl(data.signedUrl);
-
-        // ✅ Save to cache
         localStorage.setItem(
           cacheKey,
           JSON.stringify({
@@ -116,7 +111,9 @@ const Header: React.FC<HeaderProps> = ({
           })
         );
 
-        // ✅ Preload image (instant render)
+        setAvatarUrl(data.signedUrl);
+
+  
         const img = new Image();
         img.src = data.signedUrl;
       });
@@ -151,12 +148,10 @@ const Header: React.FC<HeaderProps> = ({
         <img
           src={avatarUrl}
           alt="User Avatar"
-          className={`avatar-circle ${
-            isAvatarLoaded ? 'avatar-loaded' : 'avatar-loading'
-          }`}
+          className="avatar-circle"
           loading="eager"
-          decoding="async"
-          onLoad={() => setIsAvatarLoaded(true)}
+          decoding="sync"
+          fetchPriority="high"
           onClick={() => navigate('/residence')}
         />
 
