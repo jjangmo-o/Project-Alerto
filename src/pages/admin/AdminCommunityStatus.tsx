@@ -77,7 +77,6 @@ const AdminCommunityStatus = () => {
       return;
     }
 
-    // 🔑 IMPORTANT: refresh + switch tab
     await fetchPosts();
     setActiveFilter(newStatus);
   };

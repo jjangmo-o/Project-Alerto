@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import './AdminDashboard.css';
 import { supabase } from '../../lib/supabase';
-import { useEffect } from 'react';
 
 import notificationsIcon from '../../assets/icon-notification.svg';
 
@@ -17,37 +16,21 @@ interface EvacuationCenter {
   dirty: boolean;
 }
 
-/*
-const highlightText = (text: string, searchTerm: string) => {
-  if (!searchTerm) return text;
-
-  const regex = new RegExp(`(${searchTerm})`, 'gi');
-
-  return text.split(regex).map((part, index) =>
-    part.toLowerCase() === searchTerm.toLowerCase() ? (
-      <mark key={index} className="search-highlight">
-        {part}
-      </mark>
-    ) : (
-      part
-    )
-  );
-}; */
-
 const AdminDashboard = () => {
-
-  // Evacuation centers state
+  // ============================
+  // STATE
+  // ============================
   const [centers, setCenters] = useState<EvacuationCenter[]>([]);
-
-  // For search
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [notifyResidents, setNotifyResidents] = useState(true);
 
-  // For loading and error states
   const [loadingCenters, setLoadingCenters] = useState(true);
   const [centersError, setCentersError] = useState<string | null>(null);
 
+  // ============================
+  // FETCH CENTERS
+  // ============================
   useEffect(() => {
     const fetchCenters = async () => {
       setLoadingCenters(true);
@@ -57,7 +40,7 @@ const AdminDashboard = () => {
         .from('evacuation_centers')
         .select('center_id, name, capacity, current_occupancy');
 
-      if (error) {
+      if (error || !data) {
         console.error('Failed to fetch evacuation centers:', error);
         setCentersError('Failed to load evacuation centers.');
         setLoadingCenters(false);
@@ -84,14 +67,20 @@ const AdminDashboard = () => {
     fetchCenters();
   }, []);
 
+  // ============================
+  // SEARCH DEBOUNCE
+  // ============================
   useEffect(() => {
     const timeout = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 300); // same delay as EmergencyHotlines
+    }, 300);
 
     return () => clearTimeout(timeout);
   }, [search]);
 
+  // ============================
+  // TOGGLE STATUS (UI ONLY)
+  // ============================
   const toggleStatus = (id: string) => {
     setCenters(prev =>
       prev.map(c => {
@@ -112,44 +101,125 @@ const AdminDashboard = () => {
     );
   };
 
+  // ============================
+  // REALTIME (ADMIN VIEW SYNC)
+  // ============================
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-evacuation-centers-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'evacuation_centers',
+        },
+        payload => {
+          if (!payload.new) return;
+
+          const updated = payload.new as {
+            center_id: string;
+            current_occupancy: number;
+          };
+
+          setCenters(prev =>
+            prev.map(center => {
+              if (center.id !== updated.center_id) return center;
+
+              const occupancy = updated.current_occupancy ?? 0;
+
+              return {
+                ...center,
+                currentOccupancy: occupancy,
+                status:
+                  occupancy >= center.capacity
+                    ? 'full'
+                    : 'available',
+                dirty: false,
+              };
+            })
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // ============================
+  // CREATE NOTIFICATION (KEY PART)
+  // ============================
+  const createNotification = async (message: string) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    await supabase.from('notifications').insert({
+      title: 'Evacuation Center Update',
+      message,
+      target_role: 'USER',
+      created_by: user.id,
+    });
+  };
+
+  // ============================
+  // UPDATE HANDLER (WITH NOTIF)
+  // ============================
   const handleUpdate = async () => {
     const changedCenters = centers.filter(c => c.dirty);
-
     if (changedCenters.length === 0) return;
 
+    // 1. Update evacuation centers
     const updates = changedCenters.map(c =>
       supabase
         .from('evacuation_centers')
         .update({
           current_occupancy: c.currentOccupancy,
-          updated_at: new Date().toISOString(),
         })
         .eq('center_id', c.id)
     );
 
     const results = await Promise.all(updates);
-
-    const hasError = results.some(r => r.error);
-    if (hasError) {
-      console.error('Failed to update one or more centers', results);
+    if (results.some(r => r.error)) {
+      console.error('Failed to update centers', results);
       return;
     }
 
-    console.log('Centers updated successfully');
-    console.log('Notify residents:', notifyResidents);
+    // 2. Create notification if checkbox checked
+    if (notifyResidents) {
+      const fullCenters = changedCenters.filter(
+        c => c.currentOccupancy >= c.capacity
+      );
 
-    // Reset dirty flags
+      if (fullCenters.length > 0) {
+        const message = fullCenters
+          .map(c => `${c.name} is now FULL`)
+          .join(', ');
+
+        await createNotification(message);
+      }
+    }
+
+    // 3. Reset dirty flags
     setCenters(prev =>
       prev.map(c => ({ ...c, dirty: false }))
     );
   };
 
-const normalizedSearch = debouncedSearch.trim().toLowerCase();
+  // ============================
+  // DERIVED DATA
+  // ============================
+  const normalizedSearch = debouncedSearch.trim().toLowerCase();
 
-  const filteredCenters = centers.filter(center => {
-    if (!normalizedSearch) return true;
-    return center.name.toLowerCase().includes(normalizedSearch);
-  });
+  const filteredCenters = centers.filter(center =>
+    !normalizedSearch
+      ? true
+      : center.name.toLowerCase().includes(normalizedSearch)
+  );
 
   const atCapacityCount = centers.filter(
     c => c.currentOccupancy >= c.capacity
@@ -163,9 +233,7 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
     if (!query) return text;
 
     const regex = new RegExp(`(${query})`, 'gi');
-    const parts = text.split(regex);
-
-    return parts.map((part, index) =>
+    return text.split(regex).map((part, index) =>
       part.toLowerCase() === query.toLowerCase() ? (
         <span key={index} className="search-highlight">
           {part}
@@ -176,21 +244,18 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
     );
   };
 
+  // ============================
+  // UI
+  // ============================
   return (
     <AdminLayout>
       <div className="admin-dashboard">
-
-        {/* count */}
+        {/* SUMMARY */}
         <section className="capacity-summary">
           <div className="summary-card full">
             <div className="summary-icon-box">
-              <img
-                src={notificationsIcon}
-                alt="Notification"
-                className="summary-icon"
-              />
+              <img src={notificationsIcon} className="summary-icon" />
             </div>
-
             <div className="summary-content">
               <span className="summary-number">{atCapacityCount}</span>
               <span className="summary-label">ECs At Capacity</span>
@@ -199,22 +264,16 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
 
           <div className="summary-card available">
             <div className="summary-icon-box">
-              <img
-                src={notificationsIcon}
-                alt="Notification"
-                className="summary-icon"
-              />
+              <img src={notificationsIcon} className="summary-icon" />
             </div>
-
             <div className="summary-content">
               <span className="summary-number">{availableCount}</span>
               <span className="summary-label">ECs Available</span>
             </div>
           </div>
-
         </section>
 
-        {/* evac center capacity card */}
+        {/* MANAGE CENTERS */}
         <section className="capacity-card">
           <div className="capacity-header">
             <h2>Manage Evacuation Center Status</h2>
@@ -242,33 +301,30 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
                 Loading evacuation centers…
               </div>
             )}
+
             {!loadingCenters && centersError && (
               <div className="capacity-message error">
                 {centersError}
               </div>
             )}
 
-            {!loadingCenters && !centersError && filteredCenters.length === 0 && (
-              <div className="capacity-message">
-                No evacuation centers found.
-              </div>
-            )}
-
-            {!loadingCenters && !centersError && filteredCenters.map(center => (
-              <div key={center.id} className="capacity-row">
-                <span className="center-name">
-                {renderHighlightedText(center.name, debouncedSearch)}
-              </span>
-
-                <button
-                  className={`status-pill ${center.status}`}
-                  onClick={() => toggleStatus(center.id)}
-                >
-                  {center.status === 'available' ? 'Available' : 'Full'}
-                </button>
-              </div>
-            ))}
-
+            {!loadingCenters &&
+              !centersError &&
+              filteredCenters.map(center => (
+                <div key={center.id} className="capacity-row">
+                  <span className="center-name">
+                    {renderHighlightedText(center.name, debouncedSearch)}
+                  </span>
+                  <button
+                    className={`status-pill ${center.status}`}
+                    onClick={() => toggleStatus(center.id)}
+                  >
+                    {center.status === 'available'
+                      ? 'Available'
+                      : 'Full'}
+                  </button>
+                </div>
+              ))}
           </div>
 
           <div className="capacity-footer">
@@ -282,7 +338,6 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
             </label>
           </div>
         </section>
-
       </div>
     </AdminLayout>
   );
