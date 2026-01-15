@@ -23,7 +23,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 660px;
-  min-height: 560px;
+  min-height: 600px;
   perspective: 1500px;
 }
 
@@ -315,6 +315,27 @@ body {
   .card-header h2 {
     font-size: 1.3rem;
   }
+}
+
+/* ================= ICON IMAGES ================= */
+
+.icon-img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.lock-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 10px;
+}
+
+/* Improve lock overlay layout */
+.lock-overlay {
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
 }
 
 /* ================= PRINT ================= */

@@ -8,11 +8,24 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './Residence.css';
 
-const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
+import editIcon from '../assets/icon-edit.png';
+import lockIcon from '../assets/icon-lock.png';
+
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
 const IMAGE_PLACEHOLDER = '/id-placeholder.png';
 
 const Residence = () => {
   const { profile } = useAuth();
+
+  /* ================= LOCAL LIVE PROFILE (REALTIME SOURCE) ================= */
+
+  const [liveProfile, setLiveProfile] = useState<typeof profile | null>(profile);
+
+  useEffect(() => {
+    setLiveProfile(profile);
+  }, [profile]);
+
+  /* ================= UI STATE ================= */
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -33,82 +46,64 @@ const Residence = () => {
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
 
-  /* ================= SYNC PROFILE DATA ================= */
+  /* ================= SYNC FORM DATA ================= */
 
   useEffect(() => {
-    if (!profile) return;
-    const next = {
-      address: profile.address ?? '',
-      contact_number: profile.contact_number ?? '',
-      email: profile.email ?? '',
-    };
-    // Shallow compare
-    if (
-      formData.address !== next.address ||
-      formData.contact_number !== next.contact_number ||
-      formData.email !== next.email
-    ) {
-      setFormData(next);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile]);
+    if (!liveProfile) return;
 
-  /* ================= PROFILE IMAGE (CACHED + PRELOADED) ================= */
-
-  useEffect(() => {
-  if (!profile?.profile_image_url) {
-    setImageUrl(null);
-    return;
-  }
-
-  const cacheKey = `avatar:${profile.profile_image_url}`;
-  const cached = localStorage.getItem(cacheKey);
-
-  if (cached) {
-    try {
-      const parsed = JSON.parse(cached) as {
-        url: string;
-        expiresAt: number;
-      };
-
-      if (Date.now() < parsed.expiresAt) {
-        setImageUrl(parsed.url);
-        return; // 🚀 INSTANT — NO NETWORK
-      }
-    } catch {
-      localStorage.removeItem(cacheKey);
-    }
-  }
-
-  // Fallback ONLY if header never loaded yet
-  supabase.storage
-    .from('profile-images')
-    .createSignedUrl(profile.profile_image_url, SIGNED_URL_TTL_SECONDS)
-    .then(({ data }) => {
-      if (!data?.signedUrl) return;
-
-      const expiresAt =
-        Date.now() + SIGNED_URL_TTL_SECONDS * 1000;
-
-      setImageUrl(data.signedUrl);
-
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          url: data.signedUrl,
-          expiresAt,
-        })
-      );
+    setFormData({
+      address: liveProfile.address ?? '',
+      contact_number: liveProfile.contact_number ?? '',
+      email: liveProfile.email ?? '',
     });
-}, [profile?.profile_image_url]);
+  }, [liveProfile]);
 
-  /* ================= REALTIME UPDATES ================= */
+  /* ================= PROFILE IMAGE (SHARED CACHE) ================= */
+
+  useEffect(() => {
+    if (!liveProfile?.profile_image_url) {
+      setImageUrl(null);
+      return;
+    }
+
+    const cacheKey = `avatar:${liveProfile.profile_image_url}`;
+    const cached = localStorage.getItem(cacheKey);
+
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Date.now() < parsed.expiresAt) {
+          setImageUrl(parsed.url);
+          return;
+        }
+      } catch {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
+    supabase.storage
+      .from('profile-images')
+      .createSignedUrl(liveProfile.profile_image_url, SIGNED_URL_TTL_SECONDS)
+      .then(({ data }) => {
+        if (!data?.signedUrl) return;
+
+        const expiresAt = Date.now() + SIGNED_URL_TTL_SECONDS * 1000;
+
+        setImageUrl(data.signedUrl);
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({ url: data.signedUrl, expiresAt })
+        );
+      });
+  }, [liveProfile?.profile_image_url]);
+
+  /* ================= REALTIME SUBSCRIPTION ================= */
 
   useEffect(() => {
     if (!profile?.user_id) return;
 
     const channel = supabase
-      .channel('residence-profile-realtime')
+      .channel(`residence-profile-${profile.user_id}`)
       .on(
         'postgres_changes',
         {
@@ -118,13 +113,13 @@ const Residence = () => {
           filter: `user_id=eq.${profile.user_id}`,
         },
         payload => {
-          if (payload.new) {
-            setFormData({
-              address: payload.new.address ?? '',
-              contact_number: payload.new.contact_number ?? '',
-              email: payload.new.email ?? '',
-            });
-          }
+          if (!payload.new) return;
+
+          // 🔥 THIS IS THE KEY
+          setLiveProfile(prev => ({
+            ...prev!,
+            ...payload.new,
+          }));
         }
       )
       .subscribe();
@@ -134,9 +129,9 @@ const Residence = () => {
     };
   }, [profile?.user_id]);
 
-  /* ================= LOADING STATE ================= */
+  /* ================= LOADING ================= */
 
-  if (!profile) {
+  if (!liveProfile) {
     return (
       <div className="dashboard-container">
         <Sidebar isOpen={sidebarOpen} />
@@ -152,7 +147,7 @@ const Residence = () => {
 
   /* ================= STATUS ================= */
 
-  const status = profile.residence_verification_status;
+  const status = liveProfile.residence_verification_status;
   const isVerified = status === 'VERIFIED';
   const isPending = status === 'PENDING';
 
@@ -173,17 +168,23 @@ const Residence = () => {
   };
 
   const gender =
-    profile.gender
-      ? profile.gender.charAt(0).toUpperCase() +
-        profile.gender.slice(1).toLowerCase()
+    liveProfile.gender
+      ? liveProfile.gender.charAt(0).toUpperCase() +
+        liveProfile.gender.slice(1).toLowerCase()
       : '';
 
-  /* ================= SAVE ================= */
+  /* ================= SAVE & SUBMIT ================= */
 
   const handleSave = async () => {
     setSaving(true);
 
-    if (formData.email !== profile.email) {
+    // 🔥 Optimistic UI (lock immediately)
+    setLiveProfile(prev => ({
+      ...prev!,
+      residence_verification_status: 'PENDING',
+    }));
+
+    if (formData.email !== liveProfile.email) {
       const { error } = await supabase.auth.updateUser({
         email: formData.email,
       });
@@ -204,7 +205,7 @@ const Residence = () => {
         residence_verification_status: 'PENDING',
         verification_requested_at: new Date().toISOString(),
       })
-      .eq('user_id', profile.user_id);
+      .eq('user_id', liveProfile.user_id);
 
     if (error) {
       alert(error.message);
@@ -219,11 +220,11 @@ const Residence = () => {
   /* ================= QR ================= */
 
   const qrPayload = JSON.stringify({
-    user_id: profile.user_id,
-    full_name: `${profile.last_name}, ${profile.first_name}`,
-    address: profile.address,
+    user_id: liveProfile.user_id,
+    full_name: `${liveProfile.last_name}, ${liveProfile.first_name}`,
+    address: liveProfile.address,
     verified: isVerified,
-    verified_at: profile.verified_at,
+    verified_at: liveProfile.verified_at,
   });
 
   /* ================= PDF ================= */
@@ -248,7 +249,6 @@ const Residence = () => {
       contentWidth * (frontCanvas.height / frontCanvas.width);
 
     pdf.addImage(frontImg, 'PNG', margin, margin, contentWidth, frontHeight);
-
     pdf.addPage();
 
     const backCanvas = await html2canvas(backRef.current, {
@@ -261,7 +261,6 @@ const Residence = () => {
       contentWidth * (backCanvas.height / backCanvas.width);
 
     pdf.addImage(backImg, 'PNG', margin, margin, contentWidth, backHeight);
-
     pdf.save('residence-card.pdf');
 
     document.body.classList.remove('printing');
@@ -276,7 +275,7 @@ const Residence = () => {
       <main className="main-content">
         <Header
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-          username={profile.first_name}
+          username={liveProfile.first_name}
         />
 
         <div className="residence-wrapper">
@@ -286,9 +285,14 @@ const Residence = () => {
             <div className="residence-card front" ref={frontRef}>
               <div className="card-header">
                 <h2>MARIKEÑO&apos;S RESIDENCE CARD</h2>
+
                 {isVerified && !editMode && (
-                  <button className="edit-btn" onClick={() => setEditMode(true)}>
-                    ✏️
+                  <button
+                    className="edit-btn"
+                    onClick={() => setEditMode(true)}
+                    aria-label="Edit residence"
+                  >
+                    <img src={editIcon} alt="" className="icon-img" />
                   </button>
                 )}
               </div>
@@ -316,15 +320,15 @@ const Residence = () => {
                   <div className="field">
                     <label>FULL NAME</label>
                     <span>
-                      {profile.last_name}, {profile.first_name}{' '}
-                      {profile.middle_name ?? ''}
+                      {liveProfile.last_name}, {liveProfile.first_name}{' '}
+                      {liveProfile.middle_name ?? ''}
                     </span>
                   </div>
 
                   <div className="row">
                     <div className="field">
                       <label>AGE</label>
-                      <span>{calculateAge(profile.birth_date)}</span>
+                      <span>{calculateAge(liveProfile.birth_date)}</span>
                     </div>
                     <div className="field">
                       <label>GENDER</label>
@@ -342,7 +346,7 @@ const Residence = () => {
                         }
                       />
                     ) : (
-                      <span>{profile.address}</span>
+                      <span>{liveProfile.address}</span>
                     )}
                   </div>
 
@@ -359,7 +363,7 @@ const Residence = () => {
                         }
                       />
                     ) : (
-                      <span>{profile.contact_number}</span>
+                      <span>{liveProfile.contact_number}</span>
                     )}
                   </div>
 
@@ -373,7 +377,7 @@ const Residence = () => {
                         }
                       />
                     ) : (
-                      <span>{profile.email}</span>
+                      <span>{liveProfile.email}</span>
                     )}
                   </div>
                 </div>
@@ -381,7 +385,8 @@ const Residence = () => {
 
               {isPending && (
                 <div className="lock-overlay">
-                  🔒 Residence Card Locked — Verification in progress
+                  <img src={lockIcon} alt="" className="lock-icon" />
+                  <span>Residence Card Locked — Verification in progress</span>
                 </div>
               )}
 
@@ -392,17 +397,10 @@ const Residence = () => {
                   </button>
                 ) : (
                   <>
-                    <button
-                      disabled={!isVerified}
-                      onClick={() => setShowBack(true)}
-                    >
+                    <button disabled={!isVerified} onClick={() => setShowBack(true)}>
                       View Back of Card
                     </button>
-
-                    <button
-                      disabled={!isVerified}
-                      onClick={handleDownloadPDF}
-                    >
+                    <button disabled={!isVerified} onClick={handleDownloadPDF}>
                       Download PDF
                     </button>
                   </>

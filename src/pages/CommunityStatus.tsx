@@ -4,102 +4,14 @@ import Header from './Header';
 import './CommunityStatus.css';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-
+import communityProfileIcon from '../assets/icon-community profile.png';
 import communityIcon from '../assets/icon-community-status.svg';
-import likeIcon from '../assets/icon-like-post.svg';
+import upvoteIcon from '../assets/upvote.png';
 import uploadIcon from '../assets/icon-upload-image.svg';
 import closeButtonIcon from '../assets/icon-close-button.svg';
 import samplePostImage from '../assets/sample-post-image.jpg';
 import prevIcon from '../assets/icon-arrow-left.svg';
 import nextIcon from '../assets/icon-arrow-right.svg';
-
-// FOR FUTURE, AFTER BACKEND INTEGRATION
-// interface Post {
-//   id: string;
-//   text: string;
-//   images: string[];
-// }
-
-// const [posts, setPosts] = useState<Post[]>([]);
-// const [activePost, setActivePost] = useState<Post | null>(null);
-// const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
-
-// FUTURE IMAGE RENDERING
-// {post.images.length > 0 && (
-//   <div className="post-images">
-//     {post.images.slice(0, 3).map((img, index) => {
-//       const remaining = post.images.length - 2;
-
-//       if (index === 2 && post.images.length > 2) {
-//         return (
-//           <div
-//             key={index}
-//             className="post-image-wrapper overlay"
-//             onClick={() => {
-//               setActivePost(post);
-//               setActiveImageIndex(index);
-//             }}
-//           >
-//             <img src={img} alt="Post" />
-//             <div className="image-overlay">
-//               +{remaining} photos
-//             </div>
-//           </div>
-//         );
-//       }
-
-//       return (
-//         <div
-//           key={index}
-//           className="post-image-wrapper"
-//           onClick={() => {
-//             setActivePost(post);
-//             setActiveImageIndex(index);
-//           }}
-//         >
-//           <img src={img} alt="Post" />
-//         </div>
-//       );
-//     })}
-//   </div>
-// )}
-
-// FUTURE IMAGE VIEWER
-// {activePost && activeImageIndex !== null && (
-//   <div className="image-preview-overlay">
-//     <div className="image-viewer">
-//       <button
-//         className="nav-btn prev"
-//         onClick={() =>
-//           setActiveImageIndex((i) => (i! > 0 ? i! - 1 : i))
-//         }
-//       >
-//         <img src={prevIcon} alt="Previous" />
-//       </button>
-
-//       <img
-//         src={activePost.images[activeImageIndex]}
-//         alt="Preview"
-//       />
-
-//       <button
-//         className="nav-btn next"
-//         onClick={() =>
-//           setActiveImageIndex((i) =>
-//             i! < activePost.images.length - 1 ? i! + 1 : i
-//           )
-//         }
-//       >
-//         <img src={nextIcon} alt="Next" />
-//       </button>
-//     </div>
-//   </div>
-// )}
-
-// onClick={() => {
-//   setActivePost(post);
-//   setActiveImageIndex(index);
-// }}
 
 const STATUS_OPTIONS = [
   'Safe',
@@ -359,7 +271,7 @@ const CommunityStatus = () => {
               onClick={() => setIsComposerOpen(true)}
             >
               <div className="composer-left">
-                <div className="avatar-circle small"></div>
+                <div className="avatar-circle small"><img src={communityProfileIcon} alt="Community Member" /></div>
 
                 <button
                   className="upload-btn"
@@ -399,7 +311,7 @@ const CommunityStatus = () => {
               {posts.map((post) => (
                 <div className="post-card" key={post.report_id}>
                   <div className="post-header">
-                    <div className="avatar-circle"></div>
+                    <div className="avatar-circle"> <img src={communityProfileIcon} alt="Community Member" /></div>
                     <div>
                       <h4>Community Member</h4>
                       <span>{post.timestamp}</span>
@@ -426,7 +338,7 @@ const CommunityStatus = () => {
 
                   <div className="post-actions">
                     <button className="like-btn">
-                      <img src={likeIcon} alt="Like" />
+                      <img src={upvoteIcon} alt="Like" />
                     </button>
                   </div>
                 </div>
@@ -438,7 +350,7 @@ const CommunityStatus = () => {
               {loading && (
                 <div className="post-card skeleton">
                   <div className="post-header">
-                    <div className="avatar-circle skeleton-avatar"></div>
+                    <div className="avatar-circle skeleton-avatar"><img src={communityProfileIcon} alt="Community Member" /></div>
                     <div className="skeleton-lines">
                       <div className="skeleton-line short"></div>
                       <div className="skeleton-line"></div>
@@ -477,7 +389,7 @@ const CommunityStatus = () => {
                   <hr className="composer-divider" />
 
                   <div className="composer-user">
-                    <div className="avatar-circle small"></div>
+                    <div className="avatar-circle small"><img src={communityProfileIcon} alt="Community Member" /></div>
                     <span>Community Member</span>
 
                     <button

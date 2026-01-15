@@ -19,13 +19,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔔 IN-APP REALTIME NOTIFICATION STATE
+  /* ================= REALTIME NOTIFICATION STATE ================= */
+
   const [latestNotification, setLatestNotification] =
     useState<RealtimeNotification | null>(null);
 
-  // ============================
-  // AUTH STATE HANDLING
-  // ============================
+  /* ================= AUTH STATE HANDLING ================= */
+
   useEffect(() => {
     const {
       data: { subscription },
@@ -54,9 +54,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  // ============================
-  // REALTIME NOTIFICATIONS LISTENER
-  // ============================
+  /* ================= 🔥 REALTIME PROFILE SYNC (IMPORTANT) ================= */
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`realtime-profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        payload => {
+          if (!payload.new) return;
+
+          // 🔥 SINGLE SOURCE OF TRUTH
+          setProfile(prev => ({
+            ...prev!,
+            ...payload.new,
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  /* ================= REALTIME NOTIFICATIONS ================= */
+
   useEffect(() => {
     if (!user) return;
 
@@ -75,11 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const notif = payload.new as RealtimeNotification;
 
           if (notif.target_role === 'USER' || notif.target_role === 'ALL') {
-            setLatestNotification({
-              title: notif.title,
-              message: notif.message,
-              target_role: notif.target_role,
-            });
+            setLatestNotification(notif);
           }
         }
       )
@@ -90,9 +117,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [user]);
 
-  // ============================
-  // AUTO-DISMISS NOTIFICATION
-  // ============================
+  /* ================= AUTO-DISMISS NOTIFICATION ================= */
+
   useEffect(() => {
     if (!latestNotification) return;
 
@@ -103,9 +129,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearTimeout(timeout);
   }, [latestNotification]);
 
-  // ============================
-  // AUTH ACTIONS
-  // ============================
+  /* ================= AUTH ACTIONS ================= */
+
   const login = async (email: string, password: string) => {
     const { user } = await authService.login(email, password);
 
@@ -131,6 +156,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setProfile(null);
   };
+
+  /* ================= PROVIDER ================= */
 
   return (
     <AuthContext.Provider
