@@ -20,7 +20,7 @@ import {
 } from './NotificationsIcons';
 
 import currentStatusIcon from '../assets/icon-current-status.png';
-import notificationBellIcon from '../assets/icon-notification.png';
+import notificationBellIcon from '../assets/icon-notification.svg';
 import waterLevelIcon from '../assets/icon-water-level.png';
 import hotlineIcon from '../assets/icon-emergency-hotlines.png';
 import mapIcon from '../assets/icon-evacuation-map.png';
