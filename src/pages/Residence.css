@@ -1,20 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&display=swap');
 
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: 'Roboto', sans-serif;
   color: #0f172a;
 }
 
 /* ================= WRAPPER ================= */
 
 .residence-wrapper {
-  padding: 32px 24px;
+  padding: 40px 24px;
   display: flex;
   justify-content: center;
+  min-height: 100vh;
+  background: #f5f5f5;
 }
 
 /* ================= FLIP CONTAINER ================= */
@@ -22,8 +24,8 @@ body {
 .residence-card-flip {
   position: relative;
   width: 100%;
-  max-width: 660px;
-  min-height: 600px;
+  max-width: 850px;
+  min-height: 500px;
   perspective: 1500px;
 }
 
@@ -33,10 +35,10 @@ body {
   position: absolute;
   inset: 0;
   background: #ffffff;
-  border-radius: 26px;
-  border: 6px solid #0b3b75;
-  padding: 32px 36px 36px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+  border-radius: 24px;
+  border: 8px solid #0b3b75;
+  padding: 32px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
   backface-visibility: hidden;
   transform-style: preserve-3d;
   transition: transform 0.8s ease;
@@ -49,14 +51,15 @@ body {
   content: "City of Marikina";
   position: absolute;
   inset: 0;
-  font-size: 5.5rem;
-  font-weight: 800;
-  color: rgba(11, 59, 117, 0.05);
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: rgba(11, 59, 117, 0.03);
   display: flex;
   justify-content: center;
   align-items: center;
   transform: rotate(-30deg);
   pointer-events: none;
+  z-index: 0;
 }
 
 /* ================= FRONT / BACK ================= */
@@ -92,16 +95,18 @@ body {
   justify-content: space-between;
   position: relative;
   z-index: 2;
+  margin-bottom: 16px;
 }
 
 .card-header h2 {
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
   margin: 0;
-  color: #000;
-  border-bottom: 3px solid #0b3b75;
-  padding-bottom: 6px;
+  color: #0b3b75;
+  border-bottom: 4px solid #0b3b75;
+  padding-bottom: 8px;
+  flex: 1;
 }
 
 /* ================= EDIT BUTTON ================= */
@@ -109,14 +114,22 @@ body {
 .edit-btn {
   border: none;
   background: transparent;
-  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .edit-btn:hover {
   opacity: 1;
+  background: #f0f4f8;
+}
+
+.icon-img {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 /* ================= STATUS ================= */
@@ -124,55 +137,70 @@ body {
 .status-row {
   display: flex;
   gap: 10px;
-  margin: 14px 0 20px;
+  margin: 0 0 24px;
   position: relative;
   z-index: 2;
 }
 
 .badge {
-  padding: 6px 16px;
+  padding: 8px 20px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .badge.verified {
   background: #0b3b75;
   color: #ffffff;
-  font-size: 0.7rem;
-  letter-spacing: 0.6px;
 }
 
 .badge.pending {
   background: #fef3c7;
   color: #92400e;
+  border: 2px solid #fcd34d;
 }
 
 /* ================= BODY ================= */
 
 .card-body {
   display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 28px;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
   position: relative;
   z-index: 2;
+  margin-bottom: 20px;
+  align-items: start;
 }
 
 /* ================= PHOTO ================= */
 
 .photo-box {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 .photo-box img {
-  width: 200px;
-  height: 260px;
+  width: 240px;
+  height: 300px;
   object-fit: cover;
+  object-position: center top;
   border-radius: 8px;
-  border: 1px solid #cfcfcf;
+  border: 4px solid #0b3b75;
   background-color: #f2f2f2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.img-loading {
+  opacity: 0.6;
+}
+
+.img-loaded {
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 /* ================= INFO ================= */
@@ -180,45 +208,56 @@ body {
 .info-box {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .field label {
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: #0b3b75;
-  margin-bottom: 2px;
-  display: block;
 }
 
 .field span {
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
-  color: #000;
+  color: #1a1a1a;
+  padding: 8px 0;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .row {
-  display: flex;
-  gap: 36px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 /* ================= INPUTS (EDIT MODE) ================= */
 
 .field input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  font-family: 'Source Sans 3', sans-serif;
+  border-radius: 8px;
+  border: 2px solid #cbd5e1;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  transition: border-color 0.2s ease;
 }
 
 .field input:focus {
   outline: none;
   border-color: #0b3b75;
+  box-shadow: 0 0 0 3px rgba(11, 59, 117, 0.1);
 }
 
 /* ================= LOCK OVERLAY ================= */
@@ -226,159 +265,124 @@ body {
 .lock-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #0b3b75;
-  z-index: 4;
+  z-index: 10;
+  text-align: center;
+  padding: 20px;
+}
+
+.lock-icon {
+  width: 56px;
+  height: 56px;
+  opacity: 0.5;
 }
 
 /* ================= BACK SIDE ================= */
 
+.residence-card.back {
+  padding: 48px;
+}
+
 .residence-card.back h3 {
-  font-size: 1.2rem;
-  font-weight: 800;
-  margin-bottom: 18px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 28px;
+  color: #0b3b75;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.qr-frame {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 5px solid #0b3b75;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  position: relative;
+  z-index: 2;
 }
 
 .qr-note {
-  margin-top: 14px;
-  font-size: 0.85rem;
+  margin-top: 20px;
+  font-size: 0.95rem;
   color: #374151;
   text-align: center;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
 }
 
 /* ================= ACTIONS ================= */
 
 .card-actions {
-  margin-top: 26px;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: 16px;
   position: relative;
   z-index: 2;
 }
 
 .card-actions button {
-  padding: 10px 22px;
+  padding: 14px 32px;
   background: #f38020;
   color: #ffffff;
   border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 0.95rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(243, 128, 32, 0.3);
+  letter-spacing: 0.3px;
 }
 
-.card-actions button:hover {
+.card-actions button:hover:not(:disabled) {
   background: #d66e15;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(243, 128, 32, 0.4);
+}
+
+.card-actions button:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .card-actions button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 900px) {
-  .card-body {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .row {
-    flex-direction: column;
-    gap: 18px;
-  }
-
-  .residence-card-flip {
-    min-height: 720px;
-  }
-}
-
-@media (max-width: 600px) {
-  .residence-card {
-    padding: 22px;
-  }
-
-  .photo-box img {
-    width: 180px;
-    height: 230px;
-  }
-
-  .card-header h2 {
-    font-size: 1.3rem;
-  }
-}
-
-/* ================= ICON IMAGES ================= */
-
-.icon-img {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
-.lock-icon {
-  width: 42px;
-  height: 42px;
-  margin-bottom: 10px;
-}
-
-/* Improve lock overlay layout */
-.lock-overlay {
-  flex-direction: column;
-  gap: 6px;
-  text-align: center;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ================= PRINT ================= */
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-
-  .residence-card-flip,
-  .residence-card-flip * {
-    visibility: visible;
-  }
-
-  .residence-card-flip {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-
-  .card-actions {
-    display: none;
-  }
+.printing .card-actions,
+.printing .edit-btn {
+  display: none !important;
 }
 
-/* ================= PRINT – RESIDENCE CARD ================= */
-
 @media print {
-
-  /* Hide everything else */
   body * {
     visibility: hidden !important;
   }
 
-  /* Show card only */
   .residence-card-flip,
   .residence-card-flip * {
     visibility: visible !important;
   }
 
-  /* Reset layout */
   .residence-wrapper {
+    background: white !important;
     padding: 0 !important;
     display: block !important;
   }
@@ -390,114 +394,125 @@ body {
     perspective: none !important;
   }
 
-  /* Disable animations */
   .residence-card {
     position: relative !important;
     transform: none !important;
     transition: none !important;
     box-shadow: none !important;
-    border-radius: 18px;
   }
 
-  /* PAGE 1 — FRONT */
   .residence-card.front {
     page-break-after: always;
   }
 
-  /* PAGE 2 — BACK */
   .residence-card.back {
     page-break-before: always;
     transform: none !important;
   }
 
-  /* Hide admin-only controls */
-  .edit-chip,
   .edit-btn,
   .card-actions,
   .lock-overlay {
     display: none !important;
   }
 
-  /* Make watermark more subtle on print */
   .residence-card::before {
-    opacity: 0.03;
-    font-size: 4rem;
+    opacity: 0.02;
   }
 
-  /* Improve print clarity */
-  .field span,
-  .field label {
-    color: #000 !important;
-  }
-
-  /* Ensure proper margins */
   @page {
     size: A4;
     margin: 18mm;
   }
 }
 
-.printing .card-actions,
-.printing .edit-btn {
-  display: none !important;
-}
+/* ================= RESPONSIVE ================= */
 
-/* ================= QR CODE – CENTERED FRAME ================= */
+@media (max-width: 1024px) {
+  .residence-card-flip {
+    max-width: 700px;
+  }
 
-.residence-card.back {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  text-align: center;
-}
+  .card-body {
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+  }
 
-/* QR frame */
-.qr-frame {
-  padding: 18px;
-  background: #ffffff;
-  border-radius: 16px;
-  border: 3px solid #0b3b75;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* QR title */
-.residence-card.back h3 {
-  font-size: 1.2rem;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  margin-bottom: 4px;
-}
-
-/* QR instruction */
-.qr-note {
-  font-size: 0.85rem;
-  color: #374151;
-  max-width: 280px;
-  line-height: 1.4;
-}
-
-/* ================= PRINT OPTIMIZATION ================= */
-
-@media print {
-  .qr-frame {
-    box-shadow: none;
-    border-width: 2px;
+  .photo-box img {
+    width: 220px;
+    height: 275px;
   }
 }
 
-/* ===== PDF CAPTURE MODE ===== */
-.printing .residence-card {
-  transform: none !important;
+@media (max-width: 900px) {
+  .card-body {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 24px;
+  }
+
+  .photo-box {
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .info-box {
+    width: 100%;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .residence-card-flip {
+    min-height: 720px;
+  }
 }
 
-.img-loading {
-  background: #f2f2f2;
+@media (max-width: 600px) {
+  .residence-wrapper {
+    padding: 20px 12px;
+  }
+
+  .residence-card {
+    padding: 24px 20px;
+    border-width: 6px;
+  }
+
+  .photo-box img {
+    width: 200px;
+    height: 250px;
+  }
+
+  .card-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .field span {
+    font-size: 0.95rem;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .card-actions button {
+    width: 100%;
+  }
+
+  .residence-card.back {
+    padding: 32px 24px;
+  }
 }
-.img-loaded {
-  background: transparent;
+
+@media (max-width: 400px) {
+  .card-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .photo-box img {
+    width: 180px;
+    height: 225px;
+  }
 }

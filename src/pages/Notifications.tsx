@@ -60,13 +60,13 @@ const Notifications = () => {
       } else {
         setNotifications(data || []);
         
-        // Check for alert query param to auto-open a specific notification
+        // check alert query param to auto open a specific notification
         const alertId = searchParams.get('alert');
         if (alertId && data) {
           const targetAlert = data.find((n: any) => n.notification_id === alertId);
           if (targetAlert) {
             setFocusedNotification(targetAlert);
-            // Clear the query param after opening
+            // clear query param after opening
             setSearchParams({});
           }
         }
@@ -78,7 +78,6 @@ const Notifications = () => {
     fetchNotifications();
   }, [searchParams, setSearchParams]);
 
-  // Helper function - must be defined before filteredNotifications
   const isEvacuationNotification = (title: string) => {
     return title && title.toLowerCase().includes('evacuation center');
   };
@@ -107,7 +106,6 @@ const Notifications = () => {
   };
 
   const getSeverityLabel = (severity: string, title?: string) => {
-    // For evacuation center notifications, use STATUS label
     if (title && title.toLowerCase().includes('evacuation center')) {
       return 'STATUS';
     }
@@ -121,7 +119,6 @@ const Notifications = () => {
   };
   
   const getTypeIcon = (type: string, title?: string) => {
-    // Check title first for evacuation center notifications
     if (title && isEvacuationNotification(title)) {
       return <EvacuationIcon />;
     }
@@ -253,23 +250,6 @@ const Notifications = () => {
               </button>
 
             </div>
-
-            <div className="sort-dropdown">
-              <span className="sort-label">SORT BY</span>
-
-              <div className="sort-select-wrapper">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="sort-select"
-                >
-                  <option value="newest">NEWEST</option>
-                  <option value="oldest">OLDEST</option>
-                </select>
-                <span className="sort-arrow">▾</span>
-              </div>
-            </div>
-
           </div>
 
           <div className="notifications-section-header">
@@ -277,20 +257,34 @@ const Notifications = () => {
               <span className="section-icon">{getTabIcon(activeTab)}</span>
               <h2>{tabTitles[activeTab]}</h2>
             </div>
-            <button
-              className={`refresh-btn ${loading ? 'loading' : ''}`}
-              onClick={handleRefresh}
-              disabled={loading}
-              aria-label="Refresh notifications"
-            >
-              <span className="refresh-icon" aria-hidden>
-                ↻
-              </span>
-              <span className="refresh-text">
-                Refresh
-              </span>
-            </button>
 
+            <div className="notifications-actions">
+              <div className="sort-dropdown">
+                <span className="sort-label">SORT BY</span>
+
+                <div className="sort-select-wrapper">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="sort-select"
+                  >
+                    <option value="newest">NEWEST</option>
+                    <option value="oldest">OLDEST</option>
+                  </select>
+                  <span className="sort-arrow">▾</span>
+                </div>
+              </div>
+
+              <button
+                className={`refresh-btn ${loading ? 'loading' : ''}`}
+                onClick={handleRefresh}
+                disabled={loading}
+                aria-label="Refresh notifications"
+              >
+                <span className="refresh-icon" aria-hidden>↻</span>
+                <span className="refresh-text">Refresh</span>
+              </button>
+            </div>
           </div>
 
           {error && (

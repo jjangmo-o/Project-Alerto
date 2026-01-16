@@ -33,6 +33,9 @@
   border-radius: 10px;
   cursor: pointer;
   display: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
   transition:
     background-color 0.2s ease,
     transform 0.15s ease;
@@ -147,5 +150,22 @@
 @media (max-width: 768px) {
   .menu-btn {
     display: inline-flex;
+  }
+
+  .top-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .header-title {
+    font-size: 1.1rem;
+  }
+
+  .user-profile span {
+    display: none;
+  }
+
+  .avatar-circle {
+    width: 36px;
+    height: 36px;
   }
 }

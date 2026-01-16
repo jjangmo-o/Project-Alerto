@@ -15,47 +15,34 @@ const IMAGE_PLACEHOLDER = '/id-placeholder.png';
 const Residence = () => {
   const { profile } = useAuth();
 
-  /* ================= LOCAL LIVE PROFILE (REALTIME SOURCE) ================= */
-
   const [liveProfile, setLiveProfile] = useState<typeof profile | null>(profile);
 
   useEffect(() => {
     setLiveProfile(profile);
   }, [profile]);
 
-  /* ================= UI STATE ================= */
-
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showBack, setShowBack] = useState(false);
-
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-
   const [formData, setFormData] = useState({
     address: '',
     contact_number: '',
     email: '',
   });
 
-  /* ================= REFS ================= */
-
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
 
-  /* ================= SYNC FORM DATA ================= */
-
   useEffect(() => {
     if (!liveProfile) return;
-
     setFormData({
       address: liveProfile.address ?? '',
       contact_number: liveProfile.contact_number ?? '',
       email: liveProfile.email ?? '',
     });
   }, [liveProfile]);
-
-  /* ================= PROFILE IMAGE (SHARED CACHE) ================= */
 
   useEffect(() => {
     if (!liveProfile?.profile_image_url) {
@@ -83,9 +70,7 @@ const Residence = () => {
       .createSignedUrl(liveProfile.profile_image_url, SIGNED_URL_TTL_SECONDS)
       .then(({ data }) => {
         if (!data?.signedUrl) return;
-
         const expiresAt = Date.now() + SIGNED_URL_TTL_SECONDS * 1000;
-
         setImageUrl(data.signedUrl);
         localStorage.setItem(
           cacheKey,
@@ -93,8 +78,6 @@ const Residence = () => {
         );
       });
   }, [liveProfile?.profile_image_url]);
-
-  /* ================= REALTIME SUBSCRIPTION ================= */
 
   useEffect(() => {
     if (!profile?.user_id) return;
@@ -111,22 +94,44 @@ const Residence = () => {
         },
         payload => {
           if (!payload.new) return;
-
-          // 🔥 THIS IS THE KEY
+          
+          console.log('✅ Profile update received:', payload.new);
+          
+          // Immediately update the live profile with all new data
           setLiveProfile(prev => ({
             ...prev!,
             ...payload.new,
           }));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Realtime subscription active for user:', profile.user_id);
+        }
+      });
+
+    // Polling fallback - check every 3 seconds for updates
+    const pollInterval = setInterval(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('residence_verification_status, verified_at')
+        .eq('user_id', profile.user_id)
+        .single();
+
+      if (data && data.residence_verification_status !== liveProfile?.residence_verification_status) {
+        console.log('🔄 Polling detected status change:', data.residence_verification_status);
+        setLiveProfile(prev => ({
+          ...prev!,
+          ...data,
+        }));
+      }
+    }, 3000);
 
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
-  }, [profile?.user_id]);
-
-  /* ================= LOADING ================= */
+  }, [profile?.user_id, liveProfile?.residence_verification_status]);
 
   if (!liveProfile) {
     return (
@@ -136,13 +141,9 @@ const Residence = () => {
     );
   }
 
-  /* ================= STATUS ================= */
-
   const status = liveProfile.residence_verification_status;
   const isVerified = status === 'VERIFIED';
   const isPending = status === 'PENDING';
-
-  /* ================= HELPERS ================= */
 
   const calculateAge = (birth?: string) => {
     if (!birth) return '';
@@ -164,12 +165,8 @@ const Residence = () => {
         liveProfile.gender.slice(1).toLowerCase()
       : '';
 
-  /* ================= SAVE & SUBMIT ================= */
-
   const handleSave = async () => {
     setSaving(true);
-
-    // 🔥 Optimistic UI (lock immediately)
     setLiveProfile(prev => ({
       ...prev!,
       residence_verification_status: 'PENDING',
@@ -208,8 +205,6 @@ const Residence = () => {
     setSaving(false);
   };
 
-  /* ================= QR ================= */
-
   const qrPayload = JSON.stringify({
     user_id: liveProfile.user_id,
     full_name: `${liveProfile.last_name}, ${liveProfile.first_name}`,
@@ -218,194 +213,241 @@ const Residence = () => {
     verified_at: liveProfile.verified_at,
   });
 
-  /* ================= PDF ================= */
+  const getImageAsBase64 = async (imgUrl: string): Promise<string> => {
+    try {
+      const response = await fetch(imgUrl);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting image:', error);
+      return IMAGE_PLACEHOLDER;
+    }
+  };
 
   const handleDownloadPDF = async () => {
     if (!frontRef.current || !backRef.current) return;
 
-    document.body.classList.add('printing');
+    try {
+      document.body.classList.add('printing');
 
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 15;
-    const contentWidth = pageWidth - margin * 2;
+      if (imageUrl) {
+        const base64Image = await getImageAsBase64(imageUrl);
+        const imgElement = frontRef.current.querySelector('.photo-box img') as HTMLImageElement;
+        const originalSrc = imgElement?.src;
+        
+        if (imgElement && base64Image) {
+          imgElement.src = base64Image;
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
 
-    const frontCanvas = await html2canvas(frontRef.current, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-    });
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 15;
+        const contentWidth = pageWidth - margin * 2;
 
-    const frontImg = frontCanvas.toDataURL('image/png');
-    const frontHeight =
-      contentWidth * (frontCanvas.height / frontCanvas.width);
+        // Capture front
+        const frontCanvas = await html2canvas(frontRef.current, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+        });
 
-    pdf.addImage(frontImg, 'PNG', margin, margin, contentWidth, frontHeight);
-    pdf.addPage();
+        const frontImg = frontCanvas.toDataURL('image/png');
+        const frontHeight = contentWidth * (frontCanvas.height / frontCanvas.width);
 
-    const backCanvas = await html2canvas(backRef.current, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-    });
+        pdf.addImage(frontImg, 'PNG', margin, margin, contentWidth, frontHeight);
+        pdf.addPage();
 
-    const backImg = backCanvas.toDataURL('image/png');
-    const backHeight =
-      contentWidth * (backCanvas.height / backCanvas.width);
+        // Fix: Temporarily remove transform from back card for proper QR rendering
+        const backCard = backRef.current;
+        const originalTransform = backCard.style.transform;
+        backCard.style.transform = 'none';
+        
+        await new Promise(resolve => setTimeout(resolve, 50));
 
-    pdf.addImage(backImg, 'PNG', margin, margin, contentWidth, backHeight);
-    pdf.save('residence-card.pdf');
+        // Capture back
+        const backCanvas = await html2canvas(backCard, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+        });
 
-    document.body.classList.remove('printing');
+        const backImg = backCanvas.toDataURL('image/png');
+        const backHeight = contentWidth * (backCanvas.height / backCanvas.width);
+
+        pdf.addImage(backImg, 'PNG', margin, margin, contentWidth, backHeight);
+        
+        // Restore original transform
+        backCard.style.transform = originalTransform;
+        
+        pdf.save(`${liveProfile.last_name}_${liveProfile.first_name}_Residence.pdf`);
+
+        if (imgElement && originalSrc) {
+          imgElement.src = originalSrc;
+        }
+      }
+
+      document.body.classList.remove('printing');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      alert('Failed to generate PDF. Please try again.');
+      document.body.classList.remove('printing');
+    }
   };
-
-  /* ================= RENDER ================= */
 
   return (
     <div className="residence-wrapper">
-          <div className={`residence-card-flip ${showBack ? 'flipped' : ''}`}>
+      <div className={`residence-card-flip ${showBack ? 'flipped' : ''}`}>
 
-            {/* FRONT */}
-            <div className="residence-card front" ref={frontRef}>
-              <div className="card-header">
-                <h2>MARIKEÑO&apos;S RESIDENCE CARD</h2>
-
-                {isVerified && !editMode && (
-                  <button
-                    className="edit-btn"
-                    onClick={() => setEditMode(true)}
-                    aria-label="Edit residence"
-                  >
-                    <img src={editIcon} alt="" className="icon-img" />
-                  </button>
-                )}
-              </div>
-
-              <div className="status-row">
-                {isVerified && <span className="badge verified">Verified</span>}
-                {isPending && (
-                  <span className="badge pending">Pending Verification</span>
-                )}
-              </div>
-
-              <div className="card-body">
-                <div className="photo-box">
-                  <img
-                    src={imageUrl ?? IMAGE_PLACEHOLDER}
-                    alt="Resident"
-                    loading="eager"
-                    decoding="async"
-                    onLoad={() => setImageLoaded(true)}
-                    className={imageLoaded ? 'img-loaded' : 'img-loading'}
-                  />
-                </div>
-
-                <div className="info-box">
-                  <div className="field">
-                    <label>FULL NAME</label>
-                    <span>
-                      {liveProfile.last_name}, {liveProfile.first_name}{' '}
-                      {liveProfile.middle_name ?? ''}
-                    </span>
-                  </div>
-
-                  <div className="row">
-                    <div className="field">
-                      <label>AGE</label>
-                      <span>{calculateAge(liveProfile.birth_date)}</span>
-                    </div>
-                    <div className="field">
-                      <label>GENDER</label>
-                      <span>{gender}</span>
-                    </div>
-                  </div>
-
-                  <div className="field">
-                    <label>ADDRESS</label>
-                    {editMode ? (
-                      <input
-                        value={formData.address}
-                        onChange={e =>
-                          setFormData({ ...formData, address: e.target.value })
-                        }
-                      />
-                    ) : (
-                      <span>{liveProfile.address}</span>
-                    )}
-                  </div>
-
-                  <div className="field">
-                    <label>CONTACT NUMBER</label>
-                    {editMode ? (
-                      <input
-                        value={formData.contact_number}
-                        onChange={e =>
-                          setFormData({
-                            ...formData,
-                            contact_number: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <span>{liveProfile.contact_number}</span>
-                    )}
-                  </div>
-
-                  <div className="field">
-                    <label>EMAIL</label>
-                    {editMode ? (
-                      <input
-                        value={formData.email}
-                        onChange={e =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                      />
-                    ) : (
-                      <span>{liveProfile.email}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {isPending && (
-                <div className="lock-overlay">
-                  <img src={lockIcon} alt="" className="lock-icon" />
-                  <span>Residence Card Locked — Verification in progress</span>
-                </div>
-              )}
-
-              <div className="card-actions">
-                {editMode ? (
-                  <button onClick={handleSave} disabled={saving}>
-                    {saving ? 'Submitting…' : 'Save & Submit'}
-                  </button>
-                ) : (
-                  <>
-                    <button disabled={!isVerified} onClick={() => setShowBack(true)}>
-                      View Back of Card
-                    </button>
-                    <button disabled={!isVerified} onClick={handleDownloadPDF}>
-                      Download PDF
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* BACK */}
-            <div className="residence-card back" ref={backRef}>
-              <h3>Official QR Code</h3>
-              <div className="qr-frame">
-                <QRCodeCanvas value={qrPayload} size={180} />
-              </div>
-              <p className="qr-note">Scan to verify residence authenticity</p>
-
-              <div className="card-actions">
-                <button onClick={() => setShowBack(false)}>
-                  View Front of Card
-                </button>
-              </div>
-            </div>
-
+        {/* FRONT */}
+        <div className="residence-card front" ref={frontRef}>
+          <div className="card-header">
+            <h2>MARIKEÑO'S RESIDENCE CARD</h2>
+            {isVerified && !editMode && (
+              <button
+                className="edit-btn"
+                onClick={() => setEditMode(true)}
+                aria-label="Edit residence"
+              >
+                <img src={editIcon} alt="" className="icon-img" />
+              </button>
+            )}
           </div>
+
+          <div className="status-row">
+            {isVerified && <span className="badge verified">Verified</span>}
+            {isPending && <span className="badge pending">Pending Verification</span>}
+          </div>
+
+          <div className="card-body">
+            <div className="photo-box">
+              <img
+                src={imageUrl ?? IMAGE_PLACEHOLDER}
+                alt="Resident"
+                loading="eager"
+                decoding="async"
+                onLoad={() => setImageLoaded(true)}
+                className={imageLoaded ? 'img-loaded' : 'img-loading'}
+                crossOrigin="anonymous"
+              />
+            </div>
+
+            <div className="info-box">
+              <div className="field">
+                <label>FULL NAME</label>
+                <span>
+                  {liveProfile.last_name}, {liveProfile.first_name}{' '}
+                  {liveProfile.middle_name ?? ''}
+                </span>
+              </div>
+
+              <div className="row">
+                <div className="field">
+                  <label>AGE</label>
+                  <span>{calculateAge(liveProfile.birth_date)}</span>
+                </div>
+                <div className="field">
+                  <label>GENDER</label>
+                  <span>{gender}</span>
+                </div>
+              </div>
+
+              <div className="field">
+                <label>ADDRESS</label>
+                {editMode ? (
+                  <input
+                    value={formData.address}
+                    onChange={e =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                  />
+                ) : (
+                  <span>{liveProfile.address}</span>
+                )}
+              </div>
+
+              <div className="field">
+                <label>CONTACT NUMBER</label>
+                {editMode ? (
+                  <input
+                    value={formData.contact_number}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        contact_number: e.target.value,
+                      })
+                    }
+                  />
+                ) : (
+                  <span>{liveProfile.contact_number}</span>
+                )}
+              </div>
+
+              <div className="field">
+                <label>EMAIL</label>
+                {editMode ? (
+                  <input
+                    value={formData.email}
+                    onChange={e =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
+                ) : (
+                  <span>{liveProfile.email}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {isPending && (
+            <div className="lock-overlay">
+              <img src={lockIcon} alt="" className="lock-icon" />
+              <span>Residence Card Locked — Verification in progress</span>
+            </div>
+          )}
+
+          <div className="card-actions">
+            {editMode ? (
+              <button onClick={handleSave} disabled={saving}>
+                {saving ? 'Submitting…' : 'Save & Submit'}
+              </button>
+            ) : (
+              <>
+                <button disabled={!isVerified} onClick={() => setShowBack(true)}>
+                  View Back of Card
+                </button>
+                <button disabled={!isVerified} onClick={handleDownloadPDF}>
+                  Download PDF
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* BACK */}
+        <div className="residence-card back" ref={backRef}>
+          <h3>Official QR Code</h3>
+          <div className="qr-frame">
+            <QRCodeCanvas value={qrPayload} size={200} />
+          </div>
+          <p className="qr-note">Scan to verify residence authenticity</p>
+
+          <div className="card-actions">
+            <button onClick={() => setShowBack(false)}>
+              View Front of Card
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

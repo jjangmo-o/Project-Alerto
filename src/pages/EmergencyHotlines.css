@@ -19,12 +19,14 @@
   margin: 0 auto;
   width: calc(100% - 64px);
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* TABS */
 
 .hotlines-tabs {
   display: flex;
+  flex-wrap: wrap;
   background: #ffffff;
   border-radius: 10px;
   overflow: hidden;
@@ -33,7 +35,8 @@
 }
 
 .tab-btn {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: fit-content;
   padding: 16px;
   border: none;
   background: transparent;
@@ -307,4 +310,179 @@
 /* sub feature 2 */
 .hotline-btn.secondary::before {
   content: '';
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .hotlines-content {
+    padding: 0.75rem;
+    width: calc(100% - 1.5rem);
+  }
+
+  .hotlines-tabs {
+    border-radius: 8px;
+    gap: 0;
+    flex-wrap: nowrap;
+  }
+
+  .tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.6rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;   /* allow wrapping */
+    word-break: break-word;
+  }
+
+  .hotlines-search {
+    margin-bottom: 0.75rem;
+  }
+
+  .hotlines-search input {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .search-scope {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .scope-btn {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+  }
+
+  .hotlines-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+    align-items: stretch;
+  }
+
+  .hotline-card {
+    width: 100%;
+    max-width: none;
+    padding: 0.75rem 0.7rem;
+    border-radius: 10px;
+    min-height: 110px;
+  }
+
+  .hotline-btn.main,
+  .hotline-btn.alert {
+    height: 30px;
+  }
+
+  .hotline-header {
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .hotline-header img {
+    width: 12px;
+    height: 12px;
+  }
+
+  .hotline-header h4 {
+    font-size: 0.6rem;
+  }
+
+  .hotline-label {
+    font-size: 0.5rem;
+    margin: 4px 0 2px;
+  }
+
+  .hotline-divider {
+    margin: 5px 0;
+  }
+
+  .hotline-btn {
+    font-size: 0.6rem;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+
+  .hotline-btn.main,
+  .hotline-btn.alert {
+    height: 28px;
+    padding: 0 10px;
+  }
+
+  .hotline-btn.secondary {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 0.55rem;
+  }
+
+  .hotline-btn img {
+    width: 12px;
+    height: 12px;
+  }
+
+  .section-label {
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .confirm-modal {
+    padding: 0.75rem;
+    width: 95%;
+    border-radius: 10px;
+  }
+
+  .confirm-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .confirm-text {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .confirm-actions {
+    gap: 8px;
+  }
+
+  .confirm-actions .hotline-btn.main,
+  .confirm-actions .hotline-btn.secondary {
+    height: 32px;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .hotlines-content {
+    padding: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+
+  .tab-btn {
+    padding: 0.4rem 0.3rem;
+    font-size: 0.6rem;
+  }
+
+  .hotline-card {
+    padding: 0.6rem;
+  }
+
+  .hotline-header h4 {
+    font-size: 0.55rem;
+  }
+
+  .hotline-btn.main,
+  .hotline-btn.alert {
+    height: 26px;
+    font-size: 0.55rem;
+  }
+
+  .scope-btn {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+  }
 }

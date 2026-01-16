@@ -31,6 +31,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
+      <button
+        className="sidebar-close-btn"
+        onClick={() => document.dispatchEvent(new CustomEvent('close-sidebar'))}
+        aria-label="Close sidebar"
+      >
+        ✕
+      </button>
       <div
         className="sidebar-logo clickable"
         onClick={() => navigate('/dashboard')}
