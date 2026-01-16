@@ -23,6 +23,8 @@ import AdminVerification from './pages/admin/AdminVerification';
 
 /* ================= LOADING ================= */
 
+import EvacuationMap from './pages/EvacuationMap';
+
 const LoadingScreen = () => (
   <div className="loading-screen">
     <div className="loading-spinner" />
@@ -140,6 +142,51 @@ const AppRoutes = () => {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/community-status" element={<CommunityStatus />} />
       </Route>
+
+      <Route
+        path="/hotlines"
+        element={
+          <ProtectedRoute>
+            <EmergencyHotlines />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/residence"
+        element={
+          <ProtectedRoute>
+            <Residence />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/map"
+        element={
+          <ProtectedRoute>
+            <EvacuationMap />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/community-status"
+        element={
+          <ProtectedRoute>
+            <CommunityStatus />
+          </ProtectedRoute>
+        }
+      />
 
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
