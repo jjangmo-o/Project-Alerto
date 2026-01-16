@@ -27,12 +27,10 @@ const routeTitles: Record<string, string> = {
   '/community-status': 'Community Status',
 };
 
-const getCachedAvatar = (path?: string) => {
-  if (!path) return FALLBACK_IMAGE;
-
+const getCachedAvatar = (path: string) => {
   try {
     const cached = localStorage.getItem(`avatar:${path}`);
-    if (!cached) return FALLBACK_IMAGE;
+    if (!cached) return null;
 
     const parsed = JSON.parse(cached) as {
       url: string;
@@ -43,9 +41,10 @@ const getCachedAvatar = (path?: string) => {
       return parsed.url;
     }
   } catch {
+    /* ignore */
   }
 
-  return FALLBACK_IMAGE;
+  return null;
 };
 
 const Header: React.FC<HeaderProps> = ({
@@ -55,12 +54,9 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, loading } = useAuth();
 
-
-  const [avatarUrl, setAvatarUrl] = useState(() =>
-    getCachedAvatar(profile?.profile_image_url ?? undefined)
-  );
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const title = useMemo(() => {
     return role === 'admin'
@@ -70,22 +66,15 @@ const Header: React.FC<HeaderProps> = ({
 
 
   useEffect(() => {
-    if (!profile?.profile_image_url) return;
+    if (loading || !profile?.profile_image_url) return;
 
-    const cacheKey = `avatar:${profile.profile_image_url}`;
-
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Date.now() < parsed.expiresAt) {
-          return; 
-        }
-      }
-    } catch {
-      localStorage.removeItem(cacheKey);
+    const cached = getCachedAvatar(profile.profile_image_url);
+    if (cached) {
+      Promise.resolve().then(() => setAvatarUrl(cached));
+      return;
     }
 
+    const cacheKey = `avatar:${profile.profile_image_url}`;
 
     supabase.storage
       .from('profile-images')
@@ -109,11 +98,10 @@ const Header: React.FC<HeaderProps> = ({
 
         setAvatarUrl(data.signedUrl);
 
-  
         const img = new Image();
         img.src = data.signedUrl;
       });
-  }, [profile?.profile_image_url]);
+  }, [loading, profile?.profile_image_url]);
 
   return (
     <header className="top-header">
@@ -141,8 +129,9 @@ const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
+        {/* Render avatar only when resolved */}
         <img
-          src={avatarUrl}
+          src={avatarUrl ?? FALLBACK_IMAGE}
           alt="User Avatar"
           className="avatar-circle"
           loading="eager"
