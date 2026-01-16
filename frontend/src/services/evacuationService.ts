@@ -33,7 +33,7 @@ export const evacuationService = {
     
     // Filter available (not at capacity)
     return (data as EvacuationCenterWithBarangay[]).filter(
-      center => center.current_occupancy < center.capacity
+      center => (center.current_occupancy ?? 0) < center.capacity
     );
   },
 
