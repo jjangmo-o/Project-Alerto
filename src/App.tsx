@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import UserLayout from './pages/UserLayout';
 import Dashboard from './pages/Dashboard';
 import EmergencyHotlines from './pages/EmergencyHotlines';
 import Notifications from './pages/Notifications';
@@ -84,7 +85,7 @@ const AppRoutes = () => {
       />
 
       <Route
-        path="/admin/verification" // ✅ NEW ADMIN VERIFICATION DASHBOARD
+        path="/admin/verification"
         element={
           <AdminRoute>
             <AdminVerification />
@@ -124,51 +125,19 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* ================= USER ROUTES ================= */}
-
       <Route
-        path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <UserLayout />
           </ProtectedRoute>
         }
-      />
-
-      <Route
-        path="/hotlines"
-        element={
-          <ProtectedRoute>
-            <EmergencyHotlines />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/residence"
-        element={
-          <ProtectedRoute>
-            <Residence />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/community-status"
-        element={
-          <ProtectedRoute>
-            <CommunityStatus />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/hotlines" element={<EmergencyHotlines />} />
+        <Route path="/residence" element={<Residence />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/community-status" element={<CommunityStatus />} />
+      </Route>
 
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -16,7 +16,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="app-container">
+      {/* Sidebar overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* ADMIN SIDEBAR */}
       <Sidebar
         isOpen={isSidebarOpen}

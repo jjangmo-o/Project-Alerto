@@ -27,9 +27,6 @@ const routeTitles: Record<string, string> = {
   '/community-status': 'Community Status',
 };
 
-/**
- * 🔥 Synchronously read cached avatar BEFORE render
- */
 const getCachedAvatar = (path?: string) => {
   if (!path) return FALLBACK_IMAGE;
 
@@ -43,10 +40,9 @@ const getCachedAvatar = (path?: string) => {
     };
 
     if (Date.now() < parsed.expiresAt) {
-      return parsed.url; // 🚀 INSTANT
+      return parsed.url;
     }
   } catch {
-    /* ignore */
   }
 
   return FALLBACK_IMAGE;

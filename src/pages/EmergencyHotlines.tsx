@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
 import './EmergencyHotlines.css';
-import { useAuth } from '../hooks/useAuth';
 
 import icon from '../assets/icon-call.svg';
 
@@ -778,12 +775,7 @@ const isEmergencyNumber = (phone: string) =>
 
 
 const EmergencyHotlines = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'general' | 'marikina' | 'barangay' | 'evacuation'>('general');
-    const { profile } = useAuth();
-
-    // Get user's first name for header
-    const userName = profile?.first_name || 'User';
         
     // districts and barangays
     const sortedBarangayDistricts = getSortedDistricts(HOTLINES.barangay);
@@ -881,13 +873,7 @@ const EmergencyHotlines = () => {
     // Removed effect that resets collapsedDistricts on debouncedSearch change
 
     return (
-        <div className="hotlines-container">
-            <Sidebar isOpen={isSidebarOpen} />
-
-            <main className="hotlines-main">
-                <Header onMenuClick={() => setIsSidebarOpen(! isSidebarOpen)} username={userName} />
-
-                <section className="hotlines-content">
+        <div className="hotlines-content">
 
                     {/* TABS */}
                     <div className="hotlines-tabs">
@@ -1137,8 +1123,6 @@ const EmergencyHotlines = () => {
                         </div>
                     )}
 
-                </section>
-            </main>
         </div>
     );
 };

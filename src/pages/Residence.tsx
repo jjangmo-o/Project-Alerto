@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import Sidebar from './Sidebar';
-import Header from './Header';
 import { QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -27,7 +25,6 @@ const Residence = () => {
 
   /* ================= UI STATE ================= */
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showBack, setShowBack] = useState(false);
@@ -133,14 +130,8 @@ const Residence = () => {
 
   if (!liveProfile) {
     return (
-      <div className="dashboard-container">
-        <Sidebar isOpen={sidebarOpen} />
-        <main className="main-content">
-          <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-          <div className="residence-wrapper">
-            <div className="residence-card">Loading profile…</div>
-          </div>
-        </main>
+      <div className="residence-wrapper">
+        <div className="residence-card">Loading profile…</div>
       </div>
     );
   }
@@ -269,16 +260,7 @@ const Residence = () => {
   /* ================= RENDER ================= */
 
   return (
-    <div className="dashboard-container">
-      <Sidebar isOpen={sidebarOpen} />
-
-      <main className="main-content">
-        <Header
-          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-          username={liveProfile.first_name}
-        />
-
-        <div className="residence-wrapper">
+    <div className="residence-wrapper">
           <div className={`residence-card-flip ${showBack ? 'flipped' : ''}`}>
 
             {/* FRONT */}
@@ -424,8 +406,6 @@ const Residence = () => {
             </div>
 
           </div>
-        </div>
-      </main>
     </div>
   );
 };

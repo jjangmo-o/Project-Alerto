@@ -32,7 +32,7 @@
   padding: 8px;
   border-radius: 10px;
   cursor: pointer;
-
+  display: none;
   transition:
     background-color 0.2s ease,
     transform 0.15s ease;
@@ -142,4 +142,10 @@
 
 .avatar-loaded {
   background-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .menu-btn {
+    display: inline-flex;
+  }
 }

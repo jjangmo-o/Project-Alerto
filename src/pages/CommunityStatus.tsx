@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
 import './CommunityStatus.css';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -79,11 +77,7 @@ const samplePost = {
 };
 
 const CommunityStatus = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
   const { profile } = useAuth();
-
-  const userName = profile?.first_name || 'User';
 
   // states for posts and composer
   const [loading] = useState(false);
@@ -190,10 +184,6 @@ const CommunityStatus = () => {
   return () => window.removeEventListener('keydown', handleKeyDown);
 }, [previewImageIndex]);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   const handleCreatePost = async () => {
     console.log('Auth user:', profile?.user_id);
 
@@ -243,13 +233,7 @@ const CommunityStatus = () => {
   };
 
   return (
-    <div className="community-status-container">
-      <Sidebar isOpen={isSidebarOpen} />
-
-      <main className="community-status-main">
-        <Header onMenuClick={toggleSidebar} username={userName} />
-
-        <section className="community-status-content">
+    <div className="community-status-content">
 
           <div className="community-header">
             <img
@@ -493,9 +477,6 @@ const CommunityStatus = () => {
               </div>
             )}
 
-
-        </section>
-      </main>
     </div>
   );
 };

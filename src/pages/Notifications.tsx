@@ -1,7 +1,4 @@
 import { useState, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import closeIcon from '../assets/icon-close-button.svg';
 import './Notifications.css';
@@ -36,16 +33,12 @@ const BARANGAY_MAP: Record<string, string> = {
 }
 
 const Notifications = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [notifications, setNotifications] = useState<any[]>([])
   const [focusedNotification, setFocusedNotification] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { profile } = useAuth();
-  
-  const userName = profile?.first_name || 'User';
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -70,10 +63,6 @@ const Notifications = () => {
 
     fetchNotifications();
   }, []);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
 
   const filteredNotifications =
     activeTab === 'all'
@@ -192,13 +181,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="notifications-container">
-      <Sidebar isOpen={isSidebarOpen} />
-
-      <main className="notifications-main">
-        <Header onMenuClick={toggleSidebar} username={userName} />
-
-        <section className="notifications-content">
+    <div className="notifications-content">
           <div className="notifications-controls">
             <div className="notifications-tabs">
               <button
@@ -398,8 +381,6 @@ const Notifications = () => {
             </div>
           )}
 
-        </section>
-      </main>
     </div>
   );
 };

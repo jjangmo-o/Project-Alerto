@@ -6,10 +6,6 @@ import logoImg from '../assets/logo-lighthouse.png';
 
 interface SidebarProps {
   isOpen: boolean;
-}
-
-interface SidebarProps {
-  isOpen: boolean;
   role?: 'user' | 'admin';
 }
 
@@ -27,6 +23,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
     }
   };
 
+    const handleNavClick = () => {
+    if (window.innerWidth <= 768) {
+      document.dispatchEvent(new CustomEvent('close-sidebar'));
+    }
+  };
+
   return (
     <aside className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <div
@@ -37,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
       >
         <img src={logoImg} alt="Project Alerto Logo" />
         <h2>Project Alerto</h2>
-        <p>MarikeÃ±os Readiness Hub</p>
+        <p>Marikeños Readiness Hub</p>
       </div>
 
 
@@ -74,23 +76,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
         </>
       ) : (
         <>
-          <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink to="/dashboard" onClick={handleNavClick} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Dashboard
           </NavLink>
 
-          <NavLink to="/map" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink to="/map" onClick={handleNavClick} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Evacuation Map
           </NavLink>
 
-          <NavLink to="/community-status" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink to="/community-status" onClick={handleNavClick} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Community Status
           </NavLink>
 
-          <NavLink to="/hotlines" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink to="/hotlines" onClick={handleNavClick} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Emergency Hotlines
           </NavLink>
 
-          <NavLink to="/residence" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <NavLink to="/residence" onClick={handleNavClick} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             Residence Card
           </NavLink>
         </>
