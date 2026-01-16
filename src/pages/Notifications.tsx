@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import closeIcon from '../assets/icon-close-button.svg';
 import './Notifications.css';
@@ -7,11 +8,27 @@ import {
   BellIcon,
   CloudRainWindIcon,
   ActivityIcon,
-  FireAlertIcon
+  FireAlertIcon,
+  EvacuationIcon
 } from './NotificationsIcons';
 
-type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire';
+type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire' | 'evacuation' | 'archive';
 type SortOption = 'newest' | 'oldest';
+
+interface Notification {
+  notification_id: string;
+  title: string;
+  message: string;
+  barangay_id: string | null;
+  target_role: string;
+  created_at: string;
+  created_by: string | null;
+  disaster_type: 'typhoon' | 'earthquake' | 'fire';
+  severity: 'normal' | 'alert' | 'urgent' | 'critical';
+  barangay_ids?: string[];
+  is_read?: boolean;
+  is_archived?: boolean;
+}
 
 const BARANGAY_MAP: Record<string, string> = {
   '3fee7818-0f5f-424e-ad29-4c4a7a217a0c': 'Barangka',
@@ -33,12 +50,26 @@ const BARANGAY_MAP: Record<string, string> = {
 }
 
 const Notifications = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [notifications, setNotifications] = useState<any[]>([])
-  const [focusedNotification, setFocusedNotification] = useState<any | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [archivedNotifications, setArchivedNotifications] = useState<Notification[]>([]);
+  const [focusedNotification, setFocusedNotification] = useState<Notification | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -55,19 +86,86 @@ const Notifications = () => {
         console.error(error);
         setError('Failed to load notifications. Please try again.');
       } else {
-        setNotifications(data || []);
+        const allNotifs = (data as Notification[]) || [];
+        
+        // Separate active and archived
+        if (currentUserId) {
+          const { data: userNotifs } = await supabase
+            .from('user_notifications')
+            .select('notification_id, is_archived')
+            .eq('user_id', currentUserId);
+
+          const archivedIds = new Set(
+            (userNotifs || [])
+              .filter(un => un.is_archived)
+              .map(un => un.notification_id)
+          );
+
+          const active = allNotifs.filter(n => !archivedIds.has(n.notification_id));
+          const archived = allNotifs.filter(n => archivedIds.has(n.notification_id));
+
+          setNotifications(active);
+          setArchivedNotifications(archived);
+        } else {
+          setNotifications(allNotifs);
+        }
+        
+        // Check for alert query param to auto-open a specific notification
+        const alertId = searchParams.get('alert');
+        if (alertId && data) {
+          const targetAlert = (data as Notification[]).find(n => n.notification_id === alertId);
+          if (targetAlert) {
+            setFocusedNotification(targetAlert);
+            // Clear the query param after opening
+            setSearchParams({});
+          }
+        }
       }
 
       setLoading(false);
     };
 
     fetchNotifications();
-  }, []);
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: 'target_role=eq.USER'
+        },
+        (payload) => {
+          console.log('New notification:', payload);
+          setNotifications(prev => [payload.new as Notification, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [searchParams, setSearchParams, currentUserId]);
+
+  // Helper function - must be defined before filteredNotifications
+  const isEvacuationNotification = (title: string) => {
+    return title && title.toLowerCase().includes('evacuation center');
+  };
+
+  // Determine source based on tab
+  const sourceNotifications = activeTab === 'archive' ? archivedNotifications : notifications;
 
   const filteredNotifications =
     activeTab === 'all'
-    ? notifications
-    : notifications.filter(n => n.disaster_type === activeTab);
+    ? sourceNotifications
+    : activeTab === 'archive'
+    ? archivedNotifications
+    : activeTab === 'evacuation'
+    ? sourceNotifications.filter(n => isEvacuationNotification(n.title))
+    : sourceNotifications.filter(n => n.disaster_type === activeTab && !isEvacuationNotification(n.title));
 
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
@@ -79,21 +177,31 @@ const Notifications = () => {
     switch (severity) {
       case 'critical': return 'severity-critical';
       case 'urgent': return 'severity-urgent';
+      case 'alert': return 'severity-alert';
       case 'normal': return 'severity-normal';
       default: return '';
     }
   };
 
-  const getSeverityLabel = (severity: string) => {
+  const getSeverityLabel = (severity: string, title?: string) => {
+    // For evacuation center notifications, use STATUS label
+    if (title && title.toLowerCase().includes('evacuation center')) {
+      return 'STATUS';
+    }
     switch (severity) {
         case 'critical': return 'CRITICAL';
         case 'urgent': return 'URGENT';
-        case 'normal': return 'ALERT';
+        case 'alert': return 'ALERT';
+        case 'normal': return 'NORMAL';
         default: return '';
     }
   };
   
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string, title?: string) => {
+    // Check title first for evacuation center notifications
+    if (title && isEvacuationNotification(title)) {
+      return <EvacuationIcon />;
+    }
     switch (type) {
       case 'typhoon':
         return <CloudRainWindIcon />;
@@ -101,6 +209,8 @@ const Notifications = () => {
         return <ActivityIcon />;
       case 'fire':
         return <FireAlertIcon />;
+      case 'evacuation':
+        return <EvacuationIcon />;
       default:
         return <BellIcon />;
     }
@@ -114,6 +224,10 @@ const Notifications = () => {
         return <ActivityIcon size={20} />;
       case 'fire':
         return <FireAlertIcon size={20} />;
+      case 'evacuation':
+        return <EvacuationIcon size={20} />;
+      case 'archive':
+        return <span style={{ fontSize: '20px' }}>📁</span>;
       case 'all':
       default:
         return <BellIcon size={20} />;
@@ -122,7 +236,7 @@ const Notifications = () => {
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString).getTime();
-    const now = Date.now();
+    const now = new Date().getTime();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -167,10 +281,105 @@ const Notifications = () => {
     if (error) {
       setError('Failed to refresh notifications.');
     } else {
-      setNotifications(data || []);
+      const allNotifs = (data as Notification[]) || [];
+      
+      if (currentUserId) {
+        const { data: userNotifs } = await supabase
+          .from('user_notifications')
+          .select('notification_id, is_archived')
+          .eq('user_id', currentUserId);
+
+        const archivedIds = new Set(
+          (userNotifs || [])
+            .filter(un => un.is_archived)
+            .map(un => un.notification_id)
+        );
+
+        const active = allNotifs.filter(n => !archivedIds.has(n.notification_id));
+        const archived = allNotifs.filter(n => archivedIds.has(n.notification_id));
+
+        setNotifications(active);
+        setArchivedNotifications(archived);
+      } else {
+        setNotifications(allNotifs);
+      }
     }
 
     setLoading(false);
+  };
+
+  // Archive/Unarchive handler
+  const handleArchiveToggle = async (notificationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!currentUserId) return;
+
+    const isArchiving = activeTab !== 'archive';
+
+    try {
+      // Check if user_notification record exists
+      const { data: existing } = await supabase
+        .from('user_notifications')
+        .select('*')
+        .eq('notification_id', notificationId)
+        .eq('user_id', currentUserId)
+        .single();
+
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('user_notifications')
+          .update({ 
+            is_archived: isArchiving,
+            archived_at: isArchiving ? new Date().toISOString() : null
+          })
+          .eq('notification_id', notificationId)
+          .eq('user_id', currentUserId);
+
+        if (error) {
+          console.error('Error updating notification:', error);
+          return;
+        }
+      } else {
+        // Create new record
+        const { error } = await supabase
+          .from('user_notifications')
+          .insert({
+            notification_id: notificationId,
+            user_id: currentUserId,
+            is_read: false,
+            is_archived: isArchiving,
+            archived_at: isArchiving ? new Date().toISOString() : null
+          });
+
+        if (error) {
+          console.error('Error creating notification record:', error);
+          return;
+        }
+      }
+
+      // Update local state
+      if (isArchiving) {
+        const notif = notifications.find(n => n.notification_id === notificationId);
+        if (notif) {
+          setNotifications(prev => prev.filter(n => n.notification_id !== notificationId));
+          setArchivedNotifications(prev => [notif, ...prev]);
+        }
+      } else {
+        const notif = archivedNotifications.find(n => n.notification_id === notificationId);
+        if (notif) {
+          setArchivedNotifications(prev => prev.filter(n => n.notification_id !== notificationId));
+          setNotifications(prev => [notif, ...prev]);
+        }
+      }
+
+      // Close spotlight if needed
+      if (focusedNotification?.notification_id === notificationId) {
+        setFocusedNotification(null);
+      }
+    } catch (err) {
+      console.error('Failed to toggle archive:', err);
+    }
   };
 
   const tabTitles: Record<FilterType, string> = {
@@ -178,6 +387,8 @@ const Notifications = () => {
     typhoon: 'Typhoon Updates',
     earthquake: 'Earthquake Alerts',
     fire: 'Fire Alert Updates',
+    evacuation: 'Evacuation Updates',
+    archive: 'Archived Notifications',
   };
 
   return (
@@ -208,6 +419,20 @@ const Notifications = () => {
               >
                 Fire Alert Updates
               </button>
+
+              <button
+                className={`tab-btn ${activeTab === 'evacuation' ? 'active' : ''}`}
+                onClick={() => setActiveTab('evacuation')}
+              >
+                Evacuation Updates
+              </button>
+
+              <button
+                className={`tab-btn ${activeTab === 'archive' ? 'active' : ''}`}
+                onClick={() => setActiveTab('archive')}
+              >
+                Archive
+              </button>
             </div>
 
             <div className="sort-dropdown">
@@ -226,13 +451,6 @@ const Notifications = () => {
               </div>
             </div>
 
-          </div>
-
-          <div className="notifications-section-header">
-            <div className="notifications-section-title">
-              <span className="section-icon">{getTabIcon(activeTab)}</span>
-              <h2>{tabTitles[activeTab]}</h2>
-            </div>
             <button
               className={`refresh-btn ${loading ? 'loading' : ''}`}
               onClick={handleRefresh}
@@ -246,7 +464,13 @@ const Notifications = () => {
                 Refresh
               </span>
             </button>
+          </div>
 
+          <div className="notifications-section-header">
+            <div className="notifications-section-title">
+              <span className="section-icon">{getTabIcon(activeTab)}</span>
+              <h2>{tabTitles[activeTab]}</h2>
+            </div>
           </div>
 
           {error && (
@@ -275,32 +499,28 @@ const Notifications = () => {
               sortedNotifications.map(notification => (
                 <div
                   key={notification.notification_id}
-                  className={`notification-card ${getSeverityClass(notification.severity)} ${!notification.is_read ? 'unread' : ''}`}
+                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-type' : ''} ${!notification.is_read ? 'unread' : ''} ${activeTab === 'archive' ? 'archived' : ''}`}
                   onClick={() => setFocusedNotification(notification)}
                   role="button"
                   tabIndex={0}
                 >
                   <button
                     className="notification-close"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setNotifications(prev =>
-                        prev.filter(n => n.notification_id !== notification.notification_id)
-                      );
-                    }}
-                    aria-label="Dismiss notification"
+                    onClick={(e) => handleArchiveToggle(notification.notification_id, e)}
+                    aria-label={activeTab === 'archive' ? 'Restore notification' : 'Archive notification'}
+                    title={activeTab === 'archive' ? 'Restore notification' : 'Archive notification'}
                   >
-                    <img src={closeIcon} alt="Close notification" />
+                    <img src={closeIcon} alt={activeTab === 'archive' ? 'Restore' : 'Archive'} />
                   </button>
 
                   <div className="notification-header">
-                    <span className="notification-icon">{getTypeIcon(notification.disaster_type)}</span>
+                    <span className="notification-icon">{getTypeIcon(notification.disaster_type, notification.title)}</span>
                     <span className="notification-title">{notification.title}</span>
                     <span className="notification-time">{formatTime(notification.created_at)}</span>
                   </div>
 
                   <div className="notification-body">
-                    <p>
+                    <p className="message-text">
                       {truncateText(notification.message)}
                       {notification.message.length > 160 && (
                         <span className="see-more"> See more</span>
@@ -320,8 +540,8 @@ const Notifications = () => {
                   )}
 
                   <div className="notification-footer">
-                    <span className={`severity-badge ${getSeverityClass(notification.severity)}`}>
-                      {getSeverityLabel(notification.severity)}
+                    <span className={`severity-badge ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-badge' : ''}`}>
+                      {getSeverityLabel(notification.severity, notification.title)}
                     </span>
                   </div>
                 </div>
@@ -335,19 +555,21 @@ const Notifications = () => {
               onClick={() => setFocusedNotification(null)}
             >
               <div
-                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)}`}
+                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-type' : ''}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
                   className="spotlight-close"
-                  onClick={() => setFocusedNotification(null)}
+                  onClick={(e) => handleArchiveToggle(focusedNotification.notification_id, e)}
+                  aria-label={activeTab === 'archive' ? 'Restore notification' : 'Archive notification'}
+                  title={activeTab === 'archive' ? 'Restore notification' : 'Archive notification'}
                 >
-                  <img src={closeIcon} alt="" />
+                  <img src={closeIcon} alt={activeTab === 'archive' ? 'Restore' : 'Archive'} />
                 </button>
 
                 <div className="notification-header">
                   <span className="notification-icon">
-                    {getTypeIcon(focusedNotification.disaster_type)}
+                    {getTypeIcon(focusedNotification.disaster_type, focusedNotification.title)}
                   </span>
                   <span className="notification-title">
                     {focusedNotification.title}
@@ -358,7 +580,7 @@ const Notifications = () => {
                 </div>
 
                 <div className="notification-body expanded">
-                  <p>{focusedNotification.message}</p>
+                  <p className="message-text">{focusedNotification.message}</p>
                 </div>
 
                 {Array.isArray(focusedNotification.barangay_ids) &&
@@ -373,8 +595,8 @@ const Notifications = () => {
                 )}
 
                 <div className="notification-footer">
-                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)}`}>
-                    {getSeverityLabel(focusedNotification.severity)}
+                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-badge' : ''}`}>
+                    {getSeverityLabel(focusedNotification.severity, focusedNotification.title)}
                   </span>
                 </div>
               </div>

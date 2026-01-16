@@ -27,7 +27,7 @@
 .notifications-controls {
   align-items: center;
   display: flex;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   margin-bottom: 28px;
 }
@@ -37,16 +37,15 @@
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  width: 100%;
-  max-width: 1000px;
+  flex: 1;
   height: 46px;
-  flex-shrink: 0;
+  min-width: 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .tab-btn {
   flex: 1;
-  min-width: 220px;
+  min-width: 0;
   height: 46px;
   display: flex;
   align-items: center;
@@ -54,10 +53,12 @@
   border: none;
   background: transparent;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #1c3e6f;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .tab-btn.active {
@@ -68,11 +69,13 @@
 .sort-dropdown {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #ffffff;
   padding: 10px 14px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  height: 46px;
 }
 
 .sort-label {
@@ -80,6 +83,7 @@
   font-weight: 800;
   color: #1c3e6f;
   letter-spacing: 0.6px;
+  white-space: nowrap;
 }
 
 .sort-select-wrapper {
@@ -100,6 +104,7 @@
   font-size: 0.75rem;
   color: #003077;
   cursor: pointer;
+  min-width: 110px;
 }
 
 .sort-select:hover {
@@ -115,7 +120,6 @@
   position: absolute;
   right: 12px;
   pointer-events: none;
-
   font-size: 0.7rem;
   color: #003077;
 }
@@ -127,6 +131,7 @@
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
+  height: 46px;
   font-weight: 800;
   font-size: 0.85rem;
   display: flex;
@@ -136,6 +141,7 @@
   white-space: nowrap;
   box-shadow: 0 4px 10px rgba(0, 48, 119, 0.25);
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .refresh-btn:hover:not(:disabled) {
@@ -208,6 +214,11 @@
   overflow: hidden;
 }
 
+.notification-card.archived {
+  opacity: 0.75;
+  background: #f8f8f8;
+}
+
 .notification-card::before {
   content: '';
   position: absolute;
@@ -231,8 +242,31 @@
   background: linear-gradient(to bottom,#ffb74d,#fb8c00,#ef6c00);
 }
 
+.notification-card.severity-alert::before {
+  background: linear-gradient(to bottom,#ffd54f,#ffb300,#ff8f00);
+}
+
 .notification-card.severity-normal::before {
-  background: linear-gradient(to bottom,#fff176,#fbc02d,#f9a825);
+  background: linear-gradient(to bottom, #81c784, #4caf50, #2e7d32);
+}
+
+/* Evacuation Center Status - Blue gradient */
+.notification-card.evacuation-type::before {
+  background: linear-gradient(to bottom, #64b5f6, #1976d2, #0d47a1);
+}
+
+.notification-card.evacuation-type .notification-icon {
+  color: #1976d2;
+}
+
+.notification-card.evacuation-type .severity-badge {
+  background: #1976d2;
+  color: #fff;
+}
+
+.severity-badge.evacuation-badge {
+  background: #1976d2;
+  color: #fff;
 }
 
 .no-notifications {
@@ -263,8 +297,12 @@
   color: #fb8c00;
 }
 
+.notification-card.severity-alert .notification-icon {
+  color: #ffb300;
+}
+
 .notification-card.severity-normal .notification-icon {
-  color: #f9a825;
+  color: #4caf50;
 }
 
 /* CLOSE */
@@ -322,6 +360,10 @@
   margin: 0;
 }
 
+.notification-body .message-text {
+  white-space: pre-line;
+}
+
 /* FOOTER */
 .notification-footer {
   display: flex;
@@ -347,9 +389,14 @@
   color: #fff;
 }
 
-.severity-badge.severity-normal {
-  background: #fbc02d;
+.severity-badge.severity-alert {
+  background: #ffb300;
   color: #333;
+}
+
+.severity-badge.severity-normal {
+  background: #4caf50;
+  color: #fff;
 }
 
 .animated-tab {
@@ -397,6 +444,46 @@
   box-shadow: 0 20px 60px rgba(0,0,0,0.35);
   position: relative;
   animation: scaleIn 0.25s ease;
+  overflow: hidden;
+}
+
+.notification-spotlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  border-radius: 14px 0 0 14px;
+}
+
+.notification-spotlight.severity-critical::before {
+  background: linear-gradient(to bottom,#ff6b6b,#e53935,#b71c1c);
+}
+
+.notification-spotlight.severity-urgent::before {
+  background: linear-gradient(to bottom,#ffb74d,#fb8c00,#ef6c00);
+}
+
+.notification-spotlight.severity-alert::before {
+  background: linear-gradient(to bottom,#ffd54f,#ffb300,#ff8f00);
+}
+
+.notification-spotlight.severity-normal::before {
+  background: linear-gradient(to bottom, #81c784, #4caf50, #2e7d32);
+}
+
+.notification-spotlight.evacuation-type::before {
+  background: linear-gradient(to bottom, #64b5f6, #1976d2, #0d47a1);
+}
+
+.notification-spotlight.evacuation-type .notification-icon {
+  color: #1976d2;
+}
+
+.notification-spotlight.evacuation-type .severity-badge {
+  background: #1976d2;
+  color: #fff;
 }
 
 /* EXPANDED BODY */
@@ -453,9 +540,22 @@
 
 /* RESPONSIVENESS FEATURE */
 @media (max-width: 768px) {
+  .notifications-controls {
+    flex-wrap: wrap;
+  }
+
+  .notifications-tabs {
+    width: 100%;
+    flex: none;
+  }
+
+  .sort-dropdown {
+    flex: 1;
+  }
+
   .refresh-btn {
     padding: 10px;
-    height: 36px; /* still testing this */
+    height: 46px;
   }
 
   .refresh-text {
