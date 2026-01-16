@@ -1,0 +1,350 @@
+/* ============================
+   PAGE WRAPPER
+   ============================ */
+
+.evacuation-map-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f3f2; /* same neutral bg as Community Status */
+}
+
+.evacuation-map-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================
+   CONTENT SECTION
+   ============================ */
+
+.evacuation-map-content {
+  padding: 20px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ============================
+   ALERT BANNER
+   ============================ */
+
+.alert-banner {
+  background-color: #f97316; /* orange */
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+/*
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  font-size: 13px;
+}
+*/
+/* ============================
+   MAIN LAYOUT
+   ============================ */
+
+.map-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.map-layout {
+  align-items: start;
+}
+
+.evacuation-centers-panel {
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+
+/* ============================
+   MAP SECTION
+   ============================ */
+
+.map-section {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.map-container {
+  width: 100%;
+  height: 620px;
+}
+
+/* ============================
+   ROUTE BUTTON
+   ============================ */
+
+.route-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background-color: #2563eb; /* blue */
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.route-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* ============================
+   RIGHT PANEL
+   ============================ */
+
+.evacuation-centers-panel {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.evacuation-centers-panel h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.evacuation-centers-panel .muted {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.eta-text {
+  font-size: 12px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.center-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.nearest-badge {
+  font-size: 10px;
+  background-color: #2563eb;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+
+
+.center-search,
+.center-filter {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.centers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.center-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.center-item:hover {
+  background-color: #f9fafb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.center-item.active {
+  border: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+
+.center-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.center-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.status-badge.open {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.full {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.capacity-text {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.location-btn {
+  position: absolute;
+  top: 60px;
+  right: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #f0fdf4;
+  color: #166534;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  z-index: 2;
+}
+
+.location-btn:hover {
+  background-color: #dcfce7;
+}
+
+.pin-btn {
+  position: absolute;
+  top: 104px;
+  right: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #fff7ed;
+  color: #9a3412;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 2;
+}
+
+.pin-btn:hover {
+  background-color: #fed7aa;
+}
+
+.pin-btn.active {
+  background-color: #f97316;
+  color: white;
+  border-color: #f97316;
+}
+
+.travel-mode-selector {
+  position: absolute;
+  bottom: 60px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.travel-mode-selector button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.travel-mode-selector button:hover {
+  background-color: #f3f4f6;
+}
+
+.travel-mode-selector button.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.geocoder-wrapper {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  width: 320px;
+}
+
+/* Prevent duplicate geocoder elements */
+.geocoder-wrapper .mapboxgl-ctrl-geocoder:not(:first-child) {
+  display: none;
+}
+
+.mapboxgl-ctrl-geocoder {
+  min-width: 100%;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.map-controls {
+  display: contents;
+}
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+
+@media (max-width: 1024px) {
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .map-container {
+    height: 520px;
+  }
+
+  .geocoder-wrapper {
+    width: 260px;
+  }
+
+  .location-btn,
+  .pin-btn {
+    right: 8px;
+  }
+}

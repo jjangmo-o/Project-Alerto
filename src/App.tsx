@@ -18,6 +18,8 @@ import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCommunityStatus from './pages/admin/AdminCommunityStatus'; // ✅ ADD THIS
 
+import EvacuationMap from './pages/EvacuationMap';
+
 const LoadingScreen = () => (
   <div className="loading-screen">
     <div className="loading-spinner" />
@@ -141,7 +143,16 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
+      
+      <Route
+        path="/map"
+        element={
+          <ProtectedRoute>
+            <EvacuationMap />
+          </ProtectedRoute>
+        }
+      />
+      
       <Route
         path="/community-status"
         element={

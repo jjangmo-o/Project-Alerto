@@ -188,8 +188,10 @@ export type Database = {
           barangay_id: string | null
           created_at: string | null
           created_by: string | null
+          disaster_type: string
           message: string
           notification_id: string
+          severity: string
           target_role: string
           title: string
         }
@@ -197,8 +199,10 @@ export type Database = {
           barangay_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          disaster_type: string
           message: string
           notification_id?: string
+          severity: string
           target_role?: string
           title: string
         }
@@ -206,8 +210,10 @@ export type Database = {
           barangay_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          disaster_type?: string
           message?: string
           notification_id?: string
+          severity?: string
           target_role?: string
           title?: string
         }
@@ -230,6 +236,7 @@ export type Database = {
           email: string
           first_name: string
           gender: string
+          is_verified: boolean | null
           last_name: string
           middle_name: string | null
           profile_id: string
@@ -237,6 +244,9 @@ export type Database = {
           profile_picture_path: string | null
           role: string
           user_id: string
+          verified_at: string | null
+          verified_by: string | null
+          verified_override: boolean | null
         }
         Insert: {
           address: string
@@ -246,6 +256,7 @@ export type Database = {
           email: string
           first_name: string
           gender: string
+          is_verified?: boolean | null
           last_name: string
           middle_name?: string | null
           profile_id?: string
@@ -253,6 +264,9 @@ export type Database = {
           profile_picture_path?: string | null
           role?: string
           user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+          verified_override?: boolean | null
         }
         Update: {
           address?: string
@@ -262,6 +276,7 @@ export type Database = {
           email?: string
           first_name?: string
           gender?: string
+          is_verified?: boolean | null
           last_name?: string
           middle_name?: string | null
           profile_id?: string
@@ -269,6 +284,9 @@ export type Database = {
           profile_picture_path?: string | null
           role?: string
           user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          verified_override?: boolean | null
         }
         Relationships: []
       }

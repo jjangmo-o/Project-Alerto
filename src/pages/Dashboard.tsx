@@ -18,6 +18,8 @@ import alertOrange from '../assets/icon-orange-alert.png';
 import alertGreen from '../assets/icon-green-alert.svg';
 import communityStatusIcon from '../assets/icon-community-status.svg';
 
+import { getNearestEvacuationCenter } from '../services/evacuationCenters.api';
+
 interface Notification {
   notification_id: string;
   title: string;
@@ -36,6 +38,14 @@ const Dashboard = () => {
 
   // 🔔 REALTIME ALERTS
   const [alerts, setAlerts] = useState<Notification[]>([]);
+
+  // ============================
+  // BACKEND: NEAREST EVAC CENTER
+  // ============================
+
+  const [nearestEC, setNearestEC] = useState<any>(null);
+  const [ecLoading, setEcLoading] = useState(false);
+  const [ecError, setEcError] = useState<string | null>(null);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -102,6 +112,30 @@ const Dashboard = () => {
           created_at: alert.created_at ?? ''
         }))
       );
+    }
+  };
+  const fetchNearestEvacuationCenter = async () => {
+    try {
+      setEcLoading(true);
+      setEcError(null);
+
+      // TEMPORARY coordinates (later replace with GPS)
+      const lat = 14.5995;
+      const lng = 120.9842;
+
+      const res = await getNearestEvacuationCenter({
+        lat,
+        lng,
+        mode: 'walking',
+      });
+
+      console.log('📍 Nearest Evacuation Center (backend):', res.data);
+      setNearestEC(res.data);
+    } catch (err) {
+      console.error('❌ Failed to fetch nearest evacuation center:', err);
+      setEcError('Unable to fetch nearest evacuation center');
+    } finally {
+      setEcLoading(false);
     }
   };
 
@@ -269,9 +303,21 @@ const Dashboard = () => {
                 <div className="water-timestamp">
                   As of 11:20 AM | 22 July 2025
                 </div>
-                <button className="evac-btn">
-                  View Nearest Evacuation Center
+                <button
+                  className="evac-btn"
+                  onClick={fetchNearestEvacuationCenter}
+                  disabled={ecLoading}
+                >
+                  {ecLoading ? 'Finding nearest evacuation center...' : 'View Nearest Evacuation Center'}
+                  {ecError && <p style={{ color: 'red' }}>{ecError}</p>}
+
+                {nearestEC && (
+                  <pre style={{ marginTop: '1rem', fontSize: '12px' }}>
+                    {JSON.stringify(nearestEC, null, 2)}
+                  </pre>
+                )}
                 </button>
+                
               </div>
             </div>
           </div>

@@ -10,14 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
     "@supabase/supabase-js": "^2.90.0",
+    "axios": "^1.13.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
+    "mapbox-gl": "^3.18.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.11.0",
+    "socket.io-client": "^4.8.3",
     "supabase": "^2.22.0"
   },
   "devDependencies": {
