@@ -49,7 +49,6 @@ const AdminVerification = () => {
         email,
         address,
         contact_number,
-        barangay_id,
         birth_date,
         gender,
         verification_requested_at,
@@ -62,7 +61,7 @@ const AdminVerification = () => {
       console.error('Fetch error:', error.message);
       setPendingResidents([]);
     } else if (Array.isArray(data)) {
-      // Only cast if no error and data is an array
+      setPendingResidents(data as PendingResident[]);
     } else {
       setPendingResidents([]);
     }

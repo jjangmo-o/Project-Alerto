@@ -25,7 +25,7 @@ body {
   position: relative;
   width: 100%;
   max-width: 850px;
-  min-height: 500px;
+  min-height: 750px;
   perspective: 1500px;
 }
 
@@ -514,5 +514,91 @@ body {
   .photo-box img {
     width: 180px;
     height: 225px;
+  }
+}
+
+/* ================= iPhone 14 Pro Max ================= */
+@media (max-width: 430px) {
+  .residence-wrapper {
+    padding: 16px 12px;
+    min-height: auto;
+  }
+
+  .residence-card-flip {
+    min-height: unset;
+    max-width: 100%;
+  }
+
+  .residence-card {
+    padding: 18px 16px;
+    border-width: 5px;
+    border-radius: 18px;
+  }
+
+  .card-header h2 {
+    font-size: 1.15rem;
+    line-height: 1.2;
+    border-bottom-width: 3px;
+  }
+
+  .status-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .card-body {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    justify-items: center;
+  }
+
+  .photo-box img {
+    width: 170px;
+    height: 215px;
+  }
+
+  .info-box {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .field span {
+    font-size: 0.9rem;
+    padding: 6px 0;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .card-actions button {
+    width: 100%;
+    padding: 14px;
+    font-size: 0.85rem;
+  }
+
+  .lock-overlay {
+    font-size: 0.95rem;
+    padding: 16px;
+  }
+
+  .residence-card.back {
+    padding: 24px 18px;
+  }
+
+  .qr-frame {
+    padding: 18px;
+  }
+
+  .qr-note {
+    font-size: 0.85rem;
   }
 }

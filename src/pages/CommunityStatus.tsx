@@ -371,6 +371,7 @@ const CommunityStatus = () => {
       }
 
       console.log('Uploaded image:', filePath);
+      // Store just the filename, we'll construct the public URL when fetching
       uploadedFilenames.push(filePath);
     }
 

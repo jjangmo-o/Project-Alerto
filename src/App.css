@@ -34,6 +34,7 @@ html, body, #root {
   overflow-y: auto;
   position: relative;
   max-width: 100%;
+  margin-left: 280px; /* Account for fixed sidebar width */
 }
 
 @media (max-width: 768px) {
@@ -85,5 +86,6 @@ html, body, #root {
 @media (max-width: 768px) {
   .main-content {
     width: 100%;
+    margin-left: 0; /* Remove sidebar margin on mobile */
   }
 }

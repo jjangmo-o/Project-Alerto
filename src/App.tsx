@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthProvider';
 import { useAuth } from './hooks/useAuth';
 
+import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -18,7 +19,7 @@ import './App.css';
 import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCommunityStatus from './pages/admin/AdminCommunityStatus';
-import AdminVerification from './pages/admin/AdminVerification'; // ✅ ADDED
+import AdminVerification from './pages/admin/AdminVerification';
 
 /* ================= LOADING ================= */
 
@@ -58,10 +59,9 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* ROOT */}
       <Route
         path="/"
-        element={<Navigate to={user ? '/dashboard' : '/login'} replace />}
+        element={user ? <Navigate to="/dashboard" replace /> : <Welcome />}
       />
 
       {/* ================= ADMIN ROUTES ================= */}
@@ -94,6 +94,8 @@ const AppRoutes = () => {
       />
 
       {/* ================= PUBLIC ROUTES ================= */}
+
+      <Route path="/welcome" element={<Welcome />} />
 
       <Route
         path="/login"

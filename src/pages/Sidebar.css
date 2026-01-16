@@ -17,14 +17,15 @@
   flex-direction: column;
   padding: 2rem 1.5rem;
   flex-shrink: 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
   white-space: nowrap;
-  transition: width 0.3s ease, padding 0.3s ease;
+  transition: width 0.3s ease, padding 0.3s ease, left 0.3s ease;
   z-index: 100;
 }
 
