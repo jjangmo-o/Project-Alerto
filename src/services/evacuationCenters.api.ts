@@ -16,6 +16,18 @@ export function getNearestEvacuationCenter(params: {
   );
 }
 
+// Add this new function
+export function getNearestWithRoute(params: {
+  lat: number;
+  lng: number;
+  mode: TravelMode;
+}) {
+  return axios.get(
+    `${API}/api/v1/evacuation-centers/nearest-route`,
+    { params }
+  );
+}
+
 // Get route between two points
 export function getRouteBetween(params: {
   originLat: number;

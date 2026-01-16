@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../hooks/useAuth';
 
-import { getNearestEvacuationCenter, getRouteBetween, getAllEvacuationCenters } from '../services/evacuationCenters.api';
+import { getNearestWithRoute, getRouteBetween, getAllEvacuationCenters } from '../services/evacuationCenters.api';
 import type { TravelMode } from '../services/evacuationCenters.api';
 import {
   getFloodHazards,
@@ -286,58 +286,50 @@ const EvacuationMap = () => {
     setLoading(true);
 
     try {
-      let destLat: number;
-      let destLng: number;
-      let evacuationCenter: EvacuationCenter | null = null;
+      let routes: any[];
+      let eventStatus: { flood?: boolean; earthquake?: boolean };
+      let evacuationCenter: EvacuationCenter;
 
-      // Step 1: Determine destination
-      if (intent.type === 'specific') {
-        // Use the specific center provided
-        const center = intent.center;
-        destLat = center.latitude ?? center.location?.coordinates?.[1]!;
-        destLng = center.longitude ?? center.location?.coordinates?.[0]!;
-        evacuationCenter = center;
-        console.log('Routing to specific center:', center.name);
-      } else {
-        // Find nearest center first
-        console.log('Finding nearest center from:', currentOrigin);
-        const nearestRes = await getNearestEvacuationCenter({
+      if (intent.type === 'nearest') {
+        // Use combined endpoint - single API call
+        console.log('Finding nearest center with route from:', currentOrigin);
+        const res = await getNearestWithRoute({
           lat: currentOrigin.lat,
           lng: currentOrigin.lng,
           mode,
         });
-        console.log('Nearest center response:', nearestRes.data);
-        
-        const nearest = nearestRes.data.evacuationCenter;
-        if (!nearest) {
-          alert('No evacuation center found nearby.');
-          setLoading(false);
-          return;
-        }
-        
-        destLat = nearest.latitude;
-        destLng = nearest.longitude;
+        console.log('Nearest with route response:', res.data);
+
+        const data = res.data;
+        routes = data.routes;
+        eventStatus = data.eventStatus || {};
         evacuationCenter = {
-          id: nearest.id,
-          name: nearest.name,
-          status: nearest.status,
-          latitude: nearest.latitude,
-          longitude: nearest.longitude,
+          id: data.evacuationCenter.id,
+          name: data.evacuationCenter.name,
+          status: data.evacuationCenter.status,
+          latitude: data.evacuationCenter.latitude,
+          longitude: data.evacuationCenter.longitude,
         };
+      } else {
+        // Route to specific center - two API calls
+        const center = intent.center;
+        const destLat = center.latitude ?? center.location?.coordinates?.[1]!;
+        const destLng = center.longitude ?? center.location?.coordinates?.[0]!;
+        
+        console.log('Routing to specific center:', center.name);
+        const routeRes = await getRouteBetween({
+          originLat: currentOrigin.lat,
+          originLng: currentOrigin.lng,
+          destLat,
+          destLng,
+          mode,
+        });
+        console.log('Route response:', routeRes.data);
+
+        routes = routeRes.data.routes;
+        eventStatus = routeRes.data.eventStatus || {};
+        evacuationCenter = center;
       }
-
-      // Step 2: Get route from origin to destination
-      console.log('Getting route from', currentOrigin, 'to', { destLat, destLng });
-      const routeRes = await getRouteBetween({
-        originLat: currentOrigin.lat,
-        originLng: currentOrigin.lng,
-        destLat,
-        destLng,
-        mode,
-      });
-      console.log('Route response:', routeRes.data);
-
-      const { routes, eventStatus } = routeRes.data;
 
       if (!routes || routes.length === 0) {
         alert('No route found. The destination may be unreachable.');
@@ -387,8 +379,8 @@ const EvacuationMap = () => {
       // Update origin marker color to blue (routed)
       setOriginMarker(currentOrigin.lng, currentOrigin.lat, '#2563eb');
 
-      // Set destination marker
-      setDestinationMarker(destLng, destLat);
+      // Set destination marker using evacuation center coordinates
+      setDestinationMarker(evacuationCenter.longitude, evacuationCenter.latitude);
 
       // Update selected center state to match what was routed to
       if (evacuationCenter) {
