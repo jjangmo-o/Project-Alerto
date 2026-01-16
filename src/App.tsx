@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthProvider';
 import { useAuth } from './hooks/useAuth';
 
+import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -58,10 +59,10 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* ROOT */}
+      {/* ROOT - Welcome/Landing Page */}
       <Route
         path="/"
-        element={<Navigate to={user ? '/dashboard' : '/login'} replace />}
+        element={user ? <Navigate to="/dashboard" replace /> : <Welcome />}
       />
 
       {/* ================= ADMIN ROUTES ================= */}
@@ -94,6 +95,9 @@ const AppRoutes = () => {
       />
 
       {/* ================= PUBLIC ROUTES ================= */}
+
+      {/* Welcome page - accessible anytime for testing */}
+      <Route path="/welcome" element={<Welcome />} />
 
       <Route
         path="/login"
