@@ -265,7 +265,7 @@
   background: linear-gradient(to bottom, #81c784, #4caf50, #2e7d32);
 }
 
-/* Evacuation Center Status - Blue gradient */
+/* Evacuation Center Status - Default Blue gradient */
 .notification-card.evacuation-type::before {
   background: linear-gradient(to bottom, #64b5f6, #1976d2, #0d47a1);
 }
@@ -279,9 +279,85 @@
   color: #fff;
 }
 
+/* Evacuation Status: FULL - Red */
+.notification-card.evac-status-full::before {
+  background: linear-gradient(to bottom, #ef9a9a, #e53935, #b71c1c);
+}
+
+.notification-card.evac-status-full .notification-icon {
+  color: #e53935;
+}
+
+.evac-badge-full {
+  background: #e53935 !important;
+  color: #fff !important;
+}
+
+/* Evacuation Status: NEAR-FULL - Orange */
+.notification-card.evac-status-near-full::before {
+  background: linear-gradient(to bottom, #ffcc80, #f57c00, #e65100);
+}
+
+.notification-card.evac-status-near-full .notification-icon {
+  color: #f57c00;
+}
+
+.evac-badge-near-full {
+  background: #f57c00 !important;
+  color: #fff !important;
+}
+
+/* Evacuation Status: HALF-FULL - Yellow/Amber */
+.notification-card.evac-status-half-full::before {
+  background: linear-gradient(to bottom, #ffe082, #ffc107, #ff8f00);
+}
+
+.notification-card.evac-status-half-full .notification-icon {
+  color: #ffa000;
+}
+
+.evac-badge-half-full {
+  background: #ffa000 !important;
+  color: #fff !important;
+}
+
+/* Evacuation Status: OPEN - Green */
+.notification-card.evac-status-open::before {
+  background: linear-gradient(to bottom, #a5d6a7, #43a047, #1b5e20);
+}
+
+.notification-card.evac-status-open .notification-icon {
+  color: #43a047;
+}
+
+.evac-badge-open {
+  background: #43a047 !important;
+  color: #fff !important;
+}
+
+/* Evacuation Status: CLOSED - Gray */
+.notification-card.evac-status-closed::before {
+  background: linear-gradient(to bottom, #bdbdbd, #757575, #424242);
+}
+
+.notification-card.evac-status-closed .notification-icon {
+  color: #757575;
+}
+
+.evac-badge-closed {
+  background: #757575 !important;
+  color: #fff !important;
+}
+
+/* Default evacuation badge */
 .severity-badge.evacuation-badge {
   background: #1976d2;
   color: #fff;
+}
+
+.evac-badge-default {
+  background: #1976d2 !important;
+  color: #fff !important;
 }
 
 .no-notifications {
@@ -499,6 +575,51 @@
 .notification-spotlight.evacuation-type .severity-badge {
   background: #1976d2;
   color: #fff;
+}
+
+/* Spotlight Evacuation Status: FULL - Red */
+.notification-spotlight.evac-status-full::before {
+  background: linear-gradient(to bottom, #ef9a9a, #e53935, #b71c1c);
+}
+
+.notification-spotlight.evac-status-full .notification-icon {
+  color: #e53935;
+}
+
+/* Spotlight Evacuation Status: NEAR-FULL - Orange */
+.notification-spotlight.evac-status-near-full::before {
+  background: linear-gradient(to bottom, #ffcc80, #f57c00, #e65100);
+}
+
+.notification-spotlight.evac-status-near-full .notification-icon {
+  color: #f57c00;
+}
+
+/* Spotlight Evacuation Status: HALF-FULL - Yellow/Amber */
+.notification-spotlight.evac-status-half-full::before {
+  background: linear-gradient(to bottom, #ffe082, #ffc107, #ff8f00);
+}
+
+.notification-spotlight.evac-status-half-full .notification-icon {
+  color: #ffa000;
+}
+
+/* Spotlight Evacuation Status: OPEN - Green */
+.notification-spotlight.evac-status-open::before {
+  background: linear-gradient(to bottom, #a5d6a7, #43a047, #1b5e20);
+}
+
+.notification-spotlight.evac-status-open .notification-icon {
+  color: #43a047;
+}
+
+/* Spotlight Evacuation Status: CLOSED - Gray */
+.notification-spotlight.evac-status-closed::before {
+  background: linear-gradient(to bottom, #bdbdbd, #757575, #424242);
+}
+
+.notification-spotlight.evac-status-closed .notification-icon {
+  color: #757575;
 }
 
 /* EXPANDED BODY */

@@ -8,6 +8,7 @@ import './Residence.css';
 
 import editIcon from '../assets/icon-edit.png';
 import lockIcon from '../assets/icon-lock.png';
+import uploadIcon from '../assets/icon-upload-image.svg';
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 const IMAGE_PLACEHOLDER = '/id-placeholder.png';
@@ -26,6 +27,9 @@ const Residence = () => {
   const [showBack, setShowBack] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     address: '',
     contact_number: '',
@@ -165,6 +169,57 @@ const Residence = () => {
         liveProfile.gender.slice(1).toLowerCase()
       : '';
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB.');
+      return;
+    }
+
+    setSelectedImage(file);
+    
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+  };
+
+  const handlePhotoClick = () => {
+    if (editMode) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const uploadProfileImage = async (): Promise<string | null> => {
+    if (!selectedImage || !liveProfile) return null;
+
+    const fileExt = selectedImage.name.split('.').pop();
+    const fileName = `${liveProfile.user_id}-${Date.now()}.${fileExt}`;
+    const filePath = fileName;
+
+    const { error } = await supabase.storage
+      .from('profile-images')
+      .upload(filePath, selectedImage, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('Error uploading profile image:', error);
+      throw error;
+    }
+
+    return filePath;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setLiveProfile(prev => ({
@@ -172,27 +227,39 @@ const Residence = () => {
       residence_verification_status: 'PENDING',
     }));
 
-    if (formData.email !== liveProfile.email) {
-      const { error } = await supabase.auth.updateUser({
-        email: formData.email,
-      });
-
-      if (error) {
-        alert(error.message);
+    // Upload new profile image if selected (still upload immediately to storage)
+    let newImagePath: string | null = null;
+    if (selectedImage) {
+      try {
+        newImagePath = await uploadProfileImage();
+      } catch {
+        alert('Failed to upload image. Please try again.');
         setSaving(false);
         return;
       }
     }
 
+    // Store pending changes as JSON - these will be applied only on approval
+    const pendingChanges: Record<string, unknown> = {
+      address: formData.address,
+      contact_number: formData.contact_number,
+      email: formData.email,
+    };
+
+    // Include new image path if uploaded
+    if (newImagePath) {
+      pendingChanges.profile_image_url = newImagePath;
+    }
+
+    const updateData: Record<string, unknown> = {
+      residence_verification_status: 'PENDING',
+      verification_requested_at: new Date().toISOString(),
+      pending_profile_changes: pendingChanges,
+    };
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        address: formData.address,
-        contact_number: formData.contact_number,
-        email: formData.email,
-        residence_verification_status: 'PENDING',
-        verification_requested_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('user_id', liveProfile.user_id);
 
     if (error) {
@@ -200,6 +267,16 @@ const Residence = () => {
       setSaving(false);
       return;
     }
+
+    // Clean up preview URL and reset image state
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setSelectedImage(null);
+    setImagePreview(null);
+
+    // Note: Don't clear cached image yet - changes are pending approval
+    // The image will be updated when admin approves the changes
 
     setEditMode(false);
     setSaving(false);
@@ -328,15 +405,38 @@ const Residence = () => {
           </div>
 
           <div className="card-body">
-            <div className="photo-box">
+            <div 
+              className={`photo-box ${editMode ? 'photo-box-editable' : ''}`}
+              onClick={handlePhotoClick}
+              role={editMode ? 'button' : undefined}
+              tabIndex={editMode ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (editMode && (e.key === 'Enter' || e.key === ' ')) {
+                  handlePhotoClick();
+                }
+              }}
+            >
               <img
-                src={imageUrl ?? IMAGE_PLACEHOLDER}
+                src={imagePreview ?? imageUrl ?? IMAGE_PLACEHOLDER}
                 alt="Resident"
                 loading="eager"
                 decoding="async"
                 onLoad={() => setImageLoaded(true)}
                 className={imageLoaded ? 'img-loaded' : 'img-loading'}
                 crossOrigin="anonymous"
+              />
+              {editMode && (
+                <div className="photo-overlay">
+                  <img src={uploadIcon} alt="Change photo" className="camera-icon" />
+                  <span>Change Photo</span>
+                </div>
+              )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageSelect}
+                accept="image/*"
+                style={{ display: 'none' }}
               />
             </div>
 
@@ -416,9 +516,32 @@ const Residence = () => {
 
           <div className="card-actions">
             {editMode ? (
-              <button onClick={handleSave} disabled={saving}>
-                {saving ? 'Submitting…' : 'Save & Submit'}
-              </button>
+              <>
+                <button onClick={handleSave} disabled={saving}>
+                  {saving ? 'Submitting…' : 'Save & Submit'}
+                </button>
+                <button 
+                  onClick={() => {
+                    // Cleanup preview URL
+                    if (imagePreview) {
+                      URL.revokeObjectURL(imagePreview);
+                    }
+                    setSelectedImage(null);
+                    setImagePreview(null);
+                    // Reset form data to original values
+                    setFormData({
+                      address: liveProfile.address ?? '',
+                      contact_number: liveProfile.contact_number ?? '',
+                      email: liveProfile.email ?? '',
+                    });
+                    setEditMode(false);
+                  }} 
+                  disabled={saving}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+              </>
             ) : (
               <>
                 <button disabled={!isVerified} onClick={() => setShowBack(true)}>

@@ -31,10 +31,10 @@ html, body, #root {
   min-height: 100vh;
   min-width: 0; /* Important for flex children to prevent overflow */
   overflow-x: hidden;
-  overflow-y: auto;
   position: relative;
   max-width: 100%;
   margin-left: 280px; /* Account for fixed sidebar width */
+  padding-top: 70px; /* Account for fixed header height */
 }
 
 @media (max-width: 768px) {

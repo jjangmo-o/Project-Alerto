@@ -1,56 +1,84 @@
-export interface WaterLevel {
-  id: string;
-  level: number;
-  status: 'Normal' | 'Alert' | 'Critical';
-  recorded_at: string;
+import { supabase } from '../lib/supabase';
+
+export type WaterStatus = 'NORMAL' | 'ALERT' | 'WARNING' | 'CRITICAL';
+
+export interface WaterLevelData {
+  levelMeters: number;
+  status: WaterStatus;
+  station: string;
+  thresholds: {
+    alert: number | null;
+    alarm: number | null;
+    critical: number | null;
+  };
+  source: string;
+  timestamp: string;
 }
 
-// Replace with your actual API URL
-const API_BASE_URL = import.meta.env.VITE_WATER_LEVEL_API_URL || '';
-
 export const waterLevelService = {
-  async getLatest(): Promise<WaterLevel | null> {
-    if (!API_BASE_URL) {
-      // Return mock data if no API configured
-      return {
-        id: 'mock',
-        level: 15.0,
-        status: 'Normal',
-        recorded_at: new Date().toISOString(),
-      };
-    }
+  /* ===============================
+     EDGE FUNCTION CALL
+     =============================== */
+  async getLatest(): Promise<WaterLevelData | null> {
+    const { data, error } = await supabase.functions.invoke<WaterLevelData>(
+      'waterLevelservice'
+    );
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/water-level/latest`);
-      if (!response.ok) throw new Error('Failed to fetch water level');
-      return response.json();
-    } catch (error) {
-      console.error('Error fetching water level:', error);
+    // Edge function/network error
+    if (error) {
+      console.error('[WaterLevelService] invoke error:', error);
       return null;
     }
-  },
 
-  async getHistory(limit = 24): Promise<WaterLevel[]> {
-    if (!API_BASE_URL) {
-      return [];
+    // Defensive: unexpected empty payload
+    if (!data) {
+      console.warn('[WaterLevelService] No data returned');
+      return null;
     }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/water-level/history?limit=${limit}`);
-      if (!response.ok) throw new Error('Failed to fetch water level history');
-      return response.json();
-    } catch (error) {
-      console.error('Error fetching water level history:', error);
-      return [];
+    // Defensive: validate critical fields
+    if (
+      typeof data.levelMeters !== 'number' ||
+      !data.status ||
+      !data.timestamp
+    ) {
+      console.warn('[WaterLevelService] Invalid payload:', data);
+      return null;
+    }
+
+    return data;
+  },
+
+  /* ===============================
+     UI HELPERS (IMPORTANT)
+     =============================== */
+  getStatusText(status: WaterStatus): string {
+    switch (status) {
+      case 'NORMAL':
+        return 'Normal Level';
+      case 'ALERT':
+        return 'Alert Level';
+      case 'WARNING':
+        return 'Warning Level';
+      case 'CRITICAL':
+        return 'Critical Level';
+      default:
+        return 'Unknown';
     }
   },
 
-  // Placeholder for real-time - can be replaced with WebSocket or SSE
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subscribeToUpdates(_callback: (payload: unknown) => void) {
-    // Return a mock subscription object
-    return {
-      unsubscribe: () => {},
-    };
-  },
+  getStatusClass(status: WaterStatus): string {
+    switch (status) {
+      case 'NORMAL':
+        return 'normal';
+      case 'ALERT':
+        return 'alert';
+      case 'WARNING':
+        return 'warning';
+      case 'CRITICAL':
+        return 'critical';
+      default:
+        return 'normal';
+    }
+  }
 };

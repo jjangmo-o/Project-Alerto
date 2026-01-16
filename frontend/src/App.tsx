@@ -21,6 +21,7 @@ import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCommunityStatus from './pages/admin/AdminCommunityStatus';
 import AdminVerification from './pages/admin/AdminVerification';
+import AdminEvacuation from './pages/admin/AdminEvacuation';
 
 /* ================= LOADING ================= */
 
@@ -90,6 +91,15 @@ const AppRoutes = () => {
         element={
           <AdminRoute>
             <AdminVerification />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/evacuation"
+        element={
+          <AdminRoute>
+            <AdminEvacuation />
           </AdminRoute>
         }
       />

@@ -90,7 +90,28 @@ const Notifications = () => {
           ...(n as Notification),
           created_at: typeof n.created_at === 'string' && n.created_at !== null ? n.created_at : '',
         }));
-        setNotifications(safeNotifications);
+
+        // Filter archived notifications if user is logged in
+        if (currentUserId) {
+          const { data: userNotifs } = await supabase
+            .from('user_notifications')
+            .select('notification_id, is_archived')
+            .eq('user_id', currentUserId);
+
+          const archivedIds = new Set(
+            (userNotifs || [])
+              .filter(un => un.is_archived)
+              .map(un => un.notification_id)
+          );
+
+          const active = safeNotifications.filter(n => !archivedIds.has(n.notification_id));
+          const archived = safeNotifications.filter(n => archivedIds.has(n.notification_id));
+
+          setNotifications(active);
+          setArchivedNotifications(archived);
+        } else {
+          setNotifications(safeNotifications);
+        }
 
         // check alert query param to auto open a specific notification
         const alertId = searchParams.get('alert');
@@ -108,10 +129,55 @@ const Notifications = () => {
     };
 
     fetchNotifications();
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, currentUserId]);
 
   const isEvacuationNotification = (title: string) => {
     return title && title.toLowerCase().includes('evacuation center');
+  };
+
+  // Get evacuation center status from notification title or message
+  const getEvacuationStatus = (notification: Notification): string | null => {
+    if (!isEvacuationNotification(notification.title)) return null;
+    
+    const text = (notification.title + ' ' + notification.message).toLowerCase();
+    
+    if (text.includes('full') && !text.includes('near-full') && !text.includes('half-full')) {
+      return 'full';
+    }
+    if (text.includes('near-full') || text.includes('near full') || text.includes('nearly full')) {
+      return 'near-full';
+    }
+    if (text.includes('half-full') || text.includes('half full')) {
+      return 'half-full';
+    }
+    if (text.includes('open') || text.includes('available')) {
+      return 'open';
+    }
+    if (text.includes('closed')) {
+      return 'closed';
+    }
+    
+    return null;
+  };
+
+  // Get CSS class for evacuation status
+  const getEvacuationStatusClass = (notification: Notification): string => {
+    const status = getEvacuationStatus(notification);
+    if (!status) return 'evacuation-type';
+    return `evacuation-type evac-status-${status}`;
+  };
+
+  // Get label for evacuation status
+  const getEvacuationStatusLabel = (notification: Notification): string => {
+    const status = getEvacuationStatus(notification);
+    switch (status) {
+      case 'full': return 'FULL';
+      case 'near-full': return 'NEAR-FULL';
+      case 'half-full': return 'HALF-FULL';
+      case 'open': return 'OPEN';
+      case 'closed': return 'CLOSED';
+      default: return 'STATUS';
+    }
   };
 
   const filteredNotifications =
@@ -449,7 +515,7 @@ const Notifications = () => {
               sortedNotifications.map(notification => (
                 <div
                   key={notification.notification_id}
-                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-type' : ''} ${!notification.is_read ? 'unread' : ''}`}
+                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? getEvacuationStatusClass(notification) : ''} ${!notification.is_read ? 'unread' : ''}`}
                   onClick={() => setFocusedNotification(notification)}
                   role="button"
                   tabIndex={0}
@@ -490,8 +556,8 @@ const Notifications = () => {
                   )}
 
                   <div className="notification-footer">
-                    <span className={`severity-badge ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-badge' : ''}`}>
-                      {getSeverityLabel(notification.severity, notification.title)}
+                    <span className={`severity-badge ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? `evacuation-badge evac-badge-${getEvacuationStatus(notification) || 'default'}` : ''}`}>
+                      {isEvacuationNotification(notification.title) ? getEvacuationStatusLabel(notification) : getSeverityLabel(notification.severity, notification.title)}
                     </span>
                   </div>
                 </div>
@@ -505,7 +571,7 @@ const Notifications = () => {
               onClick={() => setFocusedNotification(null)}
             >
               <div
-                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-type' : ''}`}
+                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? getEvacuationStatusClass(focusedNotification) : ''}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -545,8 +611,8 @@ const Notifications = () => {
                 )}
 
                 <div className="notification-footer">
-                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-badge' : ''}`}>
-                    {getSeverityLabel(focusedNotification.severity, focusedNotification.title)}
+                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? `evacuation-badge evac-badge-${getEvacuationStatus(focusedNotification) || 'default'}` : ''}`}>
+                    {isEvacuationNotification(focusedNotification.title) ? getEvacuationStatusLabel(focusedNotification) : getSeverityLabel(focusedNotification.severity, focusedNotification.title)}
                   </span>
                 </div>
               </div>

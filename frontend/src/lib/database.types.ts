@@ -270,6 +270,7 @@ export type Database = {
           is_verified: boolean | null
           last_name: string
           middle_name: string | null
+          pending_profile_changes: Json | null
           profile_id: string
           profile_image_url: string | null
           profile_picture_path: string | null
@@ -293,6 +294,7 @@ export type Database = {
           is_verified?: boolean | null
           last_name: string
           middle_name?: string | null
+          pending_profile_changes?: Json | null
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null
@@ -316,6 +318,7 @@ export type Database = {
           is_verified?: boolean | null
           last_name?: string
           middle_name?: string | null
+          pending_profile_changes?: Json | null
           profile_id?: string
           profile_image_url?: string | null
           profile_picture_path?: string | null

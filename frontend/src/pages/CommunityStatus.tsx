@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import communityProfileIcon from '../assets/icon-community profile.png';
 import communityIcon from '../assets/icon-community-status.svg';
-import upvoteIcon from '../assets/upvote.png';
 import uploadIcon from '../assets/icon-upload-image.svg';
 import closeButtonIcon from '../assets/icon-close-button.svg';
 import prevIcon from '../assets/icon-arrow-left.svg';
@@ -121,6 +120,9 @@ const CommunityStatus = () => {
   // states for selects in composer
   const [status, setStatus] = useState('Safe');
   const [barangay, setBarangay] = useState('');
+
+  // Filter state for posts
+  const [filterBarangay, setFilterBarangay] = useState('');
 
   // Image upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -527,9 +529,29 @@ const CommunityStatus = () => {
             </button>
           </div>
 
+          {/* BARANGAY FILTER */}
+          <div className="filter-container">
+            <label htmlFor="barangay-filter" className="filter-label">Filter by Barangay:</label>
+            <select
+              id="barangay-filter"
+              className="filter-select"
+              value={filterBarangay}
+              onChange={(e) => setFilterBarangay(e.target.value)}
+            >
+              <option value="">All Barangays</option>
+              {BARANGAY_OPTIONS.map((brgy) => (
+                <option key={brgy} value={BARANGAY_ID_MAP[brgy]}>
+                  {brgy}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* POSTS FEED */}
           <div className="posts-feed">
-            {posts.map((post) => (
+            {posts
+              .filter((post) => !filterBarangay || post.barangay_id === filterBarangay)
+              .map((post) => (
               <div className="post-card" key={post.report_id}>
                 <div className="post-header">
                   <div className="avatar-circle"> <img src={communityProfileIcon} alt="Community Member" /></div>
@@ -580,12 +602,6 @@ const CommunityStatus = () => {
                     ))}
                   </div>
                 )}
-
-                <div className="post-actions">
-                  <button className="like-btn">
-                    <img src={upvoteIcon} alt="Like" />
-                  </button>
-                </div>
               </div>
             ))}
 

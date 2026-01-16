@@ -260,6 +260,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string
+          barangay_id: string | null
           birth_date: string
           contact_number: string
           created_at: string | null
@@ -282,6 +283,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          barangay_id?: string | null
           birth_date: string
           contact_number: string
           created_at?: string | null
@@ -304,6 +306,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          barangay_id?: string | null
           birth_date?: string
           contact_number?: string
           created_at?: string | null

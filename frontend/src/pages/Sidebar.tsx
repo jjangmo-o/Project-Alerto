@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, role = 'user' }) => {
           </NavLink>
 
           <NavLink
-            to="/admin/map"
+            to="/admin/evacuation"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             Evacuation Map

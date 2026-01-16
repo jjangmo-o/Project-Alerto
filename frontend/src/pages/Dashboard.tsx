@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { waterLevelService } from '../services/waterLevelService';
+import type { WaterLevelData } from '../services/waterLevelService';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+import type { TravelMode } from '../services/evacuationCenters.api';
 
 import {
   CloudRainWindIcon,
@@ -18,6 +26,8 @@ import hotlineIcon from '../assets/icon-emergency-hotlines.png';
 import mapIcon from '../assets/icon-evacuation-map.png';
 import cardIcon from '../assets/icon-profile-card.png';
 import communityStatusIcon from '../assets/icon-community-status.svg';
+
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 interface Notification {
   notification_id: string;
@@ -36,6 +46,31 @@ const Dashboard = () => {
 
   // REALTIME ALERTS
   const [alerts, setAlerts] = useState<Notification[]>([]);
+
+  // WATER LEVEL DATA
+  const [waterLevel, setWaterLevel] = useState<WaterLevelData | null>(null);
+  const [waterLevelLoading, setWaterLevelLoading] = useState(true);
+
+  // USER STATUS (from community posts)
+  const [userStatus, setUserStatus] = useState<string>('Safe');
+  const { user } = useAuth();
+
+  // ============================
+  // MAP STATE & REFS
+  // ============================
+  const [travelMode, setTravelMode] = useState<TravelMode>('walking');
+  const [pinMode, setPinMode] = useState(false);
+  const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [testFloodActive, setTestFloodActive] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false);
+
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const geocoderContainerRef = useRef<HTMLDivElement | null>(null);
+  const geocoderRef = useRef<MapboxGeocoder | null>(null);
+  const mapInitializedRef = useRef(false);
+  const originMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   // ============================
   // EVACUATION CENTER COUNTS
@@ -122,6 +157,262 @@ const Dashboard = () => {
   }, []);
 
   // ============================
+  // USER STATUS (from community posts)
+  // ============================
+
+  const fetchUserStatus = useCallback(async () => {
+    if (!user?.id) return;
+
+    const { data, error } = await supabase
+      .from('disaster_reports')
+      .select('status_type')
+      .eq('user_id', user.id)
+      .eq('moderation_status', 'ACTIVE')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      // Fallback to 'Safe' if no posts found
+      setUserStatus('Safe');
+      return;
+    }
+
+    setUserStatus(data.status_type || 'Safe');
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchUserStatus();
+  }, [fetchUserStatus]);
+
+  // Subscribe to realtime changes for user's community status posts
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('user-status-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'disaster_reports',
+          filter: `user_id=eq.${user.id}`,
+        },
+        fetchUserStatus
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, fetchUserStatus]);
+
+  // ============================
+  // WATER LEVEL DATA
+  // ============================
+
+  const fetchWaterLevel = async () => {
+    setWaterLevelLoading(true);
+    const data = await waterLevelService.getLatest();
+    setWaterLevel(data);
+    setWaterLevelLoading(false);
+  };
+
+  useEffect(() => {
+    (async () => {
+      await fetchWaterLevel();
+    })();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchWaterLevel, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // ============================
+  // MAP INITIALIZATION
+  // ============================
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInitializedRef.current) return;
+
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [121.097, 14.650], // Marikina
+      zoom: 11,
+    });
+
+    map.on('load', () => {
+      map.fitBounds(
+        [
+          [121.0, 14.55],
+          [121.18, 14.72],
+        ],
+        { padding: 20 }
+      );
+      setMapReady(true);
+    });
+
+    mapRef.current = map;
+    mapInitializedRef.current = true;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      mapInitializedRef.current = false;
+      setMapReady(false);
+    };
+  }, []);
+
+  // ============================
+  // GEOCODER INITIALIZATION
+  // ============================
+  useEffect(() => {
+    const map = mapRef.current;
+    const container = geocoderContainerRef.current;
+    
+    if (!map || !container || geocoderRef.current) return;
+    
+    if (!map.loaded()) {
+      const onLoad = () => {
+        if (!geocoderRef.current && container) {
+          initGeocoder(map, container);
+        }
+      };
+      map.on('load', onLoad);
+      return () => { map.off('load', onLoad); };
+    } else {
+      initGeocoder(map, container);
+    }
+  }, []);
+
+  const initGeocoder = (map: mapboxgl.Map, container: HTMLDivElement) => {
+    container.innerHTML = '';
+    
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken!,
+      mapboxgl,
+      marker: false,
+      placeholder: 'Search address or place',
+    });
+
+    geocoder.addTo(container);
+
+    geocoder.on('result', (e: { result: { center: [number, number] } }) => {
+      const [lng, lat] = e.result.center;
+      setOriginMarker(lng, lat, '#0ea5e9');
+      setOrigin({ lat, lng });
+      map.flyTo({ center: [lng, lat], zoom: 15 });
+    });
+
+    geocoderRef.current = geocoder;
+  };
+
+  // ============================
+  // MARKER HELPERS
+  // ============================
+  const setOriginMarker = useCallback((lng: number, lat: number, color: string) => {
+    if (!mapRef.current) return;
+    originMarkerRef.current?.remove();
+    const marker = new mapboxgl.Marker({ color })
+      .setLngLat([lng, lat])
+      .addTo(mapRef.current);
+    originMarkerRef.current = marker;
+  }, []);
+
+  // ============================
+  // PIN MODE
+  // ============================
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const handler = (e: mapboxgl.MapMouseEvent) => {
+      const { lng, lat } = e.lngLat;
+      setOriginMarker(lng, lat, '#f59e0b');
+      setOrigin({ lat, lng });
+      map.flyTo({ 
+        center: [lng, lat], 
+        zoom: Math.max(map.getZoom(), 14),
+        duration: 500 
+      });
+      setPinMode(false);
+    };
+
+    if (pinMode) {
+      map.getCanvas().style.cursor = 'crosshair';
+      map.on('click', handler);
+    } else {
+      map.getCanvas().style.cursor = '';
+    }
+
+    return () => {
+      map.off('click', handler);
+      if (map.getCanvas()) {
+        map.getCanvas().style.cursor = '';
+      }
+    };
+  }, [pinMode, mapReady, setOriginMarker]);
+
+  // ============================
+  // USE MY LOCATION
+  // ============================
+  const useMyLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setOriginMarker(longitude, latitude, '#16a34a');
+        setOrigin({ lat: latitude, lng: longitude });
+        mapRef.current?.flyTo({ 
+          center: [longitude, latitude], 
+          zoom: 15,
+          duration: 1000 
+        });
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        alert('Unable to get your location. Please enable location services or use pin mode.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, [setOriginMarker]);
+
+  // ============================
+  // FIND NEAREST EVACUATION CENTER
+  // ============================
+  const handleFindNearest = useCallback(async () => {
+    if (!origin) {
+      alert('Please set your location first using the location button, pin mode, or search.');
+      return;
+    }
+
+    setMapLoading(true);
+
+    try {
+      // Navigate to evacuation map with location data for auto-routing
+      navigate('/map', { 
+        state: { 
+          origin, 
+          travelMode, 
+          testFloodActive,
+          autoRoute: true 
+        } 
+      });
+    } catch (error) {
+      console.error('Error finding nearest evacuation center:', error);
+      alert('Unable to find nearest evacuation center. Please try again.');
+    } finally {
+      setMapLoading(false);
+    }
+  }, [origin, travelMode, testFloodActive, navigate]);
+
+  // ============================
   // UI
   // ============================
 
@@ -140,6 +431,29 @@ const Dashboard = () => {
       default:
         return <BellIcon size={24} />;
     }
+  };
+
+  // Get CSS class for user status card based on status type
+  const getStatusCardClass = (status: string): string => {
+    const normalizedStatus = status.toLowerCase();
+    
+    // Green/Success statuses
+    if (normalizedStatus === 'safe') {
+      return 'success';
+    }
+    
+    // Red/Danger statuses (critical, emergency situations)
+    if (['critical', 'injured', 'fire', 'trapped', 'missing'].includes(normalizedStatus)) {
+      return 'danger';
+    }
+    
+    // Orange/Warning statuses (attention needed but less severe)
+    if (['flooding', 'power outage', 'outbreak', 'rescue', 'animal rescue', 'medical assistance'].includes(normalizedStatus)) {
+      return 'warning';
+    }
+    
+    // Default to success (safe)
+    return 'success';
   };
 
   const [now, setNow] = useState(() => Date.now());
@@ -176,18 +490,33 @@ const Dashboard = () => {
     return `${totalDays} day${totalDays > 1 ? 's' : ''} ago`;
   };
 
+  const formatDateTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    const dateStr = date.toLocaleDateString('en-US', { 
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    return `As of ${timeStr} | ${dateStr}`;
+  };
+
   return (
     <div className="dashboard-grid">
       <div className="left-column">
 
         {/* STATUS CARDS */}
         <section className="status-row">
-          <div className="status-card success">
+          <div className={`status-card ${getStatusCardClass(userStatus)}`}>
             <div className="icon-box">
-              <img src={currentStatusIcon} alt="Stable" />
+              <img src={currentStatusIcon} alt="Status" />
             </div>
             <div className="status-info">
-              <h3>STABLE</h3>
+              <h3>{userStatus.toUpperCase()}</h3>
               <p>Your Current Status</p>
             </div>
           </div>
@@ -215,7 +544,95 @@ const Dashboard = () => {
 
         {/* MAP */}
         <section className="map-row">
-          <div className="map-card" />
+          <div className="map-card">
+            <div ref={geocoderContainerRef} className="dashboard-geocoder-wrapper" />
+            <div ref={mapContainerRef} className="dashboard-map-container" />
+
+            {/* Map Controls */}
+            <div className="dashboard-map-controls">
+              <button onClick={useMyLocation} className="location-btn">
+                <svg className="btn-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                </svg>
+                Use My Location
+              </button>
+
+              <button
+                className={`pin-btn ${pinMode ? 'active' : ''}`}
+                onClick={() => setPinMode(p => !p)}
+              >
+                <svg className="btn-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a5.927 5.927 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707-.195-.195.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a5.922 5.922 0 0 1 1.013.16l3.134-3.133a2.772 2.772 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/>
+                </svg>
+                {pinMode ? 'Pin Mode ON' : 'Pin Location'}
+              </button>
+            </div>
+
+            {/* Hazard Toggle */}
+            <div className="dashboard-hazard-panel">
+              <div className="hazard-panel-header">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                <strong>Flood Hazard</strong>
+              </div>
+              <label className="hazard-checkbox">
+                <input
+                  type="checkbox"
+                  checked={testFloodActive}
+                  onChange={e => setTestFloodActive(e.target.checked)}
+                />
+                <span>Flood Risk</span>
+              </label>
+            </div>
+
+            {/* Travel Mode Selector */}
+            <div className="dashboard-travel-mode-selector">
+              <button
+                className={travelMode === 'walking' ? 'active' : ''}
+                onClick={() => setTravelMode('walking')}
+              >
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M9.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM6.44 3.752A.75.75 0 0 1 7 3.5h1.445c.742 0 1.32.643 1.243 1.38l-.43 4.083a1.75 1.75 0 0 1-.088.395l-.318.906.213.242a.75.75 0 0 1 .114.175l2 4.25a.75.75 0 1 1-1.357.638l-1.956-4.154-1.68-1.921A.75.75 0 0 1 6 8.96l.138-2.613-.435.489-.464 2.786a.75.75 0 1 1-1.48-.246l.5-3a.75.75 0 0 1 .18-.375l2-2.25Z"/>
+                  <path d="M6.25 11.745v-1.418l1.204 1.375.261.524a.75.75 0 0 1-.12.231l-2.5 3.25a.75.75 0 1 1-1.19-.914l2.345-3.048Zm4.22-4.215-.494-.494.205-1.843.006-.067 1.124 1.124h1.44a.75.75 0 0 1 0 1.5H11a.75.75 0 0 1-.531-.22Z"/>
+                </svg>
+                Walking
+              </button>
+              <button
+                className={travelMode === 'driving' ? 'active' : ''}
+                onClick={() => setTravelMode('driving')}
+              >
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2H6ZM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17 1.247 0 2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276Z"/>
+                  <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679c.033.161.049.325.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.807.807 0 0 0 .381-.404l.792-1.848Z"/>
+                </svg>
+                Driving
+              </button>
+              <button
+                className={travelMode === 'two-wheeler' ? 'active' : ''}
+                onClick={() => setTravelMode('two-wheeler')}
+              >
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8ZM12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
+                  <path d="M9 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-7Zm1 .5v6h2V5h-2Z"/>
+                </svg>
+                Two-wheeler
+              </button>
+            </div>
+
+            {/* Find Nearest Button */}
+            <button
+              className="dashboard-route-btn"
+              onClick={handleFindNearest}
+              disabled={mapLoading}
+            >
+              <svg className="btn-icon" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              </svg>
+              {mapLoading ? 'Finding...' : 'Find Nearest Evacuation Center'}
+            </button>
+          </div>
         </section>
 
         {/* PREPAREDNESS HUB */}
@@ -285,21 +702,38 @@ const Dashboard = () => {
         </div>
 
         <div className="water-level-card">
-          <div className="water-header">
+          <div className={`water-header ${waterLevel ? waterLevelService.getStatusClass(waterLevel.status) : ''}`}>
             <img src={waterLevelIcon} className="water-level-icon" />
             <span className="marikina-river-text">MARIKINA RIVER</span>
             <h2 className="water-level-title">WATER LEVEL UPDATE</h2>
           </div>
 
           <div className="water-body">
-            <div className="water-status-text">Status: Normal</div>
-            <div className="water-value normal">NORMAL (14.2m)</div>
-            <div className="water-timestamp">
-              As of 11:20 AM | 22 July 2025
-            </div>
-            <button className="evac-btn">
-              View Nearest Evacuation Center
-            </button>
+            {waterLevelLoading ? (
+              <div className="water-status-text">Loading...</div>
+            ) : waterLevel ? (
+              <>
+                <div className="water-status-text">
+                  Status: {waterLevelService.getStatusText(waterLevel.status)}
+                </div>
+                <div className={`water-value ${waterLevelService.getStatusClass(waterLevel.status)}`}>
+                  {waterLevel.status} ({waterLevel.levelMeters.toFixed(2)}m)
+                </div>
+                <div className="water-timestamp">
+                  {formatDateTime(waterLevel.timestamp)}
+                </div>
+                <button 
+                  className="evac-btn"
+                  onClick={() => navigate('/map')}
+                >
+                  View Nearest Evacuation Center
+                </button>
+              </>
+            ) : (
+              <div className="water-status-text">
+                Unable to fetch water level data
+              </div>
+            )}
           </div>
         </div>
       </div>

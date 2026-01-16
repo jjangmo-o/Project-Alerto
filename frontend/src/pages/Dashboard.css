@@ -90,19 +90,261 @@
 }
 
 .map-card {
-  background: #E9ECEF;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 12px;
   overflow: hidden;
-  min-height: 420px;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  min-height: 640px;
+  height: 640px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  position: relative;
 }
 
-.map-card > * {
-  height: 100%;
+/* Dashboard Map Styles */
+.dashboard-map-container {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
+.dashboard-geocoder-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  width: 340px;
+}
+
+.dashboard-geocoder-wrapper .mapboxgl-ctrl-geocoder {
   width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-map-controls {
+  position: absolute;
+  top: 115px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.dashboard-map-controls .location-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  padding: 10px 16px;
+  white-space: nowrap;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-map-controls .location-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 
+    0 4px 12px rgba(16, 185, 129, 0.4),
+    0 0 0 1px rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.dashboard-map-controls .pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  color: #ea580c;
+  padding: 10px 16px;
+  white-space: nowrap;
+  border: 1px solid #fed7aa;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-map-controls .pin-btn:hover {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fb923c;
+  box-shadow: 
+    0 4px 12px rgba(234, 88, 12, 0.25),
+    0 0 0 1px rgba(234, 88, 12, 0.1);
+  transform: translateY(-1px);
+}
+
+.dashboard-map-controls .pin-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border-color: #f97316;
+  box-shadow: 
+    0 4px 12px rgba(249, 115, 22, 0.4),
+    0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+.dashboard-hazard-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 
+    0 4px 12px rgba(251, 146, 60, 0.15),
+    0 0 0 1px rgba(251, 146, 60, 0.1);
+}
+
+.dashboard-hazard-panel .hazard-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a3412;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.dashboard-hazard-panel .hazard-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.dashboard-hazard-panel .hazard-checkbox:hover {
+  color: #1f2937;
+}
+
+.dashboard-hazard-panel .hazard-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #f97316;
+  cursor: pointer;
+}
+
+.dashboard-travel-mode-selector {
+  position: absolute;
+  bottom: 70px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+.dashboard-travel-mode-selector button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-travel-mode-selector button svg {
+  flex-shrink: 0;
+}
+
+.dashboard-travel-mode-selector button:hover {
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-travel-mode-selector button.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 
+    0 3px 10px rgba(37, 99, 235, 0.35),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.dashboard-route-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-route-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 
+    0 4px 12px rgba(37, 99, 235, 0.4),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}
+
+.dashboard-route-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 6px rgba(37, 99, 235, 0.3),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.dashboard-route-btn:disabled {
+  background: linear-gradient(135deg, #93c5fd 0%, #bfdbfe 100%);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .water-level-card {
@@ -125,7 +367,13 @@
     justify-content: center;
     text-align: center;
     flex-shrink: 0;
+    transition: background-color 0.3s ease;
 }
+
+.water-header.normal { background-color: #7BA655; }
+.water-header.alert { background-color: #7BA655; }
+.water-header.warning { background-color: #FF8C00; }
+.water-header.critical { background-color: #E83F38; }
 
 .marikina-river-text {
     font-size: 15px;
@@ -609,9 +857,51 @@
   }
 
   .map-card {
-    height: 180px;
-    min-height: 180px;
+    height: 520px;
+    min-height: 520px;
     border-radius: 10px;
+  }
+
+  .dashboard-geocoder-wrapper {
+    width: 220px;
+    top: 12px;
+    left: 12px;
+  }
+
+  .dashboard-map-controls {
+    top: 100px;
+    right: 12px;
+  }
+
+  .dashboard-map-controls .location-btn,
+  .dashboard-map-controls .pin-btn {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .dashboard-hazard-panel {
+    top: 12px;
+    right: 12px;
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+
+  .dashboard-travel-mode-selector {
+    bottom: 60px;
+    left: 12px;
+    gap: 4px;
+  }
+
+  .dashboard-travel-mode-selector button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .dashboard-route-btn {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 16px;
+    font-size: 12px;
   }
 
   /* Right column */
@@ -761,5 +1051,54 @@
 
   .alert-content p {
     font-size: 0.6rem;
+  }
+
+  /* Dashboard Map for very small screens */
+  .map-card {
+    height: 450px;
+    min-height: 450px;
+  }
+
+  .dashboard-geocoder-wrapper {
+    width: 160px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .dashboard-map-controls {
+    top: 95px;
+    right: 10px;
+  }
+
+  .dashboard-map-controls .location-btn,
+  .dashboard-map-controls .pin-btn {
+    font-size: 10px;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .dashboard-hazard-panel {
+    top: 10px;
+    right: 10px;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .dashboard-travel-mode-selector {
+    bottom: 55px;
+    left: 10px;
+    gap: 3px;
+  }
+
+  .dashboard-travel-mode-selector button {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .dashboard-route-btn {
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    font-size: 11px;
   }
 }

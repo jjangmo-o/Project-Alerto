@@ -3,6 +3,13 @@ import { supabase } from '../../lib/supabase';
 import AdminLayout from './AdminLayout';
 import './AdminVerification.css';
 
+interface PendingProfileChanges {
+  address?: string;
+  contact_number?: string;
+  email?: string;
+  profile_image_url?: string;
+}
+
 interface PendingResident {
   user_id: string;
   first_name: string;
@@ -16,6 +23,7 @@ interface PendingResident {
   gender?: string;
   verification_requested_at: string | null;
   profile_image_url?: string;
+  pending_profile_changes?: PendingProfileChanges;
 }
 
 interface Barangay {
@@ -52,7 +60,8 @@ const AdminVerification = () => {
         birth_date,
         gender,
         verification_requested_at,
-        profile_image_url
+        profile_image_url,
+        pending_profile_changes
       `)
       .eq('residence_verification_status', 'PENDING')
       .order('verification_requested_at', { ascending: true });
@@ -61,7 +70,8 @@ const AdminVerification = () => {
       console.error('Fetch error:', error.message);
       setPendingResidents([]);
     } else if (Array.isArray(data)) {
-      setPendingResidents(data as PendingResident[]);
+      // Cast to unknown first to avoid type mismatch until migration is run
+      setPendingResidents(data as unknown as PendingResident[]);
     } else {
       setPendingResidents([]);
     }
@@ -133,13 +143,26 @@ const AdminVerification = () => {
       return;
     }
 
+    // Build update data - apply pending changes if they exist
+    const updateData: Record<string, unknown> = {
+      residence_verification_status: 'VERIFIED',
+      verified_at: new Date().toISOString(),
+      verified_by: user.id,
+      pending_profile_changes: null, // Clear pending changes after applying
+    };
+
+    // Apply pending profile changes to actual profile fields
+    if (resident.pending_profile_changes) {
+      const pending = resident.pending_profile_changes;
+      if (pending.address) updateData.address = pending.address;
+      if (pending.contact_number) updateData.contact_number = pending.contact_number;
+      if (pending.email) updateData.email = pending.email;
+      if (pending.profile_image_url) updateData.profile_image_url = pending.profile_image_url;
+    }
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        residence_verification_status: 'VERIFIED',
-        verified_at: new Date().toISOString(),
-        verified_by: user.id,
-      })
+      .update(updateData)
       .eq('user_id', resident.user_id);
 
     if (error) {
@@ -194,11 +217,13 @@ const AdminVerification = () => {
       return;
     }
 
+    // Clear pending changes without applying them - this preserves the original data
     const { error } = await supabase
       .from('profiles')
       .update({
         residence_verification_status: 'VERIFIED', // Reset to last verified state
         verification_requested_at: null,
+        pending_profile_changes: null, // Clear pending changes - don't apply them
       })
       .eq('user_id', resident.user_id);
 
@@ -443,10 +468,56 @@ const AdminVerification = () => {
 
                     <div className="card-info">
                       <div className="info-grid">
-                        <div className="info-item">
-                          <span className="info-label">Address</span>
-                          <span className="info-value">{resident.address}</span>
-                        </div>
+                        {/* Show pending changes with comparison to current values */}
+                        {resident.pending_profile_changes ? (
+                          <>
+                            <div className="pending-changes-section">
+                              <span className="pending-label">📝 Requested Changes:</span>
+                            </div>
+                            
+                            {resident.pending_profile_changes.address && 
+                             resident.pending_profile_changes.address !== resident.address && (
+                              <div className="info-item change-item">
+                                <span className="info-label">Address</span>
+                                <span className="info-value current-value">{resident.address}</span>
+                                <span className="change-arrow">→</span>
+                                <span className="info-value new-value">{resident.pending_profile_changes.address}</span>
+                              </div>
+                            )}
+                            
+                            {resident.pending_profile_changes.contact_number && 
+                             resident.pending_profile_changes.contact_number !== resident.contact_number && (
+                              <div className="info-item change-item">
+                                <span className="info-label">Contact</span>
+                                <span className="info-value current-value">{resident.contact_number}</span>
+                                <span className="change-arrow">→</span>
+                                <span className="info-value new-value">{resident.pending_profile_changes.contact_number}</span>
+                              </div>
+                            )}
+                            
+                            {resident.pending_profile_changes.email && 
+                             resident.pending_profile_changes.email !== resident.email && (
+                              <div className="info-item change-item">
+                                <span className="info-label">Email</span>
+                                <span className="info-value current-value">{resident.email}</span>
+                                <span className="change-arrow">→</span>
+                                <span className="info-value new-value">{resident.pending_profile_changes.email}</span>
+                              </div>
+                            )}
+
+                            {resident.pending_profile_changes.profile_image_url && (
+                              <div className="info-item change-item">
+                                <span className="info-label">Profile Image</span>
+                                <span className="info-value new-value">New image uploaded</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="info-item">
+                            <span className="info-label">Address</span>
+                            <span className="info-value">{resident.address}</span>
+                          </div>
+                        )}
 
                         <div className="info-row-inline">
                           <div className="info-item">
