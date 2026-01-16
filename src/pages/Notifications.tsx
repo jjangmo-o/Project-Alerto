@@ -86,37 +86,19 @@ const Notifications = () => {
         console.error(error);
         setError('Failed to load notifications. Please try again.');
       } else {
-        const allNotifs = (data as Notification[]) || [];
-        
-        // Separate active and archived
-        if (currentUserId) {
-          const { data: userNotifs } = await supabase
-            .from('user_notifications')
-            .select('notification_id, is_archived')
-            .eq('user_id', currentUserId);
+        const safeNotifications = (data || []).map((n) => ({
+          ...(n as Notification),
+          created_at: typeof n.created_at === 'string' && n.created_at !== null ? n.created_at : '',
+        }));
+        setNotifications(safeNotifications);
 
-          const archivedIds = new Set(
-            (userNotifs || [])
-              .filter(un => un.is_archived)
-              .map(un => un.notification_id)
-          );
-
-          const active = allNotifs.filter(n => !archivedIds.has(n.notification_id));
-          const archived = allNotifs.filter(n => archivedIds.has(n.notification_id));
-
-          setNotifications(active);
-          setArchivedNotifications(archived);
-        } else {
-          setNotifications(allNotifs);
-        }
-        
-        // Check for alert query param to auto-open a specific notification
+        // check alert query param to auto open a specific notification
         const alertId = searchParams.get('alert');
-        if (alertId && data) {
-          const targetAlert = (data as Notification[]).find(n => n.notification_id === alertId);
+        if (alertId && safeNotifications.length > 0) {
+          const targetAlert = safeNotifications.find((n: Notification) => n.notification_id === alertId);
           if (targetAlert) {
             setFocusedNotification(targetAlert);
-            // Clear the query param after opening
+            // clear query param after opening
             setSearchParams({});
           }
         }
@@ -126,46 +108,20 @@ const Notifications = () => {
     };
 
     fetchNotifications();
+  }, [searchParams, setSearchParams]);
 
-    // Real-time subscription
-    const channel = supabase
-      .channel('notifications-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: 'target_role=eq.USER'
-        },
-        (payload) => {
-          console.log('New notification:', payload);
-          setNotifications(prev => [payload.new as Notification, ...prev]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [searchParams, setSearchParams, currentUserId]);
-
-  // Helper function - must be defined before filteredNotifications
   const isEvacuationNotification = (title: string) => {
     return title && title.toLowerCase().includes('evacuation center');
   };
 
-  // Determine source based on tab
-  const sourceNotifications = activeTab === 'archive' ? archivedNotifications : notifications;
-
   const filteredNotifications =
     activeTab === 'all'
-    ? sourceNotifications
+    ? notifications
+    : activeTab === 'evacuation'
+    ? notifications.filter(n => isEvacuationNotification(n.title))
     : activeTab === 'archive'
     ? archivedNotifications
-    : activeTab === 'evacuation'
-    ? sourceNotifications.filter(n => isEvacuationNotification(n.title))
-    : sourceNotifications.filter(n => n.disaster_type === activeTab && !isEvacuationNotification(n.title));
+    : notifications.filter(n => n.disaster_type === activeTab && !isEvacuationNotification(n.title));
 
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
@@ -184,7 +140,6 @@ const Notifications = () => {
   };
 
   const getSeverityLabel = (severity: string, title?: string) => {
-    // For evacuation center notifications, use STATUS label
     if (title && title.toLowerCase().includes('evacuation center')) {
       return 'STATUS';
     }
@@ -198,7 +153,6 @@ const Notifications = () => {
   };
   
   const getTypeIcon = (type: string, title?: string) => {
-    // Check title first for evacuation center notifications
     if (title && isEvacuationNotification(title)) {
       return <EvacuationIcon />;
     }
@@ -225,9 +179,7 @@ const Notifications = () => {
       case 'fire':
         return <FireAlertIcon size={20} />;
       case 'evacuation':
-        return <EvacuationIcon size={20} />;
-      case 'archive':
-        return <span style={{ fontSize: '20px' }}>📁</span>;
+        return <EvacuationIcon size={20} />
       case 'all':
       default:
         return <BellIcon size={20} />;
@@ -419,57 +371,55 @@ const Notifications = () => {
               >
                 Fire Alert Updates
               </button>
-
+  
               <button
                 className={`tab-btn ${activeTab === 'evacuation' ? 'active' : ''}`}
                 onClick={() => setActiveTab('evacuation')}
               >
                 Evacuation Updates
               </button>
-
+  
               <button
                 className={`tab-btn ${activeTab === 'archive' ? 'active' : ''}`}
                 onClick={() => setActiveTab('archive')}
               >
-                Archive
+                Archived
               </button>
             </div>
-
-            <div className="sort-dropdown">
-              <span className="sort-label">SORT BY</span>
-
-              <div className="sort-select-wrapper">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="sort-select"
-                >
-                  <option value="newest">NEWEST</option>
-                  <option value="oldest">OLDEST</option>
-                </select>
-                <span className="sort-arrow">▾</span>
-              </div>
-            </div>
-
-            <button
-              className={`refresh-btn ${loading ? 'loading' : ''}`}
-              onClick={handleRefresh}
-              disabled={loading}
-              aria-label="Refresh notifications"
-            >
-              <span className="refresh-icon" aria-hidden>
-                ↻
-              </span>
-              <span className="refresh-text">
-                Refresh
-              </span>
-            </button>
           </div>
 
           <div className="notifications-section-header">
             <div className="notifications-section-title">
               <span className="section-icon">{getTabIcon(activeTab)}</span>
               <h2>{tabTitles[activeTab]}</h2>
+            </div>
+
+            <div className="notifications-actions">
+              <div className="sort-dropdown">
+                <span className="sort-label">SORT BY</span>
+
+                <div className="sort-select-wrapper">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="sort-select"
+                  >
+                    <option value="newest">NEWEST</option>
+                    <option value="oldest">OLDEST</option>
+                  </select>
+                  <span className="sort-arrow">▾</span>
+                </div>
+              </div>
+
+              <button
+                className={`refresh-btn ${loading ? 'loading' : ''}`}
+                onClick={handleRefresh}
+                disabled={loading}
+                aria-label="Refresh notifications"
+              >
+                <span className="refresh-icon" aria-hidden>↻</span>
+                <span className="refresh-text">Refresh</span>
+              </button>
             </div>
           </div>
 
@@ -499,7 +449,7 @@ const Notifications = () => {
               sortedNotifications.map(notification => (
                 <div
                   key={notification.notification_id}
-                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-type' : ''} ${!notification.is_read ? 'unread' : ''} ${activeTab === 'archive' ? 'archived' : ''}`}
+                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-type' : ''} ${!notification.is_read ? 'unread' : ''}`}
                   onClick={() => setFocusedNotification(notification)}
                   role="button"
                   tabIndex={0}

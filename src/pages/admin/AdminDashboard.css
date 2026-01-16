@@ -3,6 +3,8 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* grid layout for cards */
@@ -630,5 +632,104 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .admin-dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .capacity-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admin-card {
+    padding: 1.2rem;
+  }
+
+  .card-title {
+    font-size: 1.5rem;
+  }
+
+  .capacity-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .summary-card {
+    padding: 1rem;
+  }
+
+  .capacity-card {
+    height: auto;
+    min-height: 400px;
+  }
+
+  .capacity-list {
+    grid-template-columns: 1fr;
+  }
+
+  .capacity-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .status-pill {
+    width: 100%;
+  }
+
+  .update-alerts-section {
+    padding: 1rem;
+  }
+
+  .update-alerts-title {
+    font-size: 24px;
+  }
+
+  .update-alerts-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .alert-buttons {
+    flex-direction: column;
+  }
+
+  .severity-btn,
+  .type-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .barangay-grid {
+    gap: 8px;
+  }
+
+  .barangay-option {
+    font-size: 0.7rem;
+    padding: 5px 12px;
+  }
+
+  .send-alert-btn {
+    width: 100%;
+  }
+
+  .admin-input {
+    width: 100%;
   }
 }

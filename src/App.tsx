@@ -19,7 +19,7 @@ import './App.css';
 import AdminRoute from './pages/admin/AdminRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCommunityStatus from './pages/admin/AdminCommunityStatus';
-import AdminVerification from './pages/admin/AdminVerification'; // ✅ ADDED
+import AdminVerification from './pages/admin/AdminVerification';
 
 /* ================= LOADING ================= */
 
@@ -59,7 +59,6 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* ROOT - Welcome/Landing Page */}
       <Route
         path="/"
         element={user ? <Navigate to="/dashboard" replace /> : <Welcome />}
@@ -96,7 +95,6 @@ const AppRoutes = () => {
 
       {/* ================= PUBLIC ROUTES ================= */}
 
-      {/* Welcome page - accessible anytime for testing */}
       <Route path="/welcome" element={<Welcome />} />
 
       <Route

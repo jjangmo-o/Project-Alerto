@@ -251,7 +251,39 @@ const [selectedBarangays, setSelectedBarangays] = useState<string[]>([])
     }
 
     console.log('Centers updated successfully');
-    console.log('Notify residents:', notifyResidents);
+
+    // Send notification to residents if checkbox is checked
+    if (notifyResidents && adminProfileId) {
+      const nowFull = changedCenters.filter(c => c.status === 'full');
+      const nowAvailable = changedCenters.filter(c => c.status === 'available');
+
+      const messageLines: string[] = [];
+
+      if (nowFull.length > 0) {
+        messageLines.push(`At full capacity: ${nowFull.map(c => c.name).join(', ')}`);
+      }
+
+      if (nowAvailable.length > 0) {
+        messageLines.push(`Now available: ${nowAvailable.map(c => c.name).join(', ')}`);
+      }
+
+      const notificationMessage = messageLines.join('\n');
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert({
+          title: 'Evacuation Center Status Update',
+          message: notificationMessage,
+          disaster_type: 'typhoon',
+          severity: nowFull.length > 0 ? 'alert' : 'normal',
+          target_role: 'USER',
+          created_by: adminProfileId,
+        });
+
+      if (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+    }
 
     // Reset dirty flags
     setCenters(prev =>

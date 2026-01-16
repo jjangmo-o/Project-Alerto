@@ -153,9 +153,27 @@ const Dashboard = () => {
   }, []);
 
   const formatTime = (date: string) => {
-    const diff = now - new Date(date).getTime();
-    const minutes = Math.floor(diff / 60000);
-    return minutes <= 1 ? 'Just now' : `${minutes}m ago`;
+    const diffMs = now - new Date(date).getTime();
+
+    const totalMinutes = Math.floor(diffMs / 60000);
+    if (totalMinutes < 1) return 'Just now';
+
+    if (totalMinutes < 60) {
+      return `${totalMinutes}m ago`;
+    }
+
+    const totalHours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+
+    if (totalHours < 24) {
+      if (remainingMinutes === 0) {
+        return `${totalHours}hr${totalHours > 1 ? 's' : ''} ago`;
+      }
+      return `${totalHours}hr${totalHours > 1 ? 's' : ''} ${remainingMinutes}m ago`;
+    }
+
+    const totalDays = Math.floor(totalHours / 24);
+    return `${totalDays} day${totalDays > 1 ? 's' : ''} ago`;
   };
 
   return (

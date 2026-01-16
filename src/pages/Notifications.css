@@ -21,6 +21,8 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* CONTROLS */
@@ -34,12 +36,15 @@
 
 .notifications-tabs {
   display: flex;
+  flex-wrap: wrap;
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
-  flex: 1;
-  height: 46px;
-  min-width: 0;
+  width: 100%;
+  max-width: 1100px;
+  min-height: 46px;
+  height: auto;
+  flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
@@ -176,12 +181,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .notifications-section-title {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
 }
 
 .notifications-section-title h2 {
@@ -198,6 +206,13 @@
   gap: 20px;
   width: 100%;
   min-height: 420px;
+}
+
+.notifications-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
 }
 
 /* CARD */
@@ -538,24 +553,81 @@
   }
 }
 
-/* RESPONSIVENESS FEATURE */
+/* === MOBILE RESET (HARD FIX) === */
 @media (max-width: 768px) {
+
+  /* Layout */
+  .notifications-content {
+    padding: 1rem;
+  }
+
   .notifications-controls {
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
   }
 
-  .notifications-tabs {
+  .notifications-section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* === ACTION BAR === */
+  .notifications-actions {
+    display: flex;
     width: 100%;
-    flex: none;
+    gap: 10px;
+    margin-left: 0;
   }
 
-  .sort-dropdown {
-    flex: 1;
-  }
-
+  /* === SHARED CONTROL BASE === */
+  .sort-dropdown,
   .refresh-btn {
-    padding: 10px;
-    height: 46px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  /* === SORT CONTROL === */
+  .sort-dropdown {
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .sort-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .sort-select-wrapper {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .sort-select {
+    height: 100%;
+    width: 100%;
+    padding: 0 32px 0 12px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    line-height: 1;
+  }
+
+  .sort-arrow {
+    right: 10px;
+  }
+
+  /* === REFRESH BUTTON === */
+  .refresh-btn {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
   }
 
   .refresh-text {
@@ -563,6 +635,57 @@
   }
 
   .refresh-icon {
-    font-size: 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* === TABS === */
+  .notifications-tabs {
+    max-width: 100%;
+    min-height: auto;
+  }
+
+  .tab-btn {
+    flex: 1 1 30%;
+    height: 38px;
+    font-size: 0.65rem;
+    padding: 0 6px;
+  }
+
+  /* === TYPO === */
+  .notifications-section-title h2 {
+    font-size: 1.1rem;
+  }
+
+  /* === CARDS === */
+  .notification-card {
+    padding: 12px 14px;
+  }
+
+  .notification-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .notification-title {
+    font-size: 0.85rem;
+  }
+
+  .notification-time {
+    margin-right: 20px;
+    font-size: 0.65rem;
+  }
+
+  .notification-body p {
+    font-size: 0.8rem;
+  }
+
+  .notifications-list {
+    min-height: auto;
+    gap: 12px;
+  }
+
+  .notification-spotlight {
+    width: 95%;
+    padding: 16px;
   }
 }

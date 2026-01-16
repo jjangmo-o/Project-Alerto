@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import Header from '../Header';
 import { useAuth } from '../../hooks/useAuth';
@@ -8,12 +8,19 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 768);
   const { profile } = useAuth();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
   };
+
+  // Listen for close-sidebar event from Sidebar component
+  useEffect(() => {
+    const handleCloseSidebar = () => setIsSidebarOpen(false);
+    document.addEventListener('close-sidebar', handleCloseSidebar);
+    return () => document.removeEventListener('close-sidebar', handleCloseSidebar);
+  }, []);
 
   return (
     <div className="app-container">
