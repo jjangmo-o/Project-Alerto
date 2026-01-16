@@ -3,16 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { supabase } from '../lib/supabase';
 
+import {
+  CloudRainWindIcon,
+  ActivityIcon,
+  FireAlertIcon,
+  EvacuationIcon,
+  BellIcon
+} from './NotificationsIcons';
+
 import currentStatusIcon from '../assets/icon-current-status.png';
 import notificationBellIcon from '../assets/icon-notification.png';
 import waterLevelIcon from '../assets/icon-water-level.png';
 import hotlineIcon from '../assets/icon-emergency-hotlines.png';
 import mapIcon from '../assets/icon-evacuation-map.png';
 import cardIcon from '../assets/icon-profile-card.png';
-import alertRed from '../assets/icon-red-alert.png';
-import alertYellow from '../assets/icon-yellow-alert.png';
-import alertOrange from '../assets/icon-orange-alert.png';
-import alertGreen from '../assets/icon-green-alert.svg';
 import communityStatusIcon from '../assets/icon-community-status.svg';
 
 interface Notification {
@@ -20,6 +24,7 @@ interface Notification {
   title: string;
   message: string;
   created_at: string;
+  disaster_type: string;
 }
 
 const Dashboard = () => {
@@ -79,7 +84,7 @@ const Dashboard = () => {
   const fetchAlerts = async () => {
     const { data, error } = await supabase
       .from('notifications')
-      .select('notification_id, title, message, created_at')
+      .select('notification_id, title, message, created_at, disaster_type')
       .in('target_role', ['USER', 'ALL'])
       .order('created_at', { ascending: false })
       .limit(4);
@@ -88,7 +93,8 @@ const Dashboard = () => {
       setAlerts(
         data.map(alert => ({
           ...alert,
-          created_at: alert.created_at ?? ''
+          created_at: alert.created_at ?? '',
+          disaster_type: alert.disaster_type ?? 'typhoon'
         }))
       );
     }
@@ -119,14 +125,24 @@ const Dashboard = () => {
   // UI
   // ============================
 
-  const getAlertIcon = (title: string) => {
-    if (title.toLowerCase().includes('critical')) return alertRed;
-    if (title.toLowerCase().includes('warning')) return alertYellow;
-    if (title.toLowerCase().includes('full')) return alertOrange;
-    return alertGreen;
+  const getAlertIcon = (disasterType: string, title: string) => {
+    // Check for evacuation center notifications by title
+    if (title && title.toLowerCase().includes('evacuation center')) {
+      return <EvacuationIcon size={24} />;
+    }
+    switch (disasterType) {
+      case 'typhoon':
+        return <CloudRainWindIcon size={24} />;
+      case 'earthquake':
+        return <ActivityIcon size={24} />;
+      case 'fire':
+        return <FireAlertIcon size={24} />;
+      default:
+        return <BellIcon size={24} />;
+    }
   };
 
-  const [now, setNow] = useState(0);
+  const [now, setNow] = useState(Date.now());
 
 
   useEffect(() => {
@@ -218,14 +234,25 @@ const Dashboard = () => {
 
           <div className="alerts-list">
             {alerts.map(alert => (
-              <div key={alert.notification_id} className="alert-item">
-                <img
-                  src={getAlertIcon(alert.title)}
-                  className="alert-icon"
-                />
+              <div 
+                key={alert.notification_id} 
+                className="alert-item"
+                onClick={() => navigate(`/notifications?alert=${alert.notification_id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className="alert-icon-svg">
+                  {getAlertIcon(alert.disaster_type, alert.title)}
+                </span>
                 <div className="alert-content">
                   <h4>{alert.title}</h4>
-                  <p>{alert.message}</p>
+                  <p>
+                    {alert.message.length > 80 
+                      ? alert.message.slice(0, 80) + '...' 
+                      : alert.message}
+                    {alert.message.length > 80 && (
+                      <span className="see-more-link"> See More</span>
+                    )}
+                  </p>
                 </div>
                 <span className="alert-time">
                   {formatTime(alert.created_at)}

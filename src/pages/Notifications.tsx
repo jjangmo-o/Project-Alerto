@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import closeIcon from '../assets/icon-close-button.svg';
 import './Notifications.css';
@@ -7,10 +8,11 @@ import {
   BellIcon,
   CloudRainWindIcon,
   ActivityIcon,
-  FireAlertIcon
+  FireAlertIcon,
+  EvacuationIcon
 } from './NotificationsIcons';
 
-type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire';
+type FilterType = 'all' | 'typhoon' | 'earthquake' | 'fire' | 'evacuation';
 type SortOption = 'newest' | 'oldest';
 
 const BARANGAY_MAP: Record<string, string> = {
@@ -33,6 +35,7 @@ const BARANGAY_MAP: Record<string, string> = {
 }
 
 const Notifications = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<FilterType>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [notifications, setNotifications] = useState<any[]>([])
@@ -56,18 +59,36 @@ const Notifications = () => {
         setError('Failed to load notifications. Please try again.');
       } else {
         setNotifications(data || []);
+        
+        // Check for alert query param to auto-open a specific notification
+        const alertId = searchParams.get('alert');
+        if (alertId && data) {
+          const targetAlert = data.find((n: any) => n.notification_id === alertId);
+          if (targetAlert) {
+            setFocusedNotification(targetAlert);
+            // Clear the query param after opening
+            setSearchParams({});
+          }
+        }
       }
 
       setLoading(false);
     };
 
     fetchNotifications();
-  }, []);
+  }, [searchParams, setSearchParams]);
+
+  // Helper function - must be defined before filteredNotifications
+  const isEvacuationNotification = (title: string) => {
+    return title && title.toLowerCase().includes('evacuation center');
+  };
 
   const filteredNotifications =
     activeTab === 'all'
     ? notifications
-    : notifications.filter(n => n.disaster_type === activeTab);
+    : activeTab === 'evacuation'
+    ? notifications.filter(n => isEvacuationNotification(n.title))
+    : notifications.filter(n => n.disaster_type === activeTab && !isEvacuationNotification(n.title));
 
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     const dateA = new Date(a.created_at).getTime();
@@ -79,21 +100,31 @@ const Notifications = () => {
     switch (severity) {
       case 'critical': return 'severity-critical';
       case 'urgent': return 'severity-urgent';
+      case 'alert': return 'severity-alert';
       case 'normal': return 'severity-normal';
       default: return '';
     }
   };
 
-  const getSeverityLabel = (severity: string) => {
+  const getSeverityLabel = (severity: string, title?: string) => {
+    // For evacuation center notifications, use STATUS label
+    if (title && title.toLowerCase().includes('evacuation center')) {
+      return 'STATUS';
+    }
     switch (severity) {
         case 'critical': return 'CRITICAL';
         case 'urgent': return 'URGENT';
-        case 'normal': return 'ALERT';
+        case 'alert': return 'ALERT';
+        case 'normal': return 'NORMAL';
         default: return '';
     }
   };
   
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string, title?: string) => {
+    // Check title first for evacuation center notifications
+    if (title && isEvacuationNotification(title)) {
+      return <EvacuationIcon />;
+    }
     switch (type) {
       case 'typhoon':
         return <CloudRainWindIcon />;
@@ -101,6 +132,8 @@ const Notifications = () => {
         return <ActivityIcon />;
       case 'fire':
         return <FireAlertIcon />;
+      case 'evacuation':
+        return <EvacuationIcon />;
       default:
         return <BellIcon />;
     }
@@ -114,6 +147,8 @@ const Notifications = () => {
         return <ActivityIcon size={20} />;
       case 'fire':
         return <FireAlertIcon size={20} />;
+      case 'evacuation':
+        return <EvacuationIcon size={20} />
       case 'all':
       default:
         return <BellIcon size={20} />;
@@ -178,6 +213,7 @@ const Notifications = () => {
     typhoon: 'Typhoon Updates',
     earthquake: 'Earthquake Alerts',
     fire: 'Fire Alert Updates',
+    evacuation: 'Evacuation Updates',
   };
 
   return (
@@ -208,6 +244,14 @@ const Notifications = () => {
               >
                 Fire Alert Updates
               </button>
+
+              <button
+                className={`tab-btn ${activeTab === 'evacuation' ? 'active' : ''}`}
+                onClick={() => setActiveTab('evacuation')}
+              >
+                Evacuation Updates
+              </button>
+
             </div>
 
             <div className="sort-dropdown">
@@ -275,7 +319,7 @@ const Notifications = () => {
               sortedNotifications.map(notification => (
                 <div
                   key={notification.notification_id}
-                  className={`notification-card ${getSeverityClass(notification.severity)} ${!notification.is_read ? 'unread' : ''}`}
+                  className={`notification-card ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-type' : ''} ${!notification.is_read ? 'unread' : ''}`}
                   onClick={() => setFocusedNotification(notification)}
                   role="button"
                   tabIndex={0}
@@ -294,13 +338,13 @@ const Notifications = () => {
                   </button>
 
                   <div className="notification-header">
-                    <span className="notification-icon">{getTypeIcon(notification.disaster_type)}</span>
+                    <span className="notification-icon">{getTypeIcon(notification.disaster_type, notification.title)}</span>
                     <span className="notification-title">{notification.title}</span>
                     <span className="notification-time">{formatTime(notification.created_at)}</span>
                   </div>
 
                   <div className="notification-body">
-                    <p>
+                    <p className="message-text">
                       {truncateText(notification.message)}
                       {notification.message.length > 160 && (
                         <span className="see-more"> See more</span>
@@ -320,8 +364,8 @@ const Notifications = () => {
                   )}
 
                   <div className="notification-footer">
-                    <span className={`severity-badge ${getSeverityClass(notification.severity)}`}>
-                      {getSeverityLabel(notification.severity)}
+                    <span className={`severity-badge ${getSeverityClass(notification.severity)} ${isEvacuationNotification(notification.title) ? 'evacuation-badge' : ''}`}>
+                      {getSeverityLabel(notification.severity, notification.title)}
                     </span>
                   </div>
                 </div>
@@ -335,7 +379,7 @@ const Notifications = () => {
               onClick={() => setFocusedNotification(null)}
             >
               <div
-                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)}`}
+                className={`notification-spotlight ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-type' : ''}`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -347,7 +391,7 @@ const Notifications = () => {
 
                 <div className="notification-header">
                   <span className="notification-icon">
-                    {getTypeIcon(focusedNotification.disaster_type)}
+                    {getTypeIcon(focusedNotification.disaster_type, focusedNotification.title)}
                   </span>
                   <span className="notification-title">
                     {focusedNotification.title}
@@ -358,7 +402,7 @@ const Notifications = () => {
                 </div>
 
                 <div className="notification-body expanded">
-                  <p>{focusedNotification.message}</p>
+                  <p className="message-text">{focusedNotification.message}</p>
                 </div>
 
                 {Array.isArray(focusedNotification.barangay_ids) &&
@@ -373,8 +417,8 @@ const Notifications = () => {
                 )}
 
                 <div className="notification-footer">
-                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)}`}>
-                    {getSeverityLabel(focusedNotification.severity)}
+                  <span className={`severity-badge ${getSeverityClass(focusedNotification.severity)} ${isEvacuationNotification(focusedNotification.title) ? 'evacuation-badge' : ''}`}>
+                    {getSeverityLabel(focusedNotification.severity, focusedNotification.title)}
                   </span>
                 </div>
               </div>
