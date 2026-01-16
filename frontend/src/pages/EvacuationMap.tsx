@@ -8,7 +8,7 @@ import { getNearestWithRoute, getRouteBetween, getAllEvacuationCenters } from '.
 import type { TravelMode } from '../services/evacuationCenters.api';
 import {
   getFloodHazards,
-  getEarthquakeHazards,
+  // getEarthquakeHazards, // Uncomment when needed
 } from '../services/hazards.api';
 
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -89,7 +89,8 @@ const EvacuationMap = () => {
   // TEMP HAZARD TEST TOGGLES
   // ============================
   const [testFloodActive, setTestFloodActive] = useState(navigationState?.testFloodActive || false);
-  const [testEarthquakeActive, setTestEarthquakeActive] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [testEarthquakeActive, _setTestEarthquakeActive] = useState(false);
 
   // Track current routing intent
   const routingIntentRef = useRef<RoutingIntent | null>(null);

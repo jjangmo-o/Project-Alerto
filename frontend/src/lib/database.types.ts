@@ -592,3 +592,19 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+// Convenience type aliases
+export type Barangay = Tables<'barangays'>;
+export type DisasterReport = Tables<'disaster_reports'>;
+export type EvacuationCenter = Tables<'evacuation_centers'>;
+export type Profile = Tables<'profiles'>;
+export type Notification = Tables<'notifications'>;
+
+// EmergencyHotline type (not in database, define manually)
+export interface EmergencyHotline {
+  id: string;
+  agency_name: string;
+  contact_number: string;
+  description?: string;
+  is_national: boolean;
+}

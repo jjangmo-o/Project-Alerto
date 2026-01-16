@@ -12,7 +12,7 @@ export const profileService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Profile;
   },
 
   async updateProfileImage(userId: string, path: string) {
