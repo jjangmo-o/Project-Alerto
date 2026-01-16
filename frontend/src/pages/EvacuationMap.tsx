@@ -422,6 +422,13 @@ const EvacuationMap = () => {
         console.log('Nearest with route response:', res.data);
 
         const data = res.data;
+        
+        // Validate API response - check if we got HTML instead of JSON
+        if (typeof data === 'string' || !data.evacuationCenter) {
+          console.error('Invalid API response:', data);
+          throw new Error('API returned invalid response. Please try again.');
+        }
+        
         routes = data.routes;
         eventStatus = data.eventStatus || {};
         evacuationCenter = {

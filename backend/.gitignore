@@ -1,5 +1,5 @@
 # compiled output
-/dist
+# /dist  # Commented out - dist is needed for Vercel deployment
 /node_modules
 /build
 
