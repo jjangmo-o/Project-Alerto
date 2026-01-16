@@ -28,6 +28,8 @@ interface EvacuationCenter {
   status: string;
   latitude: number;
   longitude: number;
+  capacity_current?: number;
+  capacity_total?: number;
   location?: {
     coordinates: [number, number]; // [lng, lat]
   };
@@ -62,6 +64,16 @@ const EvacuationMap = () => {
 
   const [origin, setOrigin] = useState<Origin | null>(null);
   const [mapReady, setMapReady] = useState(false);
+
+  const [routeInfo, setRouteInfo] = useState<{
+  distanceKm: number;
+  durationMin: number;
+} | null>(null);
+
+const [capacityFilter, setCapacityFilter] = useState<
+  'all' | 'available' | 'near-full' | 'full'
+>('all');
+
 
   // Track current routing intent
   const routingIntentRef = useRef<RoutingIntent | null>(null);
@@ -155,6 +167,9 @@ const EvacuationMap = () => {
       // Set origin immediately and show marker
       setOriginMarker(lng, lat, '#0ea5e9');
       setOrigin({ lat, lng });
+
+        setRouteInfo(null);
+
       map.flyTo({ center: [lng, lat], zoom: 15 });
       // NO auto-routing
     });
@@ -203,7 +218,7 @@ const EvacuationMap = () => {
       
       // Set marker immediately (before state update)
       setOriginMarker(lng, lat, '#f59e0b');
-      
+      setRouteInfo(null);
       // Update state
       setOrigin({ lat, lng });
       
@@ -248,7 +263,7 @@ const EvacuationMap = () => {
         
         // Set marker immediately
         setOriginMarker(longitude, latitude, '#16a34a');
-        
+        setRouteInfo(null);
         // Update state
         setOrigin({ lat: latitude, lng: longitude });
         
@@ -387,6 +402,30 @@ const EvacuationMap = () => {
         const routedCenter = centers.find(c => c.id === evacuationCenter.id) || evacuationCenter;
         setSelectedCenter(routedCenter);
       }
+console.log('Route object:', routes[0]);
+
+    const rawDistance =
+    routes[0].distanceMeters ??
+    routes[0].distance ??
+    routes[0].legs?.[0]?.distance;
+
+    const rawDuration =
+    routes[0].durationSeconds ??
+    routes[0].duration ??
+    routes[0].legs?.[0]?.duration;
+
+    if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
+    setRouteInfo({
+        distanceKm: rawDistance / 1000,
+        durationMin: rawDuration / 60,
+    });
+    } else {
+    console.warn('Route missing distance or duration:', routes[0]);
+    setRouteInfo(null);
+    }
+
+
+
 
       // Fit map to show route
       const bounds = new mapboxgl.LngLatBounds();
@@ -552,12 +591,40 @@ const EvacuationMap = () => {
       });
   }, []);
 
+// ============================
+// STATUS & CAPACITY HELPERS
+// ============================
+const getCenterStatus = (center: any) => {
+  if (center.status?.toLowerCase() === 'closed') return 'closed';
+
+  if (!center.capacity_total || center.capacity_total === 0) return 'open';
+
+  const ratio = center.capacity_current / center.capacity_total;
+
+  if (ratio >= 1) return 'full';
+  if (ratio >= 0.7) return 'near-full';
+  if (ratio >= 0.4) return 'half-full';
+
+  return 'open';
+};
+
+
   // ============================
   // FILTERED CENTERS
   // ============================
-  const filteredCenters = centers.filter(c =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCenters = centers.filter(c => {
+  const matchesSearch = c.name
+    .toLowerCase()
+    .includes(searchQuery.toLowerCase());
+
+  const status = getCenterStatus(c);
+
+  const matchesCapacity =
+    capacityFilter === 'all' || capacityFilter === status;
+
+  return matchesSearch && matchesCapacity;
+});
+
 
   // ============================
   // UI
@@ -579,6 +646,7 @@ const EvacuationMap = () => {
 
           <div className="map-layout">
             <div className="map-section">
+                
               <div
                 ref={geocoderContainerRef}
                 className="geocoder-wrapper"
@@ -609,7 +677,14 @@ const EvacuationMap = () => {
                   </button>
                 ))}
               </div>
-
+                {routeInfo && (
+                <div className="route-legend">
+                    <h4>📍 Route Info</h4>
+                    <p>Distance: {routeInfo.distanceKm.toFixed(2)} km</p>
+                    <p>Estimated Time: {Math.ceil(routeInfo.durationMin)} mins</p>
+                    <p>Mode: {travelMode}</p>
+                </div>
+                )}
               <button
                 className="route-btn"
                 onClick={handleFindNearest}
@@ -628,23 +703,46 @@ const EvacuationMap = () => {
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search evacuation center"
               />
+                <div className="capacity-filter">
+                {['all', 'open', 'half-full', 'near-full', 'full', 'closed'].map(f => (
+                    <button
+                    key={f}
+                    className={capacityFilter === f ? 'active' : ''}
+                    onClick={() => setCapacityFilter(f as any)}
+                    >
+                    {f === 'all' ? 'ALL' : f.replace('-', ' ').toUpperCase()}
+                    </button>
+                ))}
+                </div>
 
               <div className="centers-list">
                 {filteredCenters.length === 0 ? (
                   <p className="muted">No evacuation centers found.</p>
                 ) : (
-                  filteredCenters.map(center => (
-                    <div
-                      key={center.id}
-                      className={`center-item ${
-                        selectedCenter?.id === center.id ? 'active' : ''
-                      }`}
-                      onClick={() => handleSelectCenter(center)}
-                    >
-                      <h4>{center.name}</h4>
-                      <p>Status: <span className={`status-badge ${center.status?.toLowerCase()}`}>{center.status}</span></p>
-                    </div>
-                  ))
+                  filteredCenters.map(center => {
+                    const status = getCenterStatus(center);
+                    const statusLabel = status === 'half-full' ? 'Half-Full' 
+                      : status === 'near-full' ? 'Near-Full'
+                      : status.charAt(0).toUpperCase() + status.slice(1);
+                    
+                    return (
+                      <div
+                        key={center.id}
+                        className={`center-item ${selectedCenter?.id === center.id ? 'active' : ''}`}
+                        onClick={() => handleSelectCenter(center)}
+                      >
+                        <h4>{center.name}</h4>
+                        <div className="center-meta">
+                          <span className={`status-badge ${status}`}>
+                            {statusLabel}
+                          </span>
+                          <span className="capacity-text">
+                            Capacity: {center.capacity_current ?? 0}/{center.capacity_total ?? '—'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
