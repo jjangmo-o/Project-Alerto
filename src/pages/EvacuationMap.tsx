@@ -350,9 +350,10 @@ const [testEarthquakeActive, setTestEarthquakeActive] = useState(false);
     const rawDuration = selectedRoute.durationSeconds ?? selectedRoute.duration ?? selectedRoute.legs?.[0]?.duration;
 
     if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
+      // Round to 2 decimal places to ensure consistent display
       setRouteInfo({
-        distanceKm: rawDistance / 1000,
-        durationMin: rawDuration / 60,
+        distanceKm: Math.round((rawDistance / 1000) * 100) / 100,
+        durationMin: Math.round(rawDuration / 60),
       });
     } else {
       console.warn('Route missing distance/duration data:', {
@@ -526,13 +527,18 @@ const [testEarthquakeActive, setTestEarthquakeActive] = useState(false);
             const midIndex = Math.floor(routeCoords.length / 2);
             const midpoint = routeCoords[midIndex];
 
-            // Use display labels based on index
-            const displayLabels = ['🛡️ Safest', '⚡ Fastest', '📏 Shortest'];
-            const labelClasses = ['safest', 'fastest', 'shortest'];
+            // Use the backend's label to determine display
+            const labelIcons: Record<string, string> = {
+              'safest': '🛡️ Safest',
+              'fastest': '⚡ Fastest',
+              'safest & fastest': '🛡️⚡ Best',
+              'alternate': '📍 Alt',
+            };
+            const displayLabel = labelIcons[route.label] || route.label || '📍 Route';
 
             const labelEl = document.createElement('div');
-            labelEl.className = `route-label route-label-${labelClasses[index] || 'default'}${isSelected ? ' selected' : ''}`;
-            labelEl.innerHTML = displayLabels[index] || label;
+            labelEl.className = `route-label route-label-${route.label?.replace(/ & /g, '-') || 'default'}${isSelected ? ' selected' : ''}`;
+            labelEl.innerHTML = displayLabel;
             labelEl.dataset.routeIndex = String(index); // Store original route index
             labelEl.onclick = () => selectRoute(index);
 
@@ -569,9 +575,10 @@ const [testEarthquakeActive, setTestEarthquakeActive] = useState(false);
         selectedRoute.legs?.[0]?.duration;
 
       if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
+        // Round to 2 decimal places to ensure consistent display
         setRouteInfo({
-          distanceKm: rawDistance / 1000,
-          durationMin: rawDuration / 60,
+          distanceKm: Math.round((rawDistance / 1000) * 100) / 100,
+          durationMin: Math.round(rawDuration / 60),
         });
       } else {
         console.warn('Route missing distance or duration:', selectedRoute);
@@ -864,15 +871,16 @@ const getCenterStatus = (center: any) => {
                 <div className="route-legend">
                   <div className="route-legend-label">
                     {(() => {
-                      // Use index-based labels since backend labels are descriptive (e.g., "Flood-risk path")
-                      const displayLabels = ['🛡️ Safest Route', '⚡ Fastest Route', '📏 Shortest Route'];
-                      return displayLabels[selectedRouteIndex] || '📍 Route';
+                      // Use the backend's label to determine display
+                      const routeLabel = availableRoutes[selectedRouteIndex]?.label || 'route';
+                      const labelIcons: Record<string, string> = {
+                        'safest': '🛡️ Safest Route',
+                        'fastest': '⚡ Fastest Route',
+                        'safest & fastest': '🛡️⚡ Safest & Fastest',
+                        'alternate': '📍 Alternate Route',
+                      };
+                      return labelIcons[routeLabel] || '📍 Route';
                     })()}
-                  </div>
-                  <div className="route-risk-info">
-                    {availableRoutes[selectedRouteIndex]?.label && (
-                      <small>Path type: {availableRoutes[selectedRouteIndex].label}</small>
-                    )}
                   </div>
                   <h4>📍 Route Info</h4>
                   <p>Distance: {routeInfo.distanceKm.toFixed(2)} km</p>
