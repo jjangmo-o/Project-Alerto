@@ -14,6 +14,7 @@ import EmergencyHotlines from './pages/EmergencyHotlines';
 import Notifications from './pages/Notifications';
 import Residence from './pages/Residence';
 import CommunityStatus from './pages/CommunityStatus';
+import EvacuationMap from './pages/EvacuationMap';
 import './App.css';
 
 import AdminRoute from './pages/admin/AdminRoute';
@@ -22,8 +23,6 @@ import AdminCommunityStatus from './pages/admin/AdminCommunityStatus';
 import AdminVerification from './pages/admin/AdminVerification';
 
 /* ================= LOADING ================= */
-
-import EvacuationMap from './pages/EvacuationMap';
 
 const LoadingScreen = () => (
   <div className="loading-screen">
@@ -137,56 +136,12 @@ const AppRoutes = () => {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/map" element={<EvacuationMap />} />
         <Route path="/hotlines" element={<EmergencyHotlines />} />
         <Route path="/residence" element={<Residence />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/community-status" element={<CommunityStatus />} />
       </Route>
-
-      <Route
-        path="/hotlines"
-        element={
-          <ProtectedRoute>
-            <EmergencyHotlines />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/residence"
-        element={
-          <ProtectedRoute>
-            <Residence />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/map"
-        element={
-          <ProtectedRoute>
-            <EvacuationMap />
-          </ProtectedRoute>
-        }
-      />
-      
-      <Route
-        path="/community-status"
-        element={
-          <ProtectedRoute>
-            <CommunityStatus />
-          </ProtectedRoute>
-        }
-      />
 
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,869 @@
+/* ============================
+   PAGE WRAPPER
+   ============================ */
+
+.evacuation-map-page {
+  padding: 24px 32px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ============================
+   ALERT BANNER
+   ============================ */
+
+.alert-banner {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 20px;
+  box-shadow: 
+    0 4px 12px rgba(249, 115, 22, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* ============================
+   MAIN LAYOUT
+   ============================ */
+
+.map-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ============================
+   MAP SECTION
+   ============================ */
+
+.map-section {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.map-container {
+  width: 100%;
+  height: 640px;
+}
+
+/* ============================
+   BUTTONS - PROFESSIONAL STYLE
+   ============================ */
+
+.route-btn,
+.location-btn,
+.pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.route-btn::before,
+.location-btn::before,
+.pin-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+/* Route Button */
+.route-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  padding: 12px 20px;
+  z-index: 2;
+}
+
+.route-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 
+    0 4px 12px rgba(37, 99, 235, 0.4),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}
+
+.route-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 6px rgba(37, 99, 235, 0.3),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.route-btn:disabled {
+  background: linear-gradient(135deg, #93c5fd 0%, #bfdbfe 100%);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Location Button */
+.location-btn {
+  position: absolute;
+  top: 70px;
+  right: 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  padding: 10px 16px;
+  z-index: 2;
+}
+
+.location-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 
+    0 4px 12px rgba(16, 185, 129, 0.4),
+    0 0 0 1px rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.location-btn:active {
+  transform: translateY(0);
+}
+
+/* Pin Button */
+.pin-btn {
+  position: absolute;
+  top: 118px;
+  right: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  color: #ea580c;
+  padding: 10px 16px;
+  z-index: 2;
+  border: 1px solid #fed7aa;
+}
+
+.pin-btn:hover {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fb923c;
+  box-shadow: 
+    0 4px 12px rgba(234, 88, 12, 0.25),
+    0 0 0 1px rgba(234, 88, 12, 0.1);
+  transform: translateY(-1px);
+}
+
+.pin-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border-color: #f97316;
+  box-shadow: 
+    0 4px 12px rgba(249, 115, 22, 0.4),
+    0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+.pin-btn:active {
+  transform: translateY(0);
+}
+
+/* ============================
+   TRAVEL MODE SELECTOR
+   ============================ */
+
+.travel-mode-selector {
+  position: absolute;
+  bottom: 70px;
+  left: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.travel-mode-selector button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.travel-mode-selector button svg {
+  flex-shrink: 0;
+}
+
+.travel-mode-selector button:hover {
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.travel-mode-selector button.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 
+    0 3px 10px rgba(37, 99, 235, 0.35),
+    0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.travel-mode-selector button:active {
+  transform: translateY(0);
+}
+
+/* ============================
+   HAZARD TEST PANEL
+   ============================ */
+
+.hazard-test-panel {
+  position: absolute;
+  top: 166px;
+  right: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 
+    0 4px 12px rgba(251, 146, 60, 0.15),
+    0 0 0 1px rgba(251, 146, 60, 0.1);
+}
+
+.hazard-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a3412;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.hazard-panel-header svg {
+  flex-shrink: 0;
+}
+
+.hazard-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.hazard-checkbox:hover {
+  color: #1f2937;
+}
+
+.hazard-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #f97316;
+  cursor: pointer;
+}
+
+.hazard-checkbox span {
+  user-select: none;
+}
+
+/* ============================
+   GEOCODER
+   ============================ */
+
+.geocoder-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  width: 340px;
+}
+
+.geocoder-wrapper .mapboxgl-ctrl-geocoder:not(:first-child) {
+  display: none;
+}
+
+.mapboxgl-ctrl-geocoder {
+  min-width: 100%;
+  font-size: 14px;
+  border-radius: 10px;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
+  border: none !important;
+}
+
+/* ============================
+   ROUTE LEGEND
+   ============================ */
+
+.route-legend {
+  position: absolute;
+  top: 70px;
+  left: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  padding: 16px 20px;
+  border-radius: 10px;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
+  font-size: 13px;
+  z-index: 3;
+  max-width: 240px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.route-legend-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1C3E6F;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.route-legend-label svg {
+  flex-shrink: 0;
+}
+
+.route-info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.route-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.route-info-item svg {
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.travel-mode-label {
+  text-transform: capitalize;
+}
+
+.route-hint {
+  display: block;
+  margin-top: 10px;
+  color: #6b7280;
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ============================
+   ROUTE LABELS ON MAP
+   ============================ */
+
+.route-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 
+    0 3px 12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  opacity: 0.9;
+}
+
+.route-label svg {
+  flex-shrink: 0;
+}
+
+.route-label:hover {
+  transform: scale(1.08);
+  opacity: 1;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+.route-label.selected {
+  transform: scale(1.12);
+  opacity: 1;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.35),
+    0 0 0 3px rgba(255, 255, 255, 0.95);
+}
+
+.route-label-safest {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.route-label-fastest {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.route-label-safest-fastest,
+.route-label-safest-fastest {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.route-label-alternate,
+.route-label-default {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+/* ============================
+   EVACUATION CENTERS PANEL
+   ============================ */
+
+.evacuation-centers-panel {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.evacuation-centers-panel h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #1C3E6F;
+}
+
+.evacuation-centers-panel .muted {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 20px;
+  text-align: center;
+}
+
+.center-search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.center-search:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 
+    0 0 0 3px rgba(37, 99, 235, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.capacity-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px 0;
+}
+
+.capacity-filter button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+}
+
+.capacity-filter button:hover {
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.capacity-filter button.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.centers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.center-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.center-item:hover {
+  background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.center-item.active {
+  border: 2px solid #2563eb;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+  padding: 13px 15px; /* Adjust for thicker border */
+}
+
+.center-name {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1C3E6F;
+}
+
+.center-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.status-badge.open {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.half-full {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.status-badge.near-full {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
+.status-badge.full {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.closed {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.capacity-text {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ============================
+   RESPONSIVE - TABLET
+   ============================ */
+
+@media (max-width: 1200px) {
+  .map-layout {
+    grid-template-columns: 1fr 340px;
+  }
+
+  .evacuation-map-page {
+    padding: 20px 24px;
+  }
+
+  .geocoder-wrapper {
+    width: 280px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .evacuation-centers-panel {
+    max-height: 500px;
+  }
+
+  .map-container {
+    height: 560px;
+  }
+}
+
+/* ============================
+   RESPONSIVE - MOBILE
+   ============================ */
+
+@media (max-width: 768px) {
+  .evacuation-map-page {
+    padding: 16px;
+  }
+
+  .alert-banner {
+    font-size: 13px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+
+  .alert-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .map-section {
+    border-radius: 10px;
+  }
+
+  .map-container {
+    height: 480px;
+  }
+
+  .geocoder-wrapper {
+    width: calc(100% - 32px);
+    max-width: 280px;
+    top: 12px;
+    left: 12px;
+  }
+
+  .location-btn,
+  .pin-btn,
+  .hazard-test-panel {
+    right: 12px;
+  }
+
+  .location-btn {
+    top: 60px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .pin-btn {
+    top: 102px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .hazard-test-panel {
+    top: 144px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+
+  .hazard-panel-header svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .travel-mode-selector {
+    bottom: 60px;
+    left: 12px;
+    gap: 6px;
+  }
+
+  .travel-mode-selector button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .travel-mode-selector button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .route-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .route-legend {
+    top: 60px;
+    left: 12px;
+    padding: 14px 16px;
+    max-width: 200px;
+    font-size: 12px;
+  }
+
+  .route-legend-label {
+    font-size: 13px;
+  }
+
+  .route-info-item {
+    font-size: 12px;
+  }
+
+  .evacuation-centers-panel {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .evacuation-centers-panel h3 {
+    font-size: 16px;
+  }
+
+  .center-search {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .capacity-filter {
+    gap: 6px;
+  }
+
+  .capacity-filter button {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .center-item {
+    padding: 12px 14px;
+  }
+
+  .center-name {
+    font-size: 14px;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .capacity-text {
+    font-size: 11px;
+  }
+}
+
+/* ============================
+   RESPONSIVE - iPhone 14 Pro Max
+   ============================ */
+
+@media (max-width: 430px) {
+  .evacuation-map-page {
+    padding: 12px;
+  }
+
+  .alert-banner {
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+  }
+
+  .map-container {
+    height: 420px;
+  }
+
+  .geocoder-wrapper {
+    width: calc(100% - 24px);
+  }
+
+  .mapboxgl-ctrl-geocoder {
+    font-size: 13px;
+  }
+
+  .route-label {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .route-label svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .travel-mode-selector button {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .evacuation-centers-panel {
+    padding: 14px;
+    max-height: 400px;
+  }
+
+  .centers-list {
+    gap: 10px;
+  }
+}
