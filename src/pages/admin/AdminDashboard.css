@@ -60,7 +60,21 @@
   padding: 0.6rem;
   border-radius: 6px;
   border: 1px solid #ced4da;
+  width: 50%;
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+
+.admin-input:hover {
+  border-color: #7aa654;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #7aa654;
+  box-shadow: 0 0 0 3px rgba(84, 89, 166, 0.25);
+}
+
 
 /* button styles */
 .admin-primary-btn {
@@ -384,6 +398,7 @@
   background: #fff;
   padding: 28px;
   border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .update-alerts-title {
@@ -400,6 +415,10 @@
   justify-content: space-between;
   gap: 32px;
   margin-bottom: 16px;
+}
+
+.alert-group {
+  margin-bottom: 18px;
 }
 
 .alert-group label {
@@ -523,6 +542,73 @@
   cursor: pointer;
 }
 
+/* barangay selector */
+
+.barangay-selector {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.barangay-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.barangay-option {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  background: #f3f6fb;
+  color: #003077;
+  border: 1px solid #cfd8e3;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.barangay-option:not(.selected):hover {
+  background: #e9eff7;
+  border-color: #b8c6dc;
+}
+
+.barangay-option.selected {
+  background: #f28a38;
+  color: #ffffff;
+  border-color: #f28a38;
+  box-shadow: 0 0 0 2px rgba(242, 138, 56, 0.25);
+}
+
+.barangay-option input[type="checkbox"] {
+  display: none;
+}
+
+.barangay-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.barangay-control-btn {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ced4da;
+  background: #ffffff;
+  color: #1c3e6f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.barangay-control-btn:hover {
+  background: #f1f5fb;
+}
+
 /* Success feedback for alert sending */
 .alert-success {
   margin-top: 12px;
@@ -545,65 +631,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* barangay selector */
-
-.barangay-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.barangay-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.barangay-option {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #f1f5fb;
-  border: 1px solid #d0d7e2;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #1c3e6f;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.barangay-option:hover {
-  background: #e7effa;
-}
-
-.barangay-option input[type="checkbox"] {
-  accent-color: #ee7d30;
-}
-
-/* Select / Clear controls */
-.barangay-controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 4px;
-}
-
-.barangay-control-btn {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid #ced4da;
-  background: #ffffff;
-  color: #1c3e6f;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.barangay-control-btn:hover {
-  background: #f1f5fb;
 }

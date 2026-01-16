@@ -514,23 +514,30 @@ const normalizedSearch = debouncedSearch.trim().toLowerCase();
           <div className="alert-group">
             <label>Affected Barangays</label>
 
-            <div className="alert-buttons">
-              {BARANGAYS.map((b) => (
-                <label key={b.id} style={{ display: 'flex', gap: 6 }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedBarangays.includes(b.id)}
-                    onChange={() =>
-                      setSelectedBarangays((prev) =>
-                        prev.includes(b.id)
-                          ? prev.filter((id) => id !== b.id)
-                          : [...prev, b.id]
-                      )
-                    }
-                  />
-                  {b.name}
-                </label>
-              ))}
+            <div className="barangay-selector">
+              <div className="barangay-grid">
+                {BARANGAYS.map((b) => (
+                  <label
+                    key={b.id}
+                    className={`barangay-option ${
+                      selectedBarangays.includes(b.id) ? 'selected' : ''
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedBarangays.includes(b.id)}
+                      onChange={() =>
+                        setSelectedBarangays((prev) =>
+                          prev.includes(b.id)
+                            ? prev.filter((id) => id !== b.id)
+                            : [...prev, b.id]
+                        )
+                      }
+                    />
+                    <span>{b.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
