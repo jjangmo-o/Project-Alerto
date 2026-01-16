@@ -59,6 +59,10 @@ const EvacuationMap = () => {
 
   const [travelMode, setTravelMode] = useState<TravelMode>('walking');
 
+  // Store all available routes and which one is selected
+  const [availableRoutes, setAvailableRoutes] = useState<any[]>([]);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(0);
+
   const [hasRouted, setHasRouted] = useState(false);
   const [pinMode, setPinMode] = useState(false);
 
@@ -71,8 +75,13 @@ const EvacuationMap = () => {
 } | null>(null);
 
 const [capacityFilter, setCapacityFilter] = useState<
-  'all' | 'available' | 'near-full' | 'full'
+  'all' | 'open' | 'half-full' | 'near-full' | 'full' | 'closed'
 >('all');
+// ============================
+// TEMP HAZARD TEST TOGGLES
+// ============================
+const [testFloodActive, setTestFloodActive] = useState(false);
+const [testEarthquakeActive, setTestEarthquakeActive] = useState(false);
 
 
   // Track current routing intent
@@ -86,6 +95,8 @@ const [capacityFilter, setCapacityFilter] = useState<
 
   const originMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const destinationMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const routeLabelMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const routeLayerIdsRef = useRef<string[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
   // ============================
@@ -289,6 +300,73 @@ const [capacityFilter, setCapacityFilter] = useState<
   }, [setOriginMarker]);
 
   // ============================
+  // SELECT ROUTE (for clicking alternate routes)
+  // ============================
+  const selectRoute = useCallback((index: number) => {
+    if (!mapRef.current || !mapReady || availableRoutes.length === 0) return;
+    if (index === selectedRouteIndex) return; // Already selected
+
+    const map = mapRef.current;
+    const routes = availableRoutes;
+
+    setSelectedRouteIndex(index);
+
+    // Update line widths and opacities based on new selection
+    routes.forEach((_route: any, i: number) => {
+      // Use index-based layer IDs to match what we created
+      const layerId = `route-${i}`;
+      const isSelected = i === index;
+
+      if (map.getLayer(layerId)) {
+        map.setPaintProperty(layerId, 'line-width', isSelected ? 6 : 4);
+        map.setPaintProperty(layerId, 'line-opacity', isSelected ? 0.9 : 0.6);
+
+        // Move selected route to top
+        if (isSelected) {
+          map.moveLayer(layerId);
+        }
+      }
+    });
+
+    // Update label markers styling using stored route index
+    routeLabelMarkersRef.current.forEach((marker) => {
+      const el = marker.getElement();
+      const markerIndex = parseInt(el.dataset.routeIndex || '0', 10);
+      if (markerIndex === index) {
+        el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
+      }
+    });
+
+    // Update route info display with defensive null checks
+    const selectedRoute = routes[index];
+    if (!selectedRoute) {
+      console.warn('No route found at index:', index);
+      return;
+    }
+    
+    const rawDistance = selectedRoute.distanceMeters ?? selectedRoute.distance ?? selectedRoute.legs?.[0]?.distance;
+    const rawDuration = selectedRoute.durationSeconds ?? selectedRoute.duration ?? selectedRoute.legs?.[0]?.duration;
+
+    if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
+      setRouteInfo({
+        distanceKm: rawDistance / 1000,
+        durationMin: rawDuration / 60,
+      });
+    } else {
+      console.warn('Route missing distance/duration data:', {
+        index,
+        route: selectedRoute,
+        rawDistance,
+        rawDuration
+      });
+      // Keep previous route info or show N/A
+      setRouteInfo(null);
+    }
+  }, [mapReady, availableRoutes, selectedRouteIndex]);
+
+  // ============================
   // ROUTING FUNCTION
   // ============================
   const executeRoute = useCallback(async (
@@ -312,7 +390,10 @@ const [capacityFilter, setCapacityFilter] = useState<
           lat: currentOrigin.lat,
           lng: currentOrigin.lng,
           mode,
+          testFlood: testFloodActive,
+          testEarthquake: testEarthquakeActive,
         });
+
         console.log('Nearest with route response:', res.data);
 
         const data = res.data;
@@ -326,7 +407,7 @@ const [capacityFilter, setCapacityFilter] = useState<
           longitude: data.evacuationCenter.longitude,
         };
       } else {
-        // Route to specific center - two API calls
+        // Route to specific center
         const center = intent.center;
         const destLat = center.latitude ?? center.location?.coordinates?.[1]!;
         const destLng = center.longitude ?? center.location?.coordinates?.[0]!;
@@ -338,7 +419,10 @@ const [capacityFilter, setCapacityFilter] = useState<
           destLat,
           destLng,
           mode,
+          testFlood: testFloodActive,
+          testEarthquake: testEarthquakeActive,
         });
+
         console.log('Route response:', routeRes.data);
 
         routes = routeRes.data.routes;
@@ -352,44 +436,113 @@ const [capacityFilter, setCapacityFilter] = useState<
         return;
       }
 
-      const coords = routes[0].geometry?.coordinates;
+      // Store routes in state for interactive selection
+      setAvailableRoutes(routes);
+      setSelectedRouteIndex(0); // Default to first route (safest)
+
+      console.log('Available routes:', routes.map((r: any) => r.label || r.type || 'unlabeled'));
+
+      const selectedRoute = routes[0];
+      const coords = selectedRoute?.geometry?.coordinates;
       
       if (!coords || coords.length === 0) {
-        console.error('No coordinates in route:', routes[0]);
+        console.error('No coordinates in route:', selectedRoute);
         alert('Route found but no path data available.');
         setLoading(false);
         return;
       }
+
       const map = mapRef.current;
 
-      // Clear existing route
-      if (map.getLayer('route')) {
-        map.removeLayer('route');
-      }
-      if (map.getSource('route')) {
-        map.removeSource('route');
-      }
-
-      // Add new route
-      map.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: coords },
-          properties: {},
-        },
+      // Clear existing routes using tracked layer IDs
+      routeLayerIdsRef.current.forEach(layerId => {
+        // Remove event listeners
+        map.off('click', layerId, () => {});
+        map.off('mouseenter', layerId, () => {});
+        map.off('mouseleave', layerId, () => {});
+        if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getSource(layerId)) map.removeSource(layerId);
       });
+      routeLayerIdsRef.current = [];
 
-      map.addLayer({
-        id: 'route',
-        type: 'line',
-        source: 'route',
-        paint: { 
-          'line-color': '#2563eb', 
-          'line-width': 5,
-          'line-opacity': 0.8,
-        },
-      });
+      // Clear route label markers
+      routeLabelMarkersRef.current.forEach(m => m.remove());
+      routeLabelMarkersRef.current = [];
+
+      // Add routes in reverse order so selected is on top, then re-order
+      const routesWithIndex = routes.map((r: any, i: number) => ({ route: r, index: i }));
+      
+      // Display non-selected routes first (bottom), then selected on top
+      routesWithIndex
+        .sort((a: { route: any; index: number }) => (a.index === 0 ? 1 : -1))
+        .forEach(({ route, index }: { route: any; index: number }) => {
+          const label = route.label || route.type || `route-${index}`;
+          // Use index-based ID to ensure uniqueness even when labels are duplicated
+          const layerId = `route-${index}`;
+          const isSelected = index === 0;
+          // Assign colors based on index: 0=safest(orange), 1=fastest(green), 2=shortest(blue)
+          const colorByIndex = ['#f59e0b', '#22c55e', '#3b82f6'];
+          const color = colorByIndex[index] || '#6b7280';
+          
+          if (route.geometry?.coordinates) {
+            map.addSource(layerId, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: route.geometry.coordinates },
+                properties: { index, label },
+              },
+            });
+
+            map.addLayer({
+              id: layerId,
+              type: 'line',
+              source: layerId,
+              paint: { 
+                'line-color': color,
+                'line-width': isSelected ? 6 : 4,
+                'line-opacity': isSelected ? 0.9 : 0.6,
+              },
+            });
+
+            // Track this layer ID for cleanup
+            routeLayerIdsRef.current.push(layerId);
+
+            // Add click handler for route selection
+            map.on('click', layerId, () => {
+              selectRoute(index);
+            });
+
+            // Change cursor on hover
+            map.on('mouseenter', layerId, () => {
+              map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', layerId, () => {
+              map.getCanvas().style.cursor = '';
+            });
+
+            // Add floating label marker at midpoint of route
+            const routeCoords = route.geometry.coordinates;
+            const midIndex = Math.floor(routeCoords.length / 2);
+            const midpoint = routeCoords[midIndex];
+
+            // Use display labels based on index
+            const displayLabels = ['🛡️ Safest', '⚡ Fastest', '📏 Shortest'];
+            const labelClasses = ['safest', 'fastest', 'shortest'];
+
+            const labelEl = document.createElement('div');
+            labelEl.className = `route-label route-label-${labelClasses[index] || 'default'}${isSelected ? ' selected' : ''}`;
+            labelEl.innerHTML = displayLabels[index] || label;
+            labelEl.dataset.routeIndex = String(index); // Store original route index
+            labelEl.onclick = () => selectRoute(index);
+
+            const labelMarker = new mapboxgl.Marker({ element: labelEl, anchor: 'center' })
+              .setLngLat(midpoint)
+              .addTo(map);
+            
+            routeLabelMarkersRef.current.push(labelMarker);
+          }
+        });
 
       // Update origin marker color to blue (routed)
       setOriginMarker(currentOrigin.lng, currentOrigin.lat, '#2563eb');
@@ -402,53 +555,59 @@ const [capacityFilter, setCapacityFilter] = useState<
         const routedCenter = centers.find(c => c.id === evacuationCenter.id) || evacuationCenter;
         setSelectedCenter(routedCenter);
       }
-console.log('Route object:', routes[0]);
 
-    const rawDistance =
-    routes[0].distanceMeters ??
-    routes[0].distance ??
-    routes[0].legs?.[0]?.distance;
+      console.log('Route object:', selectedRoute);
 
-    const rawDuration =
-    routes[0].durationSeconds ??
-    routes[0].duration ??
-    routes[0].legs?.[0]?.duration;
+      const rawDistance =
+        selectedRoute.distanceMeters ??
+        selectedRoute.distance ??
+        selectedRoute.legs?.[0]?.distance;
 
-    if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
-    setRouteInfo({
-        distanceKm: rawDistance / 1000,
-        durationMin: rawDuration / 60,
-    });
-    } else {
-    console.warn('Route missing distance or duration:', routes[0]);
-    setRouteInfo(null);
-    }
+      const rawDuration =
+        selectedRoute.durationSeconds ??
+        selectedRoute.duration ??
+        selectedRoute.legs?.[0]?.duration;
 
-
-
+      if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
+        setRouteInfo({
+          distanceKm: rawDistance / 1000,
+          durationMin: rawDuration / 60,
+        });
+      } else {
+        console.warn('Route missing distance or duration:', selectedRoute);
+        setRouteInfo(null);
+      }
 
       // Fit map to show route
       const bounds = new mapboxgl.LngLatBounds();
       coords.forEach((coord: [number, number]) => bounds.extend(coord));
       map.fitBounds(bounds, { padding: 60, duration: 500 });
 
-      // Handle hazard layers
-      if (eventStatus?.flood) {
+      // Handle hazard layers based on active events
+      if (eventStatus?.flood || testFloodActive) {
         try {
           const flood = await getFloodHazards();
           addHazardLayer('flood', flood.data, '#3b82f6');
         } catch (e) {
           console.warn('Failed to load flood hazards:', e);
         }
+      } else {
+        // Remove flood layer if not active
+        if (map.getLayer('flood')) map.removeLayer('flood');
+        if (map.getSource('flood')) map.removeSource('flood');
       }
 
-      if (eventStatus?.earthquake) {
+      if (eventStatus?.earthquake || testEarthquakeActive) {
         try {
           const eq = await getEarthquakeHazards();
           addHazardLayer('earthquake', eq.data, '#ef4444');
         } catch (e) {
           console.warn('Failed to load earthquake hazards:', e);
         }
+      } else {
+        // Remove earthquake layer if not active
+        if (map.getLayer('earthquake')) map.removeLayer('earthquake');
+        if (map.getSource('earthquake')) map.removeSource('earthquake');
       }
 
       setHasRouted(true);
@@ -460,7 +619,7 @@ console.log('Route object:', routes[0]);
     } finally {
       setLoading(false);
     }
-  }, [centers, mapReady, setOriginMarker, setDestinationMarker]);
+  }, [centers, mapReady, testFloodActive, testEarthquakeActive, setOriginMarker, setDestinationMarker, selectRoute]);
 
   // ============================
   // FIND NEAREST HANDLER
@@ -666,6 +825,28 @@ const getCenterStatus = (center: any) => {
                 </button>
               </div>
 
+              {/* Hazard Test Toggles */}
+              <div className="hazard-test-panel">
+                <strong>⚠️ Test Hazard Scenarios</strong>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={testFloodActive}
+                    onChange={e => setTestFloodActive(e.target.checked)}
+                  />
+                  Flood Risk
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={testEarthquakeActive}
+                    onChange={e => setTestEarthquakeActive(e.target.checked)}
+                  />
+                  Earthquake Risk
+                </label>
+              </div>
+
+              {/* Travel Mode Selector */}
               <div className="travel-mode-selector">
                 {(['walking', 'driving', 'two-wheeler'] as TravelMode[]).map(m => (
                   <button
@@ -677,14 +858,30 @@ const getCenterStatus = (center: any) => {
                   </button>
                 ))}
               </div>
-                {routeInfo && (
+
+              {/* Route Info Legend */}
+              {routeInfo && availableRoutes.length > 0 && (
                 <div className="route-legend">
-                    <h4>📍 Route Info</h4>
-                    <p>Distance: {routeInfo.distanceKm.toFixed(2)} km</p>
-                    <p>Estimated Time: {Math.ceil(routeInfo.durationMin)} mins</p>
-                    <p>Mode: {travelMode}</p>
+                  <div className="route-legend-label">
+                    {(() => {
+                      // Use index-based labels since backend labels are descriptive (e.g., "Flood-risk path")
+                      const displayLabels = ['🛡️ Safest Route', '⚡ Fastest Route', '📏 Shortest Route'];
+                      return displayLabels[selectedRouteIndex] || '📍 Route';
+                    })()}
+                  </div>
+                  <div className="route-risk-info">
+                    {availableRoutes[selectedRouteIndex]?.label && (
+                      <small>Path type: {availableRoutes[selectedRouteIndex].label}</small>
+                    )}
+                  </div>
+                  <h4>📍 Route Info</h4>
+                  <p>Distance: {routeInfo.distanceKm.toFixed(2)} km</p>
+                  <p>Estimated Time: {Math.ceil(routeInfo.durationMin)} mins</p>
+                  <p>Mode: {travelMode}</p>
+                  <small className="route-hint">Click alternate routes on map to switch</small>
                 </div>
-                )}
+              )}
+
               <button
                 className="route-btn"
                 onClick={handleFindNearest}

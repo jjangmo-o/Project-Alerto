@@ -348,19 +348,24 @@
 
 .route-legend {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  top: 60px;
+  left: 12px;
   background: white;
   padding: 12px 16px;
   border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  font-size: 14px;
-  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 13px;
+  z-index: 3;
+  max-width: 200px;
 }
 
 .route-legend h4 {
   margin: 0 0 6px;
-  font-size: 15px;
+  font-size: 14px;
+}
+
+.route-legend p {
+  margin: 4px 0;
 }
 
 .capacity.available { color: #16a34a; }
@@ -413,13 +418,105 @@
   border-color: #2563eb;
 }
 
-.route-legend {
-  margin-top: 10px;
-  background: #ffffff;
+/* Hazard Test Panel */
+.hazard-test-panel {
+  position: absolute;
+  top: 150px;
+  right: 12px;
   padding: 10px 14px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-size: 13px;
+  background: #fff7ed;
+  border: 1px dashed #fb923c;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hazard-test-panel strong {
+  font-size: 11px;
+  color: #9a3412;
+}
+
+.hazard-test-panel label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.hazard-test-panel input[type="checkbox"] {
+  accent-color: #f97316;
+}
+
+/* Route Label Markers on Map */
+.route-label {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.15s ease;
+  user-select: none;
+  opacity: 0.85;
+}
+
+.route-label:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.route-label.selected {
+  transform: scale(1.1);
+  opacity: 1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.route-label-safest {
+  background: #f59e0b;
+  color: white;
+  border: 2px solid #d97706;
+}
+
+.route-label-fastest {
+  background: #22c55e;
+  color: white;
+  border: 2px solid #16a34a;
+}
+
+.route-label-shortest {
+  background: #3b82f6;
+  color: white;
+  border: 2px solid #2563eb;
+}
+
+/* Route legend header */
+.route-legend-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.route-risk-info {
+  margin-bottom: 8px;
+}
+
+.route-risk-info small {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.route-hint {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 /* ============================

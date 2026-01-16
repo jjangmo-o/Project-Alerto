@@ -16,11 +16,13 @@ export function getNearestEvacuationCenter(params: {
   );
 }
 
-// Add this new function
+// Get nearest evacuation center with route (combined endpoint)
 export function getNearestWithRoute(params: {
   lat: number;
   lng: number;
   mode: TravelMode;
+  testFlood?: boolean;
+  testEarthquake?: boolean;
 }) {
   return axios.get(
     `${API}/api/v1/evacuation-centers/nearest-route`,
@@ -35,6 +37,8 @@ export function getRouteBetween(params: {
   destLat: number;
   destLng: number;
   mode: TravelMode;
+  testFlood?: boolean;
+  testEarthquake?: boolean;
 }) {
   return axios.get(
     `${API}/api/v1/evacuation-centers/route`,
