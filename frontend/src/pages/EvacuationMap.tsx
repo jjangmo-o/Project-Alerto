@@ -781,7 +781,7 @@ const EvacuationMap = () => {
   // WEBSOCKET HAZARD UPDATES
   // ============================
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_URL);
+    const socket = io(import.meta.env.VITE_API_URL || window.location.origin);
     socketRef.current = socket;
 
     socket.on('hazard:update', () => {
