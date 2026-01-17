@@ -1,12 +1,19 @@
-import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import express from 'express';
-import { AppModule } from '../../backend/dist/app.module.js';
-import { HttpExceptionFilter } from '../../backend/dist/common/filters/http-exception.filter.js';
+const { NestFactory } = require('@nestjs/core');
+const { ExpressAdapter } = require('@nestjs/platform-express');
+const express = require('express');
+const { AppModule } = require('../../backend/dist/app.module.js');
+const { HttpExceptionFilter } = require('../../backend/dist/common/filters/http-exception.filter.js');
 
 const server = express();
 let app;
 let bootstrapError = null;
+
+// Log environment variables availability (not values) for debugging
+console.log('Environment check:', {
+  hasMapboxToken: !!process.env.MAPBOX_TOKEN,
+  hasSupabaseUrl: !!process.env.SUPABASE_URL,
+  hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+});
 
 async function bootstrap() {
   if (bootstrapError) {
@@ -15,6 +22,7 @@ async function bootstrap() {
   
   if (!app) {
     try {
+      console.log('Starting NestJS bootstrap...');
       const nestApp = await NestFactory.create(
         AppModule,
         new ExpressAdapter(server),
@@ -29,6 +37,7 @@ async function bootstrap() {
 
       await nestApp.init();
       app = nestApp;
+      console.log('NestJS bootstrap complete');
     } catch (error) {
       bootstrapError = error;
       console.error('Bootstrap error:', error);
@@ -38,7 +47,7 @@ async function bootstrap() {
   return server;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     await bootstrap();
     server(req, res);
@@ -50,4 +59,4 @@ export default async function handler(req, res) {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-}
+};
