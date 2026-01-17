@@ -1,8 +1,8 @@
 const { NestFactory } = require('@nestjs/core');
 const { ExpressAdapter } = require('@nestjs/platform-express');
 const express = require('express');
-const { AppModule } = require('../../backend/dist/app.module.js');
-const { HttpExceptionFilter } = require('../../backend/dist/common/filters/http-exception.filter.js');
+const { AppModule } = require('../backend/dist/app.module.js');
+const { HttpExceptionFilter } = require('../backend/dist/common/filters/http-exception.filter.js');
 
 const server = express();
 let app;

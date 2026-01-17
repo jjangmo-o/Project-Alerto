@@ -5,7 +5,7 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
-    "frontend/api/index.cjs": {
+    "api/index.cjs": {
       "includeFiles": "backend/dist/**",
       "maxDuration": 30,
       "memory": 1024
