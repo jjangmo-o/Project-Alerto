@@ -4,13 +4,15 @@
   "installCommand": "npm install && cd backend && npm install && npm run build && cd ../frontend && npm install",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "backend/dist/**",
-      "maxDuration": 30,
-      "memory": 1024
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["backend/dist/**"]
+      }
     }
-  },
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
