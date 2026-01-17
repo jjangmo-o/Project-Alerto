@@ -1,6 +1,8 @@
-const { NestFactory } = require('@nestjs/core');
-const { ExpressAdapter } = require('@nestjs/platform-express');
-const express = require('express');
+import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
+import { AppModule } from '../../backend/dist/app.module.js';
+import { HttpExceptionFilter } from '../../backend/dist/common/filters/http-exception.filter.js';
 
 const server = express();
 let app;
@@ -13,10 +15,6 @@ async function bootstrap() {
   
   if (!app) {
     try {
-      // Import the compiled AppModule (path relative to frontend folder)
-      const { AppModule } = require('../../backend/dist/app.module');
-      const { HttpExceptionFilter } = require('../../backend/dist/common/filters/http-exception.filter');
-      
       const nestApp = await NestFactory.create(
         AppModule,
         new ExpressAdapter(server),
@@ -40,7 +38,7 @@ async function bootstrap() {
   return server;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     await bootstrap();
     server(req, res);
@@ -52,4 +50,4 @@ module.exports = async (req, res) => {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-};
+}
