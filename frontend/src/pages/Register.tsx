@@ -80,6 +80,27 @@ const Register = () => {
     setLoading(true);
     setError('');
 
+    // Check for incomplete details
+    const requiredFields = [
+      'firstName', 'lastName', 'email', 'contact', 'address',
+      'birthDay', 'birthMonth', 'birthYear', 'gender', 'password', 'confirmPassword'
+    ];
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData]) {
+        setError('Please fill in all required fields.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Phone number validation: must be 11 digits, start with 09, and only numbers
+    const phone = formData.contact.replace(/\s+/g, '');
+    if (!/^09\d{9}$/.test(phone)) {
+      setError('Please enter a valid 11-digit mobile number starting with 09.');
+      setLoading(false);
+      return;
+    }
+
     if (!formData.birthDay || !formData.birthMonth || !formData.birthYear) {
       setError('Please select your complete birth date');
       setLoading(false);
@@ -101,7 +122,7 @@ const Register = () => {
         lastName: formData.lastName,
         gender: formData.gender,
         email: formData.email,
-        contact: formData.contact,
+        contact: phone,
         address: formData.address,
         birthDate,
         password: formData.password,
