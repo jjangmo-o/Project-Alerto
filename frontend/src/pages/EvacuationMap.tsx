@@ -8,7 +8,6 @@ import { getNearestWithRoute, getRouteBetween, getAllEvacuationCenters } from '.
 import type { TravelMode } from '../services/evacuationCenters.api';
 import {
   getFloodHazards,
-  // getEarthquakeHazards, // Uncomment when needed
 } from '../services/hazards.api';
 
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -19,7 +18,6 @@ import './EvacuationMap.css';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-// Types
 interface EvacuationCenter {
   id: string;
   name: string;
@@ -30,7 +28,7 @@ interface EvacuationCenter {
   capacity_total?: number;
   address?: string;
   location?: {
-    coordinates: [number, number]; // [lng, lat]
+    coordinates: [number, number]; 
   };
 }
 
@@ -39,12 +37,10 @@ interface Origin {
   lng: number;
 }
 
-// Routing intent types
 type RoutingIntent = 
   | { type: 'nearest' }
   | { type: 'specific'; center: EvacuationCenter };
 
-// Navigation state from Dashboard
 interface NavigationState {
   origin?: { lat: number; lng: number };
   travelMode?: TravelMode;
@@ -66,7 +62,6 @@ const EvacuationMap = () => {
 
   const [travelMode, setTravelMode] = useState<TravelMode>(navigationState?.travelMode || 'walking');
 
-  // Store all available routes and which one is selected
   const [availableRoutes, setAvailableRoutes] = useState<any[]>([]);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(0);
 
@@ -85,14 +80,9 @@ const EvacuationMap = () => {
     'all' | 'open' | 'half-full' | 'near-full' | 'full' | 'closed'
   >('all');
 
-  // ============================
-  // TEMP HAZARD TEST TOGGLES
-  // ============================
   const [testFloodActive, setTestFloodActive] = useState(navigationState?.testFloodActive || false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [testEarthquakeActive, _setTestEarthquakeActive] = useState(false);
 
-  // Track current routing intent
   const routingIntentRef = useRef<RoutingIntent | null>(null);
 
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -109,9 +99,6 @@ const EvacuationMap = () => {
   const selectRouteRef = useRef<(index: number) => void>(() => {});
   const centerItemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // ============================
-  // MAP INIT
-  // ============================
   useEffect(() => {
     if (!mapContainerRef.current || mapInitializedRef.current) return;
 
@@ -144,17 +131,12 @@ const EvacuationMap = () => {
     };
   }, []);
 
-  // ============================
-  // GEOCODER (SINGLE INSTANCE)
-  // ============================
   useEffect(() => {
     const map = mapRef.current;
     const container = geocoderContainerRef.current;
     
     if (!map || !container) return;
-    // Prevents the duplicate geocoder
     if (geocoderRef.current) return;
-    // this waits for map to be loaded
     if (!map.loaded()) {
       const onLoad = () => {
         if (!geocoderRef.current && container) {
@@ -171,7 +153,6 @@ const EvacuationMap = () => {
   }, []);
 
   const initGeocoder = (map: mapboxgl.Map, container: HTMLDivElement) => {
-    // Clear any existing geocoder content
     container.innerHTML = '';
     
     const geocoder = new MapboxGeocoder({
@@ -185,29 +166,22 @@ const EvacuationMap = () => {
 
     geocoder.on('result', (e: { result: { center: [number, number] } }) => {
       const [lng, lat] = e.result.center;
-      // Set origin immediately and show marker
       setOriginMarker(lng, lat, '#0ea5e9');
       setOrigin({ lat, lng });
 
       setRouteInfo(null);
 
       map.flyTo({ center: [lng, lat], zoom: 15 });
-      // NO auto-routing
     });
 
     geocoderRef.current = geocoder;
   };
 
-  // ============================
-  // MARKERS
-  // ============================
   const setOriginMarker = useCallback((lng: number, lat: number, color: string) => {
     if (!mapRef.current) return;
     
-    // Remove existing origin marker
     originMarkerRef.current?.remove();
     
-    // Create and add new marker immediately
     const marker = new mapboxgl.Marker({ color })
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
@@ -227,9 +201,6 @@ const EvacuationMap = () => {
     destinationMarkerRef.current = marker;
   }, []);
 
-  // ============================
-  // PIN MODE
-  // ============================
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
@@ -237,20 +208,16 @@ const EvacuationMap = () => {
     const handler = (e: mapboxgl.MapMouseEvent) => {
       const { lng, lat } = e.lngLat;
       
-      // Set marker immediately (before state update)
       setOriginMarker(lng, lat, '#f59e0b');
       setRouteInfo(null);
-      // Update state
       setOrigin({ lat, lng });
       
-      // Fly to location with single zoom level (no flicker)
       map.flyTo({ 
         center: [lng, lat], 
-        zoom: Math.max(map.getZoom(), 14), // Don't zoom out
+        zoom: Math.max(map.getZoom(), 14), 
         duration: 500 
       });
       
-      // Turn off pin mode after placing
       setPinMode(false);
     };
 
@@ -269,9 +236,7 @@ const EvacuationMap = () => {
     };
   }, [pinMode, mapReady, setOriginMarker]);
 
-  // ============================
-  // USE MY LOCATION
-  // ============================
+
   const useMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -282,20 +247,16 @@ const EvacuationMap = () => {
       (pos) => {
         const { latitude, longitude } = pos.coords;
         
-        // Set marker immediately
         setOriginMarker(longitude, latitude, '#16a34a');
         setRouteInfo(null);
-        // Update state
         setOrigin({ lat: latitude, lng: longitude });
         
-        // Center map
         mapRef.current?.flyTo({ 
           center: [longitude, latitude], 
           zoom: 15,
           duration: 1000 
         });
         
-        // NO auto-routing
       },
       (error) => {
         console.error('Geolocation error:', error);
@@ -309,9 +270,7 @@ const EvacuationMap = () => {
     );
   }, [setOriginMarker]);
 
-  // ============================
-  // SELECT ROUTE (for clicking alternate routes)
-  // ============================
+
   const selectRoute = useCallback((index: number) => {
     if (!mapRef.current || !mapReady || availableRoutes.length === 0) return;
 
@@ -320,9 +279,7 @@ const EvacuationMap = () => {
 
     setSelectedRouteIndex(index);
 
-    // Update line widths and opacities based on new selection
     routes.forEach((_route: any, i: number) => {
-      // Use index-based layer IDs to match what we created
       const layerId = `route-${i}`;
       const isSelected = i === index;
 
@@ -330,14 +287,12 @@ const EvacuationMap = () => {
         map.setPaintProperty(layerId, 'line-width', isSelected ? 6 : 4);
         map.setPaintProperty(layerId, 'line-opacity', isSelected ? 0.9 : 0.6);
 
-        // Move selected route to top
         if (isSelected) {
           map.moveLayer(layerId);
         }
       }
     });
 
-    // Update label markers styling using stored route index
     routeLabelMarkersRef.current.forEach((marker) => {
       const el = marker.getElement();
       const markerIndex = parseInt(el.dataset.routeIndex || '0', 10);
@@ -348,7 +303,6 @@ const EvacuationMap = () => {
       }
     });
 
-    // Update route info display with defensive null checks
     const selectedRoute = routes[index];
     if (!selectedRoute) {
       console.warn('No route found at index:', index);
@@ -359,7 +313,6 @@ const EvacuationMap = () => {
     const rawDuration = selectedRoute.durationSeconds ?? selectedRoute.duration ?? selectedRoute.legs?.[0]?.duration;
 
     if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
-      // Round to 2 decimal places to ensure consistent display
       setRouteInfo({
         distanceKm: Math.round((rawDistance / 1000) * 100) / 100,
         durationMin: Math.round(rawDuration / 60),
@@ -371,17 +324,14 @@ const EvacuationMap = () => {
         rawDistance,
         rawDuration
       });
-      // Keep previous route info or show N/A
       setRouteInfo(null);
     }
   }, [mapReady, availableRoutes]);
 
-  // Keep ref updated to avoid stale closures in event handlers
   useEffect(() => {
     selectRouteRef.current = selectRoute;
   }, [selectRoute]);
 
-  // Scroll to selected center when it changes (after routing)
   useEffect(() => {
     if (selectedCenter?.id) {
       const element = centerItemRefs.current.get(selectedCenter.id);
@@ -391,9 +341,7 @@ const EvacuationMap = () => {
     }
   }, [selectedCenter?.id]);
 
-  // ============================
-  // ROUTING FUNCTION
-  // ============================
+
   const executeRoute = useCallback(async (
     currentOrigin: Origin,
     intent: RoutingIntent,
@@ -409,21 +357,18 @@ const EvacuationMap = () => {
       let evacuationCenter: EvacuationCenter;
 
       if (intent.type === 'nearest') {
-        // Use combined endpoint - single API call
         console.log('Finding nearest center with route from:', currentOrigin);
         const res = await getNearestWithRoute({
           lat: currentOrigin.lat,
           lng: currentOrigin.lng,
           mode,
           testFlood: testFloodActive,
-          // testEarthquake: testEarthquakeActive,
         });
 
         console.log('Nearest with route response:', res.data);
 
         const data = res.data;
         
-        // Validate API response - check if we got HTML instead of JSON
         if (typeof data === 'string' || !data.evacuationCenter) {
           console.error('Invalid API response:', data);
           throw new Error('API returned invalid response. Please try again.');
@@ -439,7 +384,6 @@ const EvacuationMap = () => {
           longitude: data.evacuationCenter.longitude,
         };
       } else {
-        // Route to specific center
         const center = intent.center;
         const destLat = center.latitude ?? center.location?.coordinates?.[1]!;
         const destLng = center.longitude ?? center.location?.coordinates?.[0]!;
@@ -452,7 +396,6 @@ const EvacuationMap = () => {
           destLng,
           mode,
           testFlood: testFloodActive,
-          // testEarthquake: testEarthquakeActive,
         });
 
         console.log('Route response:', routeRes.data);
@@ -468,9 +411,8 @@ const EvacuationMap = () => {
         return;
       }
 
-      // Store routes in state for interactive selection
       setAvailableRoutes(routes);
-      setSelectedRouteIndex(0); // Default to first route (safest)
+      setSelectedRouteIndex(0); 
 
       console.log('Available routes:', routes.map((r: any) => r.label || r.type || 'unlabeled'));
 
@@ -486,9 +428,7 @@ const EvacuationMap = () => {
 
       const map = mapRef.current;
 
-      // Clear existing routes using tracked layer IDs
       routeLayerIdsRef.current.forEach(layerId => {
-        // Remove event listeners
         map.off('click', layerId, () => {});
         map.off('mouseenter', layerId, () => {});
         map.off('mouseleave', layerId, () => {});
@@ -497,27 +437,22 @@ const EvacuationMap = () => {
       });
       routeLayerIdsRef.current = [];
 
-      // Clear route label markers
       routeLabelMarkersRef.current.forEach(m => m.remove());
       routeLabelMarkersRef.current = [];
 
-      // Add routes in reverse order so selected is on top, then re-order
       const routesWithIndex = routes.map((r: any, i: number) => ({ route: r, index: i }));
       
-      // Display non-selected routes first (bottom), then selected on top
       routesWithIndex
         .sort((a: { route: any; index: number }) => (a.index === 0 ? 1 : -1))
         .forEach(({ route, index }: { route: any; index: number }) => {
           const label = route.label || route.type || `route-${index}`;
-          // Use index-based ID to ensure uniqueness even when labels are duplicated
           const layerId = `route-${index}`;
           const isSelected = index === 0;
-          // Assign colors based on route label: safest=green, best(safest & fastest)=blue, alternate=gray
           const colorByLabel: Record<string, string> = {
-            'safest': '#22c55e',           // green
-            'safest & fastest': '#3b82f6', // blue (Best)
-            'fastest': '#3b82f6',          // blue
-            'alternate': '#6b7280',        // gray
+            'safest': '#22c55e',           
+            'safest & fastest': '#3b82f6', 
+            'fastest': '#3b82f6',          
+            'alternate': '#6b7280',        
           };
           const color = colorByLabel[route.label] || '#6b7280';
           
@@ -542,15 +477,12 @@ const EvacuationMap = () => {
               },
             });
 
-            // Track this layer ID for cleanup
             routeLayerIdsRef.current.push(layerId);
 
-            // Add click handler for route selection (use ref to avoid stale closure)
             map.on('click', layerId, () => {
               selectRouteRef.current(index);
             });
 
-            // Change cursor on hover
             map.on('mouseenter', layerId, () => {
               map.getCanvas().style.cursor = 'pointer';
             });
@@ -558,12 +490,10 @@ const EvacuationMap = () => {
               map.getCanvas().style.cursor = '';
             });
 
-            // Add floating label marker at midpoint of route
             const routeCoords = route.geometry.coordinates;
             const midIndex = Math.floor(routeCoords.length / 2);
             const midpoint = routeCoords[midIndex];
 
-            // Use the backend's label to determine display with SVG icons
             const labelIcons: Record<string, string> = {
               'safest': '<svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/></svg> Safest',
               'fastest': '<svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41 4.157 8.5z"/></svg> Fastest',
@@ -575,7 +505,7 @@ const EvacuationMap = () => {
             const labelEl = document.createElement('div');
             labelEl.className = `route-label route-label-${route.label?.replace(/ & /g, '-') || 'default'}${isSelected ? ' selected' : ''}`;
             labelEl.innerHTML = displayLabel;
-            labelEl.dataset.routeIndex = String(index); // Store original route index
+            labelEl.dataset.routeIndex = String(index);
             labelEl.onclick = () => selectRouteRef.current(index);
 
             const labelMarker = new mapboxgl.Marker({ element: labelEl, anchor: 'center' })
@@ -586,13 +516,10 @@ const EvacuationMap = () => {
           }
         });
 
-      // Marker color to blue (routed)
       setOriginMarker(currentOrigin.lng, currentOrigin.lat, '#2563eb');
 
-      // Set destination marker using evacuation center coordinates
       setDestinationMarker(evacuationCenter.longitude, evacuationCenter.latitude);
 
-      // Selected center state to match what was routed to
       if (evacuationCenter) {
         const routedCenter = centers.find(c => c.id === evacuationCenter.id) || evacuationCenter;
         setSelectedCenter(routedCenter);
@@ -611,7 +538,6 @@ const EvacuationMap = () => {
         selectedRoute.legs?.[0]?.duration;
 
       if (typeof rawDistance === 'number' && typeof rawDuration === 'number') {
-        // Round to 2 decimal places to ensure consistent display
         setRouteInfo({
           distanceKm: Math.round((rawDistance / 1000) * 100) / 100,
           durationMin: Math.round(rawDuration / 60),
@@ -621,12 +547,10 @@ const EvacuationMap = () => {
         setRouteInfo(null);
       }
 
-      // Fit map to show route
       const bounds = new mapboxgl.LngLatBounds();
       coords.forEach((coord: [number, number]) => bounds.extend(coord));
       map.fitBounds(bounds, { padding: 60, duration: 500 });
 
-      // Handle hazard layers based on active events
       if (eventStatus?.flood || testFloodActive) {
         try {
           const flood = await getFloodHazards();
@@ -635,23 +559,9 @@ const EvacuationMap = () => {
           console.warn('Failed to load flood hazards:', e);
         }
       } else {
-        // Remove flood layer if not active
         if (map.getLayer('flood')) map.removeLayer('flood');
         if (map.getSource('flood')) map.removeSource('flood');
       }
-
-      // if (eventStatus?.earthquake || testEarthquakeActive) {
-      //   try {
-      //     const eq = await getEarthquakeHazards();
-      //     addHazardLayer('earthquake', eq.data, '#ef4444');
-      //   } catch (e) {
-      //     console.warn('Failed to load earthquake hazards:', e);
-      //   }
-      // } else {
-      //   // Remove earthquake layer if not active
-      //   if (map.getLayer('earthquake')) map.removeLayer('earthquake');
-      //   if (map.getSource('earthquake')) map.removeSource('earthquake');
-      // }
 
       setHasRouted(true);
       routingIntentRef.current = intent;
@@ -664,11 +574,7 @@ const EvacuationMap = () => {
     }
   }, [centers, mapReady, testFloodActive, testEarthquakeActive, setOriginMarker, setDestinationMarker, selectRoute]);
 
-  // ============================
-  // AUTO-ROUTE FROM DASHBOARD
-  // ============================
   useEffect(() => {
-    // Only trigger auto-route if coming from Dashboard with autoRoute flag
     if (
       navigationState?.autoRoute &&
       navigationState?.origin &&
@@ -677,17 +583,14 @@ const EvacuationMap = () => {
     ) {
       autoRouteTriggeredRef.current = true;
       
-      // Set the origin marker
       setOriginMarker(navigationState.origin.lng, navigationState.origin.lat, '#2563eb');
       
-      // Fly to the origin location
       mapRef.current?.flyTo({
         center: [navigationState.origin.lng, navigationState.origin.lat],
         zoom: 14,
         duration: 1000
       });
 
-      // Execute the route after a short delay to ensure map is ready
       setTimeout(() => {
         executeRoute(
           navigationState.origin!,
@@ -698,27 +601,18 @@ const EvacuationMap = () => {
     }
   }, [mapReady, navigationState, executeRoute, setOriginMarker]);
 
-  // ============================
-  // FIND NEAREST HANDLER
-  // ============================
   const handleFindNearest = useCallback(() => {
     if (!origin) {
       alert('Please set your location first using:\n• "Use My Location" button\n• Pin mode\n• Search bar');
       return;
     }
 
-    // Clear any specific selection
     setSelectedCenter(null);
     
-    // Route to nearest
     executeRoute(origin, { type: 'nearest' }, travelMode);
   }, [origin, travelMode, executeRoute]);
 
-  // ============================
-  // SELECT CENTER HANDLER
-  // ============================
   const handleSelectCenter = useCallback((center: EvacuationCenter) => {
-    // Always update selection visually
     setSelectedCenter(center);
 
     if (!origin) {
@@ -726,25 +620,16 @@ const EvacuationMap = () => {
       return;
     }
 
-    // Route to specific center
     executeRoute(origin, { type: 'specific', center }, travelMode);
   }, [origin, travelMode, executeRoute]);
-
-  // ============================
-  // TRAVEL MODE CHANGE
-  // ============================
   const handleTravelModeChange = useCallback((mode: TravelMode) => {
     setTravelMode(mode);
 
-    // Only re-route if we already have a route
     if (hasRouted && origin && routingIntentRef.current) {
       executeRoute(origin, routingIntentRef.current, mode);
     }
   }, [hasRouted, origin, executeRoute]);
 
-  // ============================
-  // HAZARD LAYER
-  // ============================
   const addHazardLayer = useCallback((
     id: string,
     geojson: GeoJSON.FeatureCollection,
@@ -753,7 +638,6 @@ const EvacuationMap = () => {
     const map = mapRef.current;
     if (!map) return;
 
-    // Remove existing layer/source
     if (map.getLayer(id)) {
       map.removeLayer(id);
     }
@@ -777,15 +661,12 @@ const EvacuationMap = () => {
     });
   }, []);
 
-  // ============================
-  // WEBSOCKET HAZARD UPDATES
-  // ============================
+
   useEffect(() => {
     const socket = io(import.meta.env.VITE_API_URL || window.location.origin);
     socketRef.current = socket;
 
     socket.on('hazard:update', () => {
-      // Only re-route if we have an active route
       if (hasRouted && origin && routingIntentRef.current) {
         executeRoute(origin, routingIntentRef.current, travelMode);
       }
@@ -797,15 +678,11 @@ const EvacuationMap = () => {
     };
   }, [hasRouted, origin, travelMode, executeRoute]);
 
-  // ============================
-  // FETCH CENTERS
-  // ============================
   useEffect(() => {
     getAllEvacuationCenters()
       .then(res => {
         const data = res.data;
         if (Array.isArray(data)) {
-          // Map the data to ensure we have lat/lng
           const mapped = data.map((c: any) => ({
             id: c.id,
             name: c.name,
@@ -828,9 +705,6 @@ const EvacuationMap = () => {
       });
   }, []);
 
-  // ============================
-  // STATUS & CAPACITY HELPERS
-  // ============================
   const getCenterStatus = (center: EvacuationCenter) => {
     if (center.status?.toLowerCase() === 'closed') return 'closed';
 
@@ -845,9 +719,6 @@ const EvacuationMap = () => {
     return 'open';
   };
 
-  // ============================
-  // FILTERED CENTERS
-  // ============================
   const filteredCenters = centers.filter(c => {
     const matchesSearch = c.name
       .toLowerCase()
@@ -861,9 +732,6 @@ const EvacuationMap = () => {
     return matchesSearch && matchesCapacity;
   });
 
-  // ============================
-  // UI
-  // ============================
   return (
     <div className="evacuation-map-page">
       <div className="alert-banner">

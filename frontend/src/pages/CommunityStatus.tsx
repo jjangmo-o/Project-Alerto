@@ -83,20 +83,17 @@ interface SignedUrlCache {
 const CommunityStatus = () => {
   const { profile } = useAuth();
 
-  // states for posts and composer
   const [loading] = useState(false);
   const [postText, setPostText] = useState('');
   const [posts, setPosts] = useState<DisasterReport[]>([]);
   const [imagesByReport, setImagesByReport] = useState<Record<string, string[]>>({});
   
-  // Cache for signed URLs with expiry time
   const [signedUrlCache, setSignedUrlCache] = useState<Record<string, SignedUrlCache>>(() => {
-    // Load cache from localStorage on mount
+   
     try {
       const cached = localStorage.getItem('signedUrlCache');
       if (cached) {
         const parsed = JSON.parse(cached);
-        // Filter out expired URLs
         const now = Date.now();
         const validCache: Record<string, SignedUrlCache> = {};
         Object.entries(parsed).forEach(([key, value]) => {
@@ -113,28 +110,23 @@ const CommunityStatus = () => {
     return {};
   });
 
-  // state for post composer modal
+ 
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [showUploadUI, setShowUploadUI] = useState(false);
 
-  // states for selects in composer
   const [status, setStatus] = useState('Safe');
   const [barangay, setBarangay] = useState('');
 
-  // Filter state for posts
   const [filterBarangay, setFilterBarangay] = useState('');
 
-  // Image upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // This is to allow users to preview selected images from the posts
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
   const [activePreviewImages, setActivePreviewImages] = useState<string[]>([]);
 
-  // Save cache to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem('signedUrlCache', JSON.stringify(signedUrlCache));
@@ -143,16 +135,13 @@ const CommunityStatus = () => {
     }
   }, [signedUrlCache]);
 
-  // Get signed URL with caching - valid for 1 hour
   const getSignedUrl = useCallback(async (filename: string): Promise<string> => {
     const now = Date.now();
     
-    // Check if we have a valid cached URL
     if (signedUrlCache[filename] && signedUrlCache[filename].expiresAt > now) {
       return signedUrlCache[filename].url;
     }
 
-    // Generate new signed URL (valid for 3600 seconds = 1 hour)
     const { data, error } = await supabase.storage
       .from('report-images')
       .createSignedUrl(filename, 3600);
@@ -163,7 +152,6 @@ const CommunityStatus = () => {
     }
 
     if (data?.signedUrl) {
-      // Cache the URL with expiry time (59 minutes from now to be safe)
       const expiresAt = now + (59 * 60 * 1000);
       setSignedUrlCache(prev => ({
         ...prev,
@@ -202,7 +190,6 @@ const CommunityStatus = () => {
       }))
     );
 
-    // Fetch images for the reports
     const reportIds = (data ?? []).map((d) => d.report_id);
 
     if (reportIds.length > 0) {
@@ -220,17 +207,14 @@ const CommunityStatus = () => {
 
       const map: Record<string, string[]> = {};
 
-      // Generate signed URLs for private bucket access (with caching)
       for (const img of images ?? []) {
         if (img.report_id && img.image_url) {
-          // Extract filename (in case full URL was stored)
           let filename = img.image_url;
           if (filename.includes('/')) {
             const parts = filename.split('/');
             filename = parts[parts.length - 1];
           }
           
-          // Get signed URL (uses cache if available, generates if not)
           const signedUrl = await getSignedUrl(filename);
 
           if (signedUrl) {
@@ -298,14 +282,13 @@ const CommunityStatus = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [previewImageIndex, activePreviewImages.length]);
 
-  // Handle file selection
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const newFiles = Array.from(files);
     
-    // Validate file types
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const invalidFiles = newFiles.filter(file => !validTypes.includes(file.type));
     
@@ -314,8 +297,7 @@ const CommunityStatus = () => {
       return;
     }
 
-    // Validate file sizes (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    const maxSize = 5 * 1024 * 1024;
     const oversizedFiles = newFiles.filter(file => file.size > maxSize);
     
     if (oversizedFiles.length > 0) {
@@ -323,7 +305,6 @@ const CommunityStatus = () => {
       return;
     }
 
-    // Limit to 3 images total
     const currentCount = selectedFiles.length;
     const availableSlots = 3 - currentCount;
     
@@ -334,24 +315,21 @@ const CommunityStatus = () => {
 
     const filesToAdd = newFiles.slice(0, availableSlots);
     
-    // Create preview URLs
     const newPreviewUrls = filesToAdd.map(file => URL.createObjectURL(file));
     
     setSelectedFiles(prev => [...prev, ...filesToAdd]);
     setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
   };
 
-  // Remove selected image
   const handleRemoveImage = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => {
-      // Revoke the URL to free memory
       URL.revokeObjectURL(prev[index]);
       return prev.filter((_, i) => i !== index);
     });
   };
 
-  // Upload images to Supabase Storage
+  // put the images to Supabase
   const uploadImages = async (reportId: string): Promise<string[]> => {
     const uploadedFilenames: string[] = [];
 
@@ -373,18 +351,17 @@ const CommunityStatus = () => {
       }
 
       console.log('Uploaded image:', filePath);
-      // Store just the filename, we'll construct the public URL when fetching
       uploadedFilenames.push(filePath);
     }
 
     return uploadedFilenames;
   };
 
-  // Save image filenames to report_images table
+  // Save image filenames to report_images table (db)
   const saveImageRecords = async (reportId: string, imageFilenames: string[]) => {
     const imageRecords = imageFilenames.map(filename => ({
       report_id: reportId,
-      image_url: filename  // Store just the filename
+      image_url: filename
     }));
 
     const { error } = await supabase

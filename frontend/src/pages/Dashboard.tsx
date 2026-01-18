@@ -40,24 +40,17 @@ interface Notification {
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // REALTIME COUNTS
   const [atCapacityCount, setAtCapacityCount] = useState(0);
   const [availableCount, setAvailableCount] = useState(0);
 
-  // REALTIME ALERTS
   const [alerts, setAlerts] = useState<Notification[]>([]);
 
-  // WATER LEVEL DATA
   const [waterLevel, setWaterLevel] = useState<WaterLevelData | null>(null);
   const [waterLevelLoading, setWaterLevelLoading] = useState(true);
 
-  // USER STATUS (from community posts)
   const [userStatus, setUserStatus] = useState<string>('Safe');
   const { user } = useAuth();
 
-  // ============================
-  // MAP STATE & REFS
-  // ============================
   const [travelMode, setTravelMode] = useState<TravelMode>('walking');
   const [pinMode, setPinMode] = useState(false);
   const [origin, setOrigin] = useState<{ lat: number; lng: number } | null>(null);
@@ -72,9 +65,6 @@ const Dashboard = () => {
   const mapInitializedRef = useRef(false);
   const originMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
-  // ============================
-  // EVACUATION CENTER COUNTS
-  // ============================
 
   const fetchEvacuationCounts = async () => {
     const { data, error } = await supabase
@@ -112,9 +102,6 @@ const Dashboard = () => {
     };
   }, []);
 
-  // ============================
-  // RECENT ALERTS (REALTIME)
-  // ============================
 
   const fetchAlerts = async () => {
     const { data, error } = await supabase
@@ -156,9 +143,6 @@ const Dashboard = () => {
     };
   }, []);
 
-  // ============================
-  // USER STATUS (from community posts)
-  // ============================
 
   const fetchUserStatus = useCallback(async () => {
     if (!user?.id) return;
@@ -173,7 +157,6 @@ const Dashboard = () => {
       .single();
 
     if (error || !data) {
-      // Fallback to 'Safe' if no posts found
       setUserStatus('Safe');
       return;
     }
@@ -185,7 +168,6 @@ const Dashboard = () => {
     fetchUserStatus();
   }, [fetchUserStatus]);
 
-  // Subscribe to realtime changes for user's community status posts
   useEffect(() => {
     if (!user?.id) return;
 
@@ -208,9 +190,6 @@ const Dashboard = () => {
     };
   }, [user?.id, fetchUserStatus]);
 
-  // ============================
-  // WATER LEVEL DATA
-  // ============================
 
   const fetchWaterLevel = async () => {
     setWaterLevelLoading(true);
@@ -224,15 +203,11 @@ const Dashboard = () => {
       await fetchWaterLevel();
     })();
     
-    // Refresh every 5 minutes
     const interval = setInterval(fetchWaterLevel, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);
 
-  // ============================
-  // MAP INITIALIZATION
-  // ============================
   useEffect(() => {
     if (!mapContainerRef.current || mapInitializedRef.current) return;
 
@@ -265,9 +240,6 @@ const Dashboard = () => {
     };
   }, []);
 
-  // ============================
-  // GEOCODER INITIALIZATION
-  // ============================
   useEffect(() => {
     const map = mapRef.current;
     const container = geocoderContainerRef.current;
@@ -309,9 +281,6 @@ const Dashboard = () => {
     geocoderRef.current = geocoder;
   };
 
-  // ============================
-  // MARKER HELPERS
-  // ============================
   const setOriginMarker = useCallback((lng: number, lat: number, color: string) => {
     if (!mapRef.current) return;
     originMarkerRef.current?.remove();
@@ -321,9 +290,7 @@ const Dashboard = () => {
     originMarkerRef.current = marker;
   }, []);
 
-  // ============================
-  // PIN MODE
-  // ============================
+  // for drag and drop of pin location
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
@@ -355,9 +322,7 @@ const Dashboard = () => {
     };
   }, [pinMode, mapReady, setOriginMarker]);
 
-  // ============================
-  // USE MY LOCATION
-  // ============================
+  //use own location
   const useMyLocation = useCallback(() => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -433,26 +398,21 @@ const Dashboard = () => {
     }
   };
 
-  // Get CSS class for user status card based on status type
   const getStatusCardClass = (status: string): string => {
     const normalizedStatus = status.toLowerCase();
     
-    // Green/Success statuses
     if (normalizedStatus === 'safe') {
       return 'success';
     }
     
-    // Red/Danger statuses (critical, emergency situations)
     if (['critical', 'injured', 'fire', 'trapped', 'missing'].includes(normalizedStatus)) {
       return 'danger';
     }
     
-    // Orange/Warning statuses (attention needed but less severe)
     if (['flooding', 'power outage', 'outbreak', 'rescue', 'animal rescue', 'medical assistance'].includes(normalizedStatus)) {
       return 'warning';
     }
     
-    // Default to success (safe)
     return 'success';
   };
 
