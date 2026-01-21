@@ -527,16 +527,70 @@ body {
 @media (max-width: 600px) {
   .residence-wrapper {
     padding: 20px 12px;
+    overflow-y: auto;
+  }
+
+  .residence-card-flip {
+    min-height: auto;
+    perspective: none;
   }
 
   .residence-card {
+    position: relative;
     padding: 24px 20px;
     border-width: 6px;
+    transform: none !important;
+    backface-visibility: visible;
+  }
+
+  .residence-card.front {
+    position: relative;
+    transform: none !important;
+  }
+
+  .residence-card.back {
+    position: absolute;
+    inset: 0;
+    transform: none !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .residence-card-flip.flipped .front {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .residence-card-flip.flipped .back {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .photo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
   .photo-box img {
     width: 200px;
     height: 250px;
+  }
+
+  .info-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .card-header h2 {
@@ -579,14 +633,42 @@ body {
   }
 
   .residence-card-flip {
-    min-height: unset;
+    min-height: auto;
     max-width: 100%;
+    perspective: none;
   }
 
   .residence-card {
+    position: relative;
     padding: 18px 16px;
     border-width: 5px;
     border-radius: 18px;
+    transform: none !important;
+    backface-visibility: visible;
+  }
+
+  .residence-card.front {
+    position: relative;
+    transform: none !important;
+  }
+
+  .residence-card.back {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .residence-card-flip.flipped .front {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .residence-card-flip.flipped .back {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
   }
 
   .card-header h2 {
@@ -602,9 +684,17 @@ body {
   }
 
   .card-body {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 18px;
-    justify-items: center;
+    align-items: center;
+  }
+
+  .photo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
 
   .photo-box img {
@@ -615,6 +705,13 @@ body {
   .info-box {
     width: 100%;
     gap: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
   }
 
   .field span {
@@ -623,7 +720,8 @@ body {
   }
 
   .row {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
   }
 
@@ -654,5 +752,10 @@ body {
 
   .qr-note {
     font-size: 0.85rem;
+  }
+
+  /* Watermark adjustment for mobile */
+  .residence-card::before {
+    font-size: 2.5rem;
   }
 }
